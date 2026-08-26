@@ -1,0 +1,15 @@
+.DS_Store
+**/node_modules/
+**/dist/
+**/*.log
+**/.env
+**/.env.*
+!**/.env.example
+.cache/
+.tmp/
+coverage/
+artifacts/
+*.pem
+*.key
+*.p12
+/magno clean 2026/
