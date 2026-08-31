@@ -14,6 +14,9 @@ const envSchema = z.object({
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(200),
   AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
   CHECKOUT_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(30),
+  CHECKOUT_ENABLED: z.enum(["true", "false"])
+    .default("false")
+    .transform((value) => value === "true"),
   WEBHOOK_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(600),
   ADMIN_NAME: z.string().min(2),
   ADMIN_EMAIL: z.string().email(),
