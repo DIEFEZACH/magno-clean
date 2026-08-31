@@ -18,8 +18,11 @@ export const errorHandler: ErrorRequestHandler = (error, req, res, _next) => {
     if (error.code === "P2034") { statusCode = 409; message = "Conflicto concurrente; vuelve a intentar"; }
   }
   if (error instanceof MulterError) {
+    const inventoryImport = req.originalUrl.startsWith("/api/admin/inventory/import");
     statusCode = error.code === "LIMIT_FILE_SIZE" ? 413 : 400;
-    message = error.code === "LIMIT_FILE_SIZE" ? "La imagen supera el tamaño máximo permitido" : "Archivo de imagen inválido";
+    message = error.code === "LIMIT_FILE_SIZE"
+      ? inventoryImport ? "El CSV supera el tamaño máximo de 1 MB" : "La imagen supera el tamaño máximo permitido"
+      : inventoryImport ? "Archivo CSV inválido" : "Archivo de imagen inválido";
   }
 
   req.log?.error({ err: error, statusCode }, message);

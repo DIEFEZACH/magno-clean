@@ -56,8 +56,11 @@ app.use(rateLimit({
 }));
 app.use((req, res, next) => {
   const writesBody = ["POST", "PUT", "PATCH"].includes(req.method) && Number(req.headers["content-length"] || 0) > 0;
-  const imageUpload = req.method === "POST" && /^\/api\/admin\/products\/[^/]+\/images\/upload$/.test(req.path);
-  if (writesBody && !req.is("application/json") && !(imageUpload && req.is("multipart/form-data"))) return res.status(415).json({ message: "Content-Type no permitido" });
+  const multipartUpload = req.method === "POST" && (
+    /^\/api\/admin\/products\/[^/]+\/images\/upload$/.test(req.path) ||
+    /^\/api\/admin\/inventory\/import(?:\/preview)?$/.test(req.path)
+  );
+  if (writesBody && !req.is("application/json") && !(multipartUpload && req.is("multipart/form-data"))) return res.status(415).json({ message: "Content-Type no permitido" });
   next();
 });
 app.use(express.json({ limit: env.JSON_BODY_LIMIT }));
