@@ -5,6 +5,11 @@
 **/.env
 **/.env.*
 !**/.env.example
+# Block accidental environment-file copies while preserving canonical .env.example files.
+**/.env\ *.example
+**/.env\ *.backup
+**/.env\ *.bak
+**/.env\ *.copy
 .cache/
 .tmp/
 coverage/
