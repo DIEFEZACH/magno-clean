@@ -5,6 +5,7 @@ import {
   PrismaClient,
 } from "@prisma/client";
 import { AppError } from "../errors/AppError";
+import { prisma } from "../lib/prisma";
 
 type Tx = Prisma.TransactionClient;
 type StockRow = { stock: number; reservedStock: number };
@@ -15,6 +16,55 @@ type ReservationRow = {
   quantity: number;
   status: InventoryReservationStatus;
 };
+
+export type AdjustProductInventoryInput = {
+  productId: string;
+  newStock: number;
+  reason: string;
+  createdById: string;
+};
+
+export async function adjustProductInventoryInTransaction(
+  tx: Tx,
+  input: AdjustProductInventoryInput,
+) {
+  const rows = await tx.$queryRaw<StockRow[]>`
+    SELECT "stock", "reservedStock" FROM "Product" WHERE "id" = ${input.productId} FOR UPDATE
+  `;
+  const current = rows[0];
+  if (!current) throw new AppError(404, "Producto no encontrado");
+  if (input.newStock < current.reservedStock) {
+    throw new AppError(409, "La existencia no puede ser menor que el stock reservado");
+  }
+  if (input.newStock === current.stock) {
+    return { product: current, movement: null, changed: false as const, previousStock: current.stock };
+  }
+
+  const quantity = input.newStock - current.stock;
+  const product = await tx.product.update({
+    where: { id: input.productId },
+    data: { stock: input.newStock },
+  });
+  const inventoryMovement = await tx.inventoryMovement.create({
+    data: {
+      productId: input.productId,
+      type: InventoryMovementType.ADJUSTMENT,
+      quantity,
+      reason: input.reason,
+      createdById: input.createdById,
+      stockAfter: product.stock,
+      reservedStockAfter: product.reservedStock,
+    },
+  });
+  return { product, movement: inventoryMovement, changed: true as const, previousStock: current.stock };
+}
+
+export async function adjustProductInventory(input: AdjustProductInventoryInput) {
+  return prisma.$transaction(
+    (tx) => adjustProductInventoryInTransaction(tx, input),
+    { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+  );
+}
 
 async function stockState(tx: Tx, productId: string) {
   const product = await tx.product.findUnique({

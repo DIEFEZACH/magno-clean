@@ -12,7 +12,22 @@ jobs:
   backend:
     runs-on: ubuntu-latest
     env:
+      NODE_ENV: test
       DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/magno_clean_ci
+      CORS_ORIGIN: https://ci.example.invalid
+      JWT_ACCESS_SECRET: ci-only-not-a-secret-000000000000000000000000
+      JWT_ACCESS_EXPIRES_SECONDS: 900
+      REFRESH_TOKEN_EXPIRES_DAYS: 7
+      ADMIN_NAME: CI Admin
+      ADMIN_EMAIL: admin@ci.example.invalid
+      ADMIN_PASSWORD: ci-only-password
+      MERCADO_PAGO_ACCESS_TOKEN: ci-only-token
+      MERCADO_PAGO_WEBHOOK_SECRET: ci-only-webhook-secret
+      DEFAULT_CURRENCY: MXN
+      MAX_ORDER_ITEMS: 100
+      MAX_ITEM_QUANTITY: 100
+      SUPABASE_URL: https://ci.example.invalid
+      SUPABASE_SERVICE_ROLE_KEY: ci-only-service-role-key
     defaults:
       run:
         working-directory: backend
