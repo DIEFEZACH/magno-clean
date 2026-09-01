@@ -20,7 +20,8 @@ export function useCatalog(params: CatalogParams = {}) {
 
 class CatalogRequestError extends Error { status:number; constructor(message:string,status:number){super(message);this.status=status;} }
 async function fetchCatalogDetail(slug:string):Promise<CatalogDetailResponse>{
-  const response=await fetch(`${API_URL}/api/catalog/${encodeURIComponent(slug)}`);
+  let response:Response;
+  try{response=await fetch(`${API_URL}/api/catalog/${encodeURIComponent(slug)}`);}catch{throw new CatalogRequestError("No fue posible cargar el producto",0);}
   if(!response.ok)throw new CatalogRequestError(response.status===404?"Producto no encontrado":"No fue posible cargar el producto",response.status);
   return response.json() as Promise<CatalogDetailResponse>;
 }

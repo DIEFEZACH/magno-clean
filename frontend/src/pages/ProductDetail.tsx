@@ -36,7 +36,7 @@ export function ProductDetail(){
   const description=family?.shortDescription??product!.description;
   const code=selectedVariant?.code??product!.code;
   const price=selectedVariant?.price??product!.price;
-  const oldPrice=selectedVariant?.oldPrice??product!.oldPrice;
+  const oldPrice=family?selectedVariant!.oldPrice:product!.oldPrice;
   const availableStock=selectedVariant?.availableStock??product!.availableStock;
   const soldOut=availableStock<=0;
   const badge=selectedVariant?.badge??item.badge;
