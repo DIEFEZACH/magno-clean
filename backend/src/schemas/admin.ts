@@ -33,3 +33,38 @@ export const companySettingsSchema = z.object({
   facebookUrl: z.string().url().nullable().optional(), instagramUrl: z.string().url().nullable().optional(),
   taxRate: z.number().min(0).max(100), shippingFee: z.number().nonnegative(), freeShippingMin: z.number().nonnegative().nullable().optional(),
 }).strict();
+
+const slugSchema = z.string().trim().min(1).max(200).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug inválido");
+const productFamilyFields = {
+  slug: slugSchema,
+  name: z.string().trim().min(1).max(200),
+  brand: z.string().trim().min(1).max(100),
+  category: z.string().trim().min(1).max(120),
+  description: z.string().trim().min(1).max(10000),
+  imageUrl: z.string().url().nullable().optional(),
+  badge: z.string().trim().max(80).nullable().optional(),
+  featured: z.boolean().default(false),
+  active: z.boolean().default(true),
+  variantType: z.string().trim().min(1).max(50).default("Presentación"),
+  alwaysShowAsFamily: z.boolean().default(false),
+};
+
+export const createProductFamilySchema = z.object(productFamilyFields).strict();
+export const updateProductFamilySchema = z.object({
+  slug: slugSchema.optional(), name: z.string().trim().min(1).max(200).optional(),
+  brand: z.string().trim().min(1).max(100).optional(), category: z.string().trim().min(1).max(120).optional(),
+  description: z.string().trim().min(1).max(10000).optional(), imageUrl: z.string().url().nullable().optional(),
+  badge: z.string().trim().max(80).nullable().optional(), featured: z.boolean().optional(), active: z.boolean().optional(),
+  variantType: z.string().trim().min(1).max(50).optional(), alwaysShowAsFamily: z.boolean().optional(),
+}).strict()
+  .refine((value) => Object.keys(value).length > 0, "Actualización vacía");
+export const linkProductVariantSchema = z.object({
+  productId: z.string().trim().min(1),
+  variantLabel: z.string().trim().min(1).max(80),
+  variantSortOrder: z.number().int().min(0).max(10000).default(0),
+  confirmMove: z.boolean().default(false),
+}).strict();
+export const updateProductVariantSchema = z.object({
+  variantLabel: z.string().trim().min(1).max(80).optional(),
+  variantSortOrder: z.number().int().min(0).max(10000).optional(),
+}).strict().refine((value) => Object.keys(value).length > 0, "Actualización vacía");

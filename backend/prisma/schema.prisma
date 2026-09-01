@@ -155,11 +155,39 @@ model Product {
   stock                 Int                    @default(0)
   reservedStock         Int                    @default(0)
   minStock              Int                    @default(5)
+  familyId              String?
+  variantLabel          String?
+  variantSortOrder      Int                    @default(0)
+  family                ProductFamily?         @relation(fields: [familyId], references: [id], onDelete: SetNull)
   images                ProductImage[]
   inventoryMovements    InventoryMovement[]
   inventoryReservations InventoryReservation[]
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @default(now()) @updatedAt
+
+  @@unique([familyId, variantLabel])
+  @@index([familyId, variantSortOrder])
+}
+
+model ProductFamily {
+  id                 String    @id @default(cuid())
+  slug               String    @unique
+  name               String
+  brand              String
+  category           String
+  description        String
+  imageUrl           String?
+  badge              String?
+  featured           Boolean   @default(false)
+  active             Boolean   @default(true)
+  variantType        String    @default("Presentación")
+  alwaysShowAsFamily Boolean   @default(false)
+  products           Product[]
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @default(now()) @updatedAt
+
+  @@index([active])
+  @@index([featured])
 }
 
 model ProductImage {
