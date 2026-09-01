@@ -1,7 +1,11 @@
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
+import { Link } from "react-router-dom";
+import { useCheckoutAvailability } from "../hooks/useCheckoutAvailability";
+import { CheckoutUnavailable } from "../components/commerce/CheckoutUnavailable";
 
 export function Cart() {
+  const { checkoutEnabled, loading: checkoutLoading } = useCheckoutAvailability();
   const {
     items,
     removeItem,
@@ -31,6 +35,9 @@ export function Cart() {
           <p className="mt-6 text-lg text-black/60">
             Agrega productos Magno Clean para comenzar tu compra.
           </p>
+          <Link to="/productos" className="mt-8 inline-flex min-h-11 items-center rounded-full bg-[#111111] px-7 py-3 text-sm font-black text-white transition hover:bg-[#19A2B6]">
+            Explorar productos
+          </Link>
         </div>
       </section>
     );
@@ -58,8 +65,8 @@ export function Cart() {
           </button>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
-          <div className="space-y-5">
+        <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_400px]">
+          <div className="min-w-0 space-y-5">
             {items.map((item) => {
               const formattedPrice = new Intl.NumberFormat("es-MX", {
                 style: "currency",
@@ -69,7 +76,7 @@ export function Cart() {
               return (
                 <article
                   key={item.id}
-                  className="flex flex-col gap-5 rounded-[2rem] bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between"
+                  className="min-w-0 flex flex-col gap-5 rounded-[2rem] bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between"
                 >
                   <div className="flex items-center gap-5">
                     <div className="flex h-28 w-28 items-center justify-center rounded-[1.5rem] bg-gradient-to-br from-[#19A2B6]/10 to-[#EF8329]/10">
@@ -78,12 +85,12 @@ export function Cart() {
                       </span>
                     </div>
 
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm font-black uppercase tracking-[0.2em] text-[#19A2B6]">
                         {item.category}
                       </p>
 
-                      <h2 className="mt-2 text-2xl font-black">
+                      <h2 className="mt-2 break-words text-2xl font-black">
                         {item.name}
                       </h2>
 
@@ -124,7 +131,7 @@ export function Cart() {
             })}
           </div>
 
-          <aside className="h-fit rounded-[2rem] bg-white p-8 shadow-sm">
+          <aside className="min-w-0 h-fit rounded-[2rem] bg-white p-8 shadow-sm">
             <h2 className="text-3xl font-black">
               Resumen
             </h2>
@@ -139,12 +146,16 @@ export function Cart() {
               </span>
             </div>
 
-            <a
-            href="/checkout"
-            className="mt-10 block w-full rounded-full bg-[#19A2B6] px-6 py-4 text-center text-sm font-black text-white transition hover:bg-[#111111]"
-            >
-            Proceder al pago
-            </a>
+            {checkoutEnabled ? (
+              <Link
+                to="/checkout"
+                className="mt-10 flex min-h-11 w-full items-center justify-center rounded-full bg-[#19A2B6] px-6 py-4 text-center text-sm font-black text-white transition hover:bg-[#111111]"
+              >
+                Proceder al pago
+              </Link>
+            ) : (
+              <div className="mt-8"><CheckoutUnavailable compact loading={checkoutLoading}/></div>
+            )}
           </aside>
         </div>
       </div>

@@ -4,7 +4,7 @@ import { env } from "../config/env";
 import { AppError } from "../errors/AppError";
 import { prisma } from "../lib/prisma";
 import { asyncHandler } from "../middleware/asyncHandler";
-import { createCheckoutAvailabilityGuard } from "../middleware/checkoutAvailability";
+import { createCheckoutAvailabilityGuard, createCheckoutStatusHandler } from "../middleware/checkoutAvailability";
 import { validateBody } from "../middleware/validate";
 import { checkoutSchema } from "../schemas/orders";
 import { createCheckout } from "../services/checkout";
@@ -17,6 +17,8 @@ const checkoutLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+checkoutRouter.get("/status", createCheckoutStatusHandler(env.CHECKOUT_ENABLED));
 
 checkoutRouter.post("/create-preference", checkoutAvailabilityGuard, checkoutLimiter, validateBody(checkoutSchema), asyncHandler(async (req, res) => {
   const idempotencyKey = req.header("Idempotency-Key")?.trim();
