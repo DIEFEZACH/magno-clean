@@ -47,19 +47,53 @@ enum InventoryReservationStatus {
   RETURNED
 }
 
+enum WebsiteContentStatus {
+  DRAFT
+  REVIEW
+  APPROVED
+  PUBLISHED
+}
+
+enum WebsiteContentSection {
+  BENEFIT
+  APPLICATION
+  USAGE
+  DILUTION
+  PRECAUTION
+  PICTOGRAM
+  SEO_KEYWORD
+}
+
+enum WebsiteContentSourceLayer {
+  SOURCE_TECHNICAL
+  DERIVED_COMMERCIAL
+}
+
+enum ContentExtractionConfidence {
+  LOW
+  MEDIUM
+  HIGH
+}
+
 model User {
-  id                 String               @id @default(cuid())
-  name               String
-  email              String               @unique
-  passwordHash       String
-  role               Role                 @default(CUSTOMER)
-  active             Boolean              @default(true)
-  refreshTokens      RefreshToken[]
-  inventoryMovements InventoryMovement[]
-  orderNotes         OrderNote[]
-  orderStatusChanges OrderStatusHistory[]
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @default(now()) @updatedAt
+  id                        String                   @id @default(cuid())
+  name                      String
+  email                     String                   @unique
+  passwordHash              String
+  role                      Role                     @default(CUSTOMER)
+  active                    Boolean                  @default(true)
+  refreshTokens             RefreshToken[]
+  inventoryMovements        InventoryMovement[]
+  orderNotes                OrderNote[]
+  orderStatusChanges        OrderStatusHistory[]
+  websiteContentCreated     WebsiteContentRevision[] @relation("WebsiteContentCreatedBy")
+  websiteContentReviewed    WebsiteContentRevision[] @relation("WebsiteContentReviewedBy")
+  websiteContentApproved    WebsiteContentRevision[] @relation("WebsiteContentApprovedBy")
+  websiteContentPublished   WebsiteContentRevision[] @relation("WebsiteContentPublishedBy")
+  contentConflictsConfirmed WebsiteContentRevision[] @relation("WebsiteContentConflictsConfirmedBy")
+  websiteContentSources     WebsiteContentSource[]   @relation("WebsiteContentSourceCreatedBy")
+  createdAt                 DateTime                 @default(now())
+  updatedAt                 DateTime                 @default(now()) @updatedAt
 }
 
 model RefreshToken {
@@ -159,6 +193,7 @@ model Product {
   variantLabel          String?
   variantSortOrder      Int                    @default(0)
   family                ProductFamily?         @relation(fields: [familyId], references: [id], onDelete: SetNull)
+  websiteContent        WebsiteContent?
   images                ProductImage[]
   inventoryMovements    InventoryMovement[]
   inventoryReservations InventoryReservation[]
@@ -170,24 +205,123 @@ model Product {
 }
 
 model ProductFamily {
-  id                 String    @id @default(cuid())
-  slug               String    @unique
+  id                 String          @id @default(cuid())
+  slug               String          @unique
   name               String
   brand              String
   category           String
   description        String
   imageUrl           String?
   badge              String?
-  featured           Boolean   @default(false)
-  active             Boolean   @default(true)
-  variantType        String    @default("Presentación")
-  alwaysShowAsFamily Boolean   @default(false)
+  featured           Boolean         @default(false)
+  active             Boolean         @default(true)
+  variantType        String          @default("Presentación")
+  alwaysShowAsFamily Boolean         @default(false)
   products           Product[]
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @default(now()) @updatedAt
+  websiteContent     WebsiteContent?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @default(now()) @updatedAt
 
   @@index([active])
   @@index([featured])
+}
+
+model WebsiteContent {
+  id                  String                   @id @default(cuid())
+  familyId            String?                  @unique
+  productId           String?                  @unique
+  publishedRevisionId String?                  @unique
+  family              ProductFamily?           @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  product             Product?                 @relation(fields: [productId], references: [id], onDelete: Cascade)
+  publishedRevision   WebsiteContentRevision?  @relation("PublishedWebsiteContentRevision", fields: [publishedRevisionId], references: [id], onDelete: SetNull)
+  revisions           WebsiteContentRevision[] @relation("WebsiteContentRevisions")
+  sources             WebsiteContentSource[]
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @default(now()) @updatedAt
+}
+
+model WebsiteContentRevision {
+  id                        String                @id @default(cuid())
+  contentId                 String
+  version                   Int
+  status                    WebsiteContentStatus  @default(DRAFT)
+  title                     String?
+  shortDescription          String?
+  longDescription           String?
+  seoTitle                  String?
+  seoDescription            String?
+  technicalSheetUrl         String?
+  sdsUrl                    String?
+  createdById               String
+  reviewedById              String?
+  approvedById              String?
+  publishedById             String?
+  conflictsConfirmedById    String?
+  conflictsConfirmationNote String?
+  reviewedAt                DateTime?
+  approvedAt                DateTime?
+  publishedAt               DateTime?
+  conflictsConfirmedAt      DateTime?
+  createdAt                 DateTime              @default(now())
+  updatedAt                 DateTime              @default(now()) @updatedAt
+  content                   WebsiteContent        @relation("WebsiteContentRevisions", fields: [contentId], references: [id], onDelete: Cascade)
+  publishedFor              WebsiteContent?       @relation("PublishedWebsiteContentRevision")
+  createdBy                 User                  @relation("WebsiteContentCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  reviewedBy                User?                 @relation("WebsiteContentReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  approvedBy                User?                 @relation("WebsiteContentApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  publishedBy               User?                 @relation("WebsiteContentPublishedBy", fields: [publishedById], references: [id], onDelete: SetNull)
+  conflictsConfirmedBy      User?                 @relation("WebsiteContentConflictsConfirmedBy", fields: [conflictsConfirmedById], references: [id], onDelete: SetNull)
+  entries                   WebsiteContentEntry[]
+  faq                       WebsiteContentFaq[]
+
+  @@unique([contentId, version])
+  @@index([contentId, status])
+  @@index([createdById])
+  @@index([reviewedById])
+  @@index([approvedById])
+  @@index([publishedById])
+  @@index([conflictsConfirmedById])
+}
+
+model WebsiteContentEntry {
+  id         String                 @id @default(cuid())
+  revisionId String
+  section    WebsiteContentSection
+  value      String
+  position   Int                    @default(0)
+  revision   WebsiteContentRevision @relation(fields: [revisionId], references: [id], onDelete: Cascade)
+
+  @@index([revisionId, section, position])
+}
+
+model WebsiteContentFaq {
+  id         String                 @id @default(cuid())
+  revisionId String
+  question   String
+  answer     String
+  position   Int                    @default(0)
+  revision   WebsiteContentRevision @relation(fields: [revisionId], references: [id], onDelete: Cascade)
+
+  @@index([revisionId, position])
+}
+
+model WebsiteContentSource {
+  id             String                       @id @default(cuid())
+  contentId      String
+  layer          WebsiteContentSourceLayer
+  sourceFile     String?
+  sourceSha256   String?
+  data           Json
+  reviewRequired Boolean                      @default(false)
+  confidence     ContentExtractionConfidence?
+  createdById    String
+  createdAt      DateTime                     @default(now())
+  content        WebsiteContent               @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  createdBy      User                         @relation("WebsiteContentSourceCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([contentId, layer])
+  @@index([createdById])
+  @@index([sourceSha256])
 }
 
 model ProductImage {
