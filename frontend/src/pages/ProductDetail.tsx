@@ -1,188 +1,71 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import {
-  ShoppingCart,
-  ShieldCheck,
-  Truck,
-  Wrench,
-} from "lucide-react";
-import { useProducts } from "../hooks/useProducts";
-import { useCartStore } from "../store/cartStore";
-import { ProductCard } from "../components/product/ProductCard";
-import { Seo, siteUrl } from "../components/Seo";
-import { NotFound } from "./NotFound";
-import { useCheckoutAvailability } from "../hooks/useCheckoutAvailability";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import { ShoppingCart } from "lucide-react";
 import { CheckoutUnavailable } from "../components/commerce/CheckoutUnavailable";
+import { ProductContentSections } from "../components/product/ProductContentSections";
+import { ProductGallery } from "../components/product/ProductGallery";
+import { ProductCard } from "../components/product/ProductCard";
+import { VariantSelector } from "../components/product/VariantSelector";
+import { Seo, siteUrl } from "../components/Seo";
+import { useCatalog, useCatalogDetail } from "../hooks/useCatalog";
+import { useCheckoutAvailability } from "../hooks/useCheckoutAvailability";
+import { buildGallery, selectInitialVariant } from "../lib/productDetail";
+import { useCartStore } from "../store/cartStore";
+import type { CatalogVariant } from "../types/catalog";
+import { NotFound } from "./NotFound";
 
-export function ProductDetail() {
-  const { slug } = useParams();
-  const { products, loading, error, refetch } = useProducts();
-  const addItem = useCartStore((state) => state.addItem);
-  const [selectedImage,setSelectedImage]=useState<string|null>(null);
-  const { checkoutEnabled, loading: checkoutLoading } = useCheckoutAvailability();
+const money=new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN"});
 
-  const product = products.find((item) => item.slug === slug);
+export function ProductDetail(){
+  const {slug}=useParams();
+  const [searchParams,setSearchParams]=useSearchParams();
+  const {detail,loading,error,notFound,refetch}=useCatalogDetail(slug);
+  const {checkoutEnabled,loading:checkoutLoading}=useCheckoutAvailability();
+  const addItem=useCartStore((state)=>state.addItem);
+  const category=detail?.item.category??"";
+  const relatedQuery=useCatalog({category,pageSize:6,sort:"featured"});
 
-  useEffect(()=>setSelectedImage(null),[product?.id]);
+  if(loading)return <section className="px-5 py-12 lg:px-8" aria-busy="true"><div className="mx-auto grid max-w-7xl animate-pulse gap-10 lg:grid-cols-2"><div className="aspect-square rounded-[2rem] bg-black/5"/><div className="space-y-5 py-8"><div className="h-4 w-28 rounded bg-black/10"/><div className="h-16 w-4/5 rounded bg-black/10"/><div className="h-7 w-40 rounded bg-black/10"/><div className="h-32 rounded bg-black/5"/></div></div><span className="sr-only">Cargando producto</span></section>;
+  if(notFound)return <NotFound product/>;
+  if(error||!detail)return <section className="px-5 py-20 lg:px-8"><div className="mx-auto max-w-4xl rounded-[2rem] bg-red-50 p-8"><h1 className="text-3xl font-black">No pudimos cargar el producto</h1><p className="mt-3 text-black/60">{error||"La respuesta del catálogo no es válida."}</p><button type="button" onClick={()=>refetch()} className="mt-6 min-h-11 rounded-full bg-[#111] px-6 py-3 text-sm font-black text-white">Reintentar</button></div></section>;
 
-  if (loading) {
-    return (
-      <section className="px-5 py-20 lg:px-8">
-        <h1 className="text-5xl font-black">Cargando producto...</h1>
-      </section>
-    );
-  }
+  const item=detail.item;
+  const family=item.type==="FAMILY"?item:null;
+  const product=item.type==="PRODUCT"?item:null;
+  const selectedVariant=family?selectInitialVariant(family,searchParams.get("variant"),detail.selectedVariantId):null;
+  const name=family?.name??product!.name;
+  const description=family?.shortDescription??product!.description;
+  const code=selectedVariant?.code??product!.code;
+  const price=selectedVariant?.price??product!.price;
+  const oldPrice=family?selectedVariant!.oldPrice:product!.oldPrice;
+  const availableStock=selectedVariant?.availableStock??product!.availableStock;
+  const soldOut=availableStock<=0;
+  const badge=selectedVariant?.badge??item.badge;
+  const gallery=buildGallery(item,selectedVariant??undefined);
+  const canonicalPath=`/producto/${encodeURIComponent(detail.canonicalSlug)}`;
+  const cartProduct=family?{id:selectedVariant!.id,slug:selectedVariant!.slug,name:selectedVariant!.name,category:family.category,price:selectedVariant!.price,oldPrice:selectedVariant!.oldPrice,badge:selectedVariant!.badge,description:selectedVariant!.description,imageUrl:selectedVariant!.imageUrl??family.imageUrl,availableStock:selectedVariant!.availableStock}:product!;
+  const related=relatedQuery.items.filter((candidate)=>candidate.id!==item.id).slice(0,3);
+  function selectVariant(variant:CatalogVariant){const next=new URLSearchParams(searchParams);next.set("variant",variant.code);setSearchParams(next,{replace:true});}
 
-  if (error) {
-    return (
-      <section className="px-5 py-20 lg:px-8">
-        <div className="mx-auto max-w-7xl rounded-[2rem] bg-red-50 p-8">
-          <h1 className="text-3xl font-black">No pudimos cargar el producto</h1>
-          <p className="mt-3 text-black/60">{error}</p>
-          <button type="button" onClick={() => refetch()} className="mt-6 rounded-full bg-[#111111] px-6 py-3 text-sm font-black text-white">Reintentar</button>
-        </div>
-      </section>
-    );
-  }
+  const productJsonLd=item.type==="FAMILY"?{
+    "@context":"https://schema.org","@type":"ProductGroup","name":family!.name,"description":family!.shortDescription,"url":`${siteUrl}${canonicalPath}`,"productGroupID":family!.id,"variesBy":family!.variantType,"brand":{"@type":"Brand","name":family!.brand},"hasVariant":family!.variants.map((variant)=>({"@type":"Product","name":variant.name,"sku":variant.code,"image":[variant.imageUrl,...variant.images.map((image)=>image.url)].filter(Boolean),...(checkoutEnabled?{"offers":{"@type":"Offer","url":`${siteUrl}${canonicalPath}?variant=${encodeURIComponent(variant.code)}`,"priceCurrency":"MXN","price":variant.price,"availability":variant.available?"https://schema.org/InStock":"https://schema.org/OutOfStock","itemCondition":"https://schema.org/NewCondition"}}:{})}))
+  }:{"@context":"https://schema.org","@type":"Product","name":product!.name,"description":product!.description,"image":gallery.map((image)=>image.url),"sku":product!.code,"brand":{"@type":"Brand","name":product!.brand},...(checkoutEnabled?{"offers":{"@type":"Offer","url":`${siteUrl}${canonicalPath}`,"priceCurrency":"MXN","price":product!.price,"availability":product!.available?"https://schema.org/InStock":"https://schema.org/OutOfStock","itemCondition":"https://schema.org/NewCondition"}}:{})};
+  const breadcrumbJsonLd={"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Inicio","item":siteUrl},{"@type":"ListItem","position":2,"name":"Productos","item":`${siteUrl}/productos`},{"@type":"ListItem","position":3,"name":name,"item":`${siteUrl}${canonicalPath}`}]};
 
-  if (!product) {
-    return <NotFound product/>;
-  }
-
-  const price = new Intl.NumberFormat("es-MX", {
-    style: "currency",
-    currency: "MXN",
-  }).format(product.price);
-
-  const oldPrice = product.oldPrice
-    ? new Intl.NumberFormat("es-MX", {
-        style: "currency",
-        currency: "MXN",
-      }).format(product.oldPrice)
-    : null;
-  const relatedProducts = products
-    .filter((item) => item.id !== product.id && item.category === product.category)
-    .slice(0, 3);
-  const soldOut = product.availableStock <= 0;
-  const gallery=[...new Set([product.imageUrl,...(product.images||[]).map(image=>image.url)].filter((url):url is string=>Boolean(url)))];
-  const mainImage=selectedImage||gallery[0]||null;
-  const canonicalPath=`/producto/${encodeURIComponent(product.slug)}`;
-  const productJsonLd={"@context":"https://schema.org","@type":"Product","name":product.name,"description":product.description,"image":gallery,"sku":product.code,"brand":{"@type":"Brand","name":product.brand},...(checkoutEnabled?{"offers":{"@type":"Offer","url":`${siteUrl}${canonicalPath}`,"priceCurrency":"MXN","price":product.price,"availability":soldOut?"https://schema.org/OutOfStock":"https://schema.org/InStock","itemCondition":"https://schema.org/NewCondition"}}:{})};
-  const breadcrumbJsonLd={"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Inicio","item":siteUrl},{"@type":"ListItem","position":2,"name":"Productos","item":`${siteUrl}/productos`},{"@type":"ListItem","position":3,"name":product.name,"item":`${siteUrl}${canonicalPath}`}]};
-
-  return (
-    <><Seo title={product.name} description={product.description.slice(0,160)} path={canonicalPath} image={mainImage} type="product" jsonLd={[productJsonLd,breadcrumbJsonLd]}/><section className="bg-white px-5 py-16 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <nav aria-label="Migas de pan" className="mb-10 flex flex-wrap items-center gap-2 text-sm font-bold text-black/45"><Link to="/">Inicio</Link><span aria-hidden="true">/</span><Link to="/productos">Productos</Link><span aria-hidden="true">/</span><span aria-current="page" className="text-[#19A2B6]">{product.name}</span></nav>
-
-        <div className="grid min-w-0 gap-12 lg:grid-cols-2">
-          <div className="min-w-0 rounded-[2.5rem] bg-[#F5F5F5] p-6">
-            <div className="flex aspect-square items-center justify-center rounded-[2rem] bg-gradient-to-br from-[#19A2B6]/10 to-[#EF8329]/10">
-              <div className="flex h-80 w-80 items-center justify-center overflow-hidden rounded-[2.5rem] bg-white shadow-xl">
-                {mainImage ? (
-                  <img
-                    src={mainImage}
-                    alt={product.name}
-                    width="320"
-                    height="320"
-                    decoding="async"
-                    className="h-full w-full object-contain p-10"
-                  />
-                ) : (
-                  <span className="text-6xl font-black text-[#19A2B6]">
-                    MC
-                  </span>
-                )}
-              </div>
-            </div>
-            {gallery.length>1&&<div className="mt-4 grid grid-cols-4 gap-3">{gallery.map((url,index)=><button type="button" aria-label={`Ver imagen ${index+1} de ${product.name}`} aria-pressed={mainImage===url} key={url} onClick={()=>setSelectedImage(url)} className="aspect-square overflow-hidden rounded-2xl border border-black/10 bg-white p-2 aria-pressed:border-[#19A2B6] aria-pressed:ring-2 aria-pressed:ring-[#19A2B6]/20"><img src={url} alt={`${product.name}, vista ${index+1}`} width="96" height="96" loading="lazy" decoding="async" className="h-full w-full object-contain"/></button>)}</div>}
-          </div>
-
-          <div className="min-w-0 flex flex-col justify-center">
-            {product.badge && (
-              <span className="mb-5 w-fit rounded-full bg-[#EF8329] px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-white">
-                {product.badge}
-              </span>
-            )}
-
-            <p className="text-sm font-black uppercase tracking-[0.25em] text-[#19A2B6]">
-              {product.category}
-            </p>
-            <p className="mt-3 text-sm font-bold text-black/45">Marca: {product.brand} · Código: {product.code}</p>
-
-            <h1 className="mt-4 text-5xl font-black tracking-[-0.05em] md:text-7xl">
-              {product.name}
-            </h1>
-
-            <p className="mt-6 max-w-xl text-lg leading-8 text-black/60">
-              {product.description}
-            </p>
-
-            <div className="mt-8">
-              <p className="text-4xl font-black">{price}</p>
-              <p className={`mt-3 text-sm font-black ${soldOut ? "text-red-500" : "text-emerald-600"}`}>
-                {soldOut ? "Agotado" : `${product.availableStock} disponibles`}
-              </p>
-
-              {oldPrice && (
-                <p className="mt-1 text-lg font-bold text-black/35 line-through">
-                  {oldPrice}
-                </p>
-              )}
-            </div>
-
-            {checkoutEnabled ? <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => addItem(product)}
-                disabled={soldOut}
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#111111] px-8 py-4 text-sm font-black text-white transition hover:bg-[#19A2B6] disabled:cursor-not-allowed disabled:bg-black/20"
-              >
-                <ShoppingCart size={18} />
-                {soldOut ? "Agotado" : "Agregar al carrito"}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => addItem(product)}
-                disabled={soldOut}
-                className="rounded-full border border-black/10 px-8 py-4 text-sm font-black transition hover:bg-[#F5F5F5] disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Comprar ahora
-              </button>
-            </div> : <div className="mt-8"><CheckoutUnavailable compact loading={checkoutLoading}/></div>}
-
-            <div className="mt-10 grid gap-4 sm:grid-cols-3">
-              <div className="rounded-3xl bg-[#F5F5F5] p-5">
-                <Truck className="mb-3 text-[#19A2B6]" />
-                <p className="text-sm font-black">Envío nacional</p>
-              </div>
-
-              <div className="rounded-3xl bg-[#F5F5F5] p-5">
-                <ShieldCheck className="mb-3 text-[#19A2B6]" />
-                <p className="text-sm font-black">Garantía oficial</p>
-              </div>
-
-              <div className="rounded-3xl bg-[#F5F5F5] p-5">
-                <Wrench className="mb-3 text-[#19A2B6]" />
-                <p className="text-sm font-black">Refacciones</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {relatedProducts.length > 0 && (
-          <div className="mt-20 border-t border-black/5 pt-14">
-            <h2 className="text-4xl font-black tracking-[-0.04em]">Productos relacionados</h2>
-            <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {relatedProducts.map((item) => (
-                <ProductCard key={item.id} product={{ ...item, oldPrice: item.oldPrice ?? undefined, badge: item.badge ?? undefined }} />
-              ))}
-            </div>
-          </div>
-        )}
+  return <><Seo title={name} description={description.slice(0,160)} path={canonicalPath} image={gallery[0]?.url} type="product" jsonLd={[productJsonLd,breadcrumbJsonLd]}/><section className="bg-white px-4 py-8 sm:px-5 sm:py-12 lg:px-8 lg:py-16"><div className="mx-auto max-w-7xl">
+    <nav aria-label="Migas de pan" className="mb-7 flex min-w-0 items-center gap-2 overflow-hidden text-xs font-bold text-black/45 sm:mb-10 sm:text-sm"><Link to="/" className="shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#19A2B6]">Inicio</Link><span aria-hidden="true">/</span><Link to="/productos" className="shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#19A2B6]">Productos</Link><span aria-hidden="true">/</span><span aria-current="page" className="truncate text-[#19A2B6]">{name}</span></nav>
+    <div className="grid min-w-0 gap-8 md:grid-cols-2 md:items-start lg:gap-14">
+      <ProductGallery key={selectedVariant?.id??product?.id} images={gallery} name={selectedVariant?.name??name}/>
+      <div className="min-w-0 md:sticky md:top-24">
+        {badge&&<span className="mb-5 inline-flex rounded-full bg-[#EF8329] px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-white">{badge}</span>}
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-[#19A2B6] sm:text-sm sm:tracking-[0.25em]">{item.category}</p>
+        <h1 className="mt-3 break-words text-4xl font-black tracking-[-0.05em] sm:text-5xl lg:text-6xl xl:text-7xl">{name}</h1>
+        <p className="mt-4 text-sm font-bold text-black/45">Marca: {item.brand} <span aria-hidden="true">·</span> Código: <span aria-live="polite">{code}</span></p>
+        <div className="mt-7"><p className="text-4xl font-black sm:text-5xl" aria-live="polite">{money.format(price)}</p>{oldPrice&&<p className="mt-1 text-lg font-bold text-black/35 line-through">{money.format(oldPrice)}</p>}<p className={`mt-3 text-sm font-black ${soldOut?"text-red-600":"text-emerald-700"}`}>{soldOut?"Agotado":`${availableStock} disponibles`}</p></div>
+        {family&&selectedVariant&&<VariantSelector family={family} selected={selectedVariant} onSelect={selectVariant}/>}
+        <div className="mt-8">{checkoutEnabled?<button type="button" onClick={()=>addItem(cartProduct)} disabled={soldOut} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#111] px-8 py-4 text-sm font-black text-white transition hover:bg-[#19A2B6] disabled:cursor-not-allowed disabled:bg-black/20 sm:w-auto"><ShoppingCart size={18}/>{soldOut?"Agotado":"Agregar al carrito"}</button>:<CheckoutUnavailable compact loading={checkoutLoading}/>}</div>
       </div>
-    </section></>
-  );
+    </div>
+    <ProductContentSections content={{description}}/>
+    {!relatedQuery.loading&&!relatedQuery.error&&related.length>0&&<section className="mt-16 border-t border-black/10 pt-12 sm:mt-20 sm:pt-14"><h2 className="text-3xl font-black tracking-[-0.04em] sm:text-4xl">Productos relacionados</h2><div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">{related.map((candidate)=><ProductCard key={`${candidate.type}-${candidate.id}`} product={candidate}/>)}</div></section>}
+  </div></section></>;
 }

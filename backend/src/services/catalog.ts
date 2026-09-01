@@ -18,7 +18,7 @@ const familySelect = {
 export type CatalogProductRow = Prisma.ProductGetPayload<{ select: typeof publicProductSelect }>;
 export type CatalogFamilyRow = Prisma.ProductFamilyGetPayload<{ select: typeof familySelect }>;
 
-export type CatalogVariant = { id:string; slug:string; code:string; label:string; sortOrder:number; price:number; oldPrice:number|null; imageUrl:string|null; available:boolean; availableStock:number };
+export type CatalogVariant = { id:string; slug:string; code:string; name:string; description:string; label:string; sortOrder:number; price:number; oldPrice:number|null; imageUrl:string|null; images:Array<{id:string;url:string;alt:string|null;position:number}>; badge:string|null; available:boolean; availableStock:number };
 export type CatalogFamily = { type:"FAMILY"; id:string; slug:string; name:string; brand:string; category:string; shortDescription:string; imageUrl:string|null; badge:string|null; featured:boolean; variantType:string; variantCount:number; priceFrom:number; available:boolean; availableStock:number; displayMode:"FAMILY"|"PRODUCT_LIKE"; variants:CatalogVariant[] };
 export type CatalogProduct = { type:"PRODUCT"; id:string; slug:string; code:string; brand:string; name:string; category:string; description:string; imageUrl:string|null; images:Array<{id:string;url:string;alt:string|null;position:number}>; price:number; oldPrice:number|null; badge:string|null; featured:boolean; available:boolean; availableStock:number };
 export type CatalogItem = CatalogFamily | CatalogProduct;
@@ -47,7 +47,7 @@ export function mapProduct(row:CatalogProductRow):CatalogProduct {
 
 export function mapFamily(row:CatalogFamilyRow):CatalogFamily|null {
   if (!row.active || row.products.length === 0) return null;
-  const variants = row.products.map((product) => { const stock=availableStock(product); return { id:product.id, slug:product.slug, code:product.code, label:product.variantLabel!, sortOrder:product.variantSortOrder, price:product.price, oldPrice:product.oldPrice, imageUrl:product.imageUrl, available:stock>0, availableStock:stock }; });
+  const variants = row.products.map((product) => { const stock=availableStock(product); return { id:product.id, slug:product.slug, code:product.code, name:product.name, description:product.description, label:product.variantLabel!, sortOrder:product.variantSortOrder, price:product.price, oldPrice:product.oldPrice, imageUrl:product.imageUrl, images:product.images, badge:product.badge, available:stock>0, availableStock:stock }; });
   const stock = variants.reduce((sum, variant) => sum + variant.availableStock, 0);
   return { type:"FAMILY", id:row.id, slug:row.slug, name:row.name, brand:row.brand, category:row.category, shortDescription:summarize(row.description), imageUrl:row.imageUrl || variants.find((variant)=>variant.imageUrl)?.imageUrl || null, badge:row.badge, featured:row.featured, variantType:row.variantType, variantCount:variants.length, priceFrom:Math.min(...variants.map((variant)=>variant.price)), available:stock>0, availableStock:stock, displayMode:variants.length>=2?"FAMILY":"PRODUCT_LIKE", variants };
 }
