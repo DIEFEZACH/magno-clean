@@ -113,25 +113,25 @@ export function AdminInventory() {
     URL.revokeObjectURL(url);
   }
   return (
-    <section className="p-5 lg:p-8">
+    <section className="p-4 sm:p-5 lg:p-8">
       <p className="text-sm font-black uppercase tracking-[.25em] text-[#19A2B6]">
         Existencias
       </p>
-      <h1 className="mt-2 text-4xl font-black">Inventario</h1>
+      <h1 className="mt-2 text-3xl font-black sm:text-4xl">Inventario</h1>
       <article className="mt-7 rounded-[1.5rem] bg-white p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div><h2 className="text-xl font-black">Carga administrativa CSV</h2><p className="mt-1 text-sm text-black/45">Primero valida el archivo; aplicar inventario requiere una confirmación separada.</p></div>
           <label className="flex items-center gap-2 text-sm font-black"><input type="checkbox" checked={strictCatalog} onChange={(event) => { setStrictCatalog(event.target.checked); setPreview(null); setReport(null); }} />Exigir catálogo completo</label>
         </div>
-        <div className="mt-5 flex flex-wrap items-center gap-3">
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:flex xl:flex-wrap xl:items-center">
           <input type="file" accept=".csv,text/csv" disabled={importAction !== null} onChange={(event) => { setCsvFile(event.target.files?.[0] || null); setPreview(null); setReport(null); }} className="min-w-0 flex-1 rounded-2xl border p-3 text-sm font-bold" />
-          <button type="button" disabled={!csvFile || importAction !== null} onClick={validateCsv} className="rounded-full bg-black px-5 py-3 text-sm font-black text-white disabled:opacity-40">{importAction === "preview" ? "Validando..." : "Validar archivo"}</button>
-          <button type="button" disabled={!preview?.valid || importAction !== null} onClick={() => feedback.confirm({ title: "Aplicar inventario", description: `Se procesarán ${preview?.summary.rows || 0} productos. Cada ajuste quedará auditado y esta acción no modifica precios ni pedidos.`, confirmLabel: "Aplicar inventario", action: executeCsv })} className="rounded-full bg-[#EF8329] px-5 py-3 text-sm font-black text-white disabled:opacity-40">{importAction === "execute" ? "Aplicando..." : "Aplicar inventario"}</button>
+          <button type="button" disabled={!csvFile || importAction !== null} onClick={validateCsv} className="min-h-11 rounded-full bg-black px-5 py-3 text-sm font-black text-white disabled:opacity-40">{importAction === "preview" ? "Validando..." : "Validar archivo"}</button>
+          <button type="button" disabled={!preview?.valid || importAction !== null} onClick={() => feedback.confirm({ title: "Aplicar inventario", description: `Se procesarán ${preview?.summary.rows || 0} productos. Cada ajuste quedará auditado y esta acción no modifica precios ni pedidos.`, confirmLabel: "Aplicar inventario", action: executeCsv })} className="min-h-11 rounded-full bg-[#EF8329] px-5 py-3 text-sm font-black text-white disabled:opacity-40">{importAction === "execute" ? "Aplicando..." : "Aplicar inventario"}</button>
         </div>
         {preview && <div className="mt-5 rounded-2xl bg-[#F5F5F5] p-4 text-sm"><p className="font-black">Preview · {preview.valid ? "válido" : "con errores"}</p><p className="mt-2 text-black/55">Ajustes: {preview.summary.adjusted} · Sin cambios: {preview.summary.unchanged} · Errores: {preview.summary.errors || 0}</p>{preview.errors?.length ? <ul className="mt-3 grid gap-1 text-red-600">{preview.errors.slice(0, 12).map((error, index) => <li key={`${error.line}-${error.code}-${index}`}>{error.line ? `Línea ${error.line}: ` : ""}{error.code ? `${error.code}: ` : ""}{error.message}</li>)}</ul> : null}</div>}
         {report && <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#F5F5F5] p-4 text-sm"><div><p className="font-black">Reporte final</p><p className="mt-1 text-black/55">Ajustados: {report.summary.adjusted} · Sin cambios: {report.summary.unchanged} · Fallidos: {report.summary.failed || 0}</p></div><button type="button" onClick={downloadReport} className="rounded-full bg-[#19A2B6] px-5 py-3 font-black text-white">Descargar reporte</button></div>}
       </article>
-      <div className="mt-7 flex gap-3 rounded-[1.5rem] bg-white p-4">
+      <div className="mt-7 grid gap-3 rounded-[1.5rem] bg-white p-4 sm:grid-cols-[1fr_auto]">
         <input
           value={q}
           onChange={(e) => {
@@ -147,14 +147,15 @@ export function AdminInventory() {
             setFilter(e.target.value);
             setPage(1);
           }}
-          className="rounded-2xl border bg-white px-4 font-bold"
+          className="min-h-12 rounded-2xl border bg-white px-4 font-bold"
         >
           <option value="all">Todos</option>
           <option value="out">Agotados</option>
           <option value="low">Bajo mínimo</option>
         </select>
       </div>
-      <div className="mt-5 overflow-x-auto rounded-[1.5rem] bg-white">
+      <div className="mt-5 grid gap-3 md:hidden">{items.map(item=><article key={item.id} className="rounded-[1.25rem] bg-white p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="break-words font-black">{item.name}</h2><p className="mt-1 break-all text-xs font-bold text-black/45">{item.code} · {item.category}</p></div><span className={`shrink-0 rounded-full px-3 py-1 text-xs font-black ${item.availableStock<=0?"bg-red-50 text-red-600":"bg-emerald-50 text-emerald-600"}`}>{item.availableStock<=0?"AGOTADO":"DISPONIBLE"}</span></div><dl className="mt-4 grid grid-cols-3 gap-2 text-center"><div className="rounded-xl bg-[#F5F5F5] p-2"><dt className="text-[10px] font-bold text-black/45">Físico</dt><dd className="mt-1 font-black">{item.stock}</dd></div><div className="rounded-xl bg-[#F5F5F5] p-2"><dt className="text-[10px] font-bold text-black/45">Reservado</dt><dd className="mt-1 font-black">{item.reservedStock}</dd></div><div className="rounded-xl bg-[#F5F5F5] p-2"><dt className="text-[10px] font-bold text-black/45">Disponible</dt><dd className="mt-1 font-black">{item.availableStock}</dd></div></dl><Link to={`/admin/products/${item.id}/edit`} className="mt-4 flex min-h-11 items-center justify-center rounded-full bg-[#19A2B6]/10 px-4 font-black text-[#147f8e]">Ajustar</Link></article>)}</div>
+      <div className="mt-5 hidden overflow-x-auto rounded-[1.5rem] bg-white md:block">
         <table className="w-full min-w-[700px] text-left">
           <thead>
             <tr className="border-b text-xs uppercase text-black/40">
@@ -204,11 +205,11 @@ export function AdminInventory() {
           </tbody>
         </table>
       </div>
-      <div className="mt-5 flex justify-end gap-3">
+      <div className="mt-5 flex items-center justify-center gap-3 sm:justify-end">
         <button
           disabled={page <= 1}
           onClick={() => setPage((p) => p - 1)}
-          className="rounded-full bg-white px-5 py-2 font-black disabled:opacity-30"
+          className="min-h-11 rounded-full bg-white px-4 font-black disabled:opacity-30 sm:px-5"
         >
           Anterior
         </button>
@@ -218,7 +219,7 @@ export function AdminInventory() {
         <button
           disabled={page >= pages}
           onClick={() => setPage((p) => p + 1)}
-          className="rounded-full bg-white px-5 py-2 font-black disabled:opacity-30"
+          className="min-h-11 rounded-full bg-white px-4 font-black disabled:opacity-30 sm:px-5"
         >
           Siguiente
         </button>
