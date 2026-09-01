@@ -18,8 +18,7 @@ export function ProductCard({ product }: { product: CatalogItem | LegacyProduct 
   const description = family ? family.shortDescription : realProduct!.description;
   const availableStock = family ? family.availableStock : (product.availableStock ?? 0);
   const soldOut = availableStock <= 0;
-  // Lote 2 conserva ProductDetail intacto: el CTA usa el slug histórico de la primera variante.
-  const detailSlug = family ? family.variants[0].slug : product.slug;
+  const detailSlug = family ? family.slug : product.slug;
   const formattedPrice = new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(price);
   const formattedOldPrice = oldPrice ? new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(oldPrice) : null;
 
