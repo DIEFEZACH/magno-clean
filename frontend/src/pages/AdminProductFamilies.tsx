@@ -4,36 +4,444 @@ import { AdminPageHeader, AdminSkeleton } from "../components/admin/AdminUi";
 import { useAdminFeedback } from "../components/admin/AdminFeedback";
 import { apiFetch } from "../lib/api";
 
-type Variant = { id:string; code:string; name:string; active:boolean; stock:number; reservedStock:number; imageUrl?:string|null; variantLabel:string|null; variantSortOrder:number };
-type Family = { id:string; slug:string; name:string; brand:string; category:string; description:string; imageUrl?:string|null; badge?:string|null; featured:boolean; active:boolean; variantType:string; alwaysShowAsFamily:boolean; products:Variant[] };
-type Product = { id:string; code:string; name:string; familyId?:string|null; family?:{id:string;name:string}|null };
-type FamilyForm = { slug:string; name:string; brand:string; category:string; description:string; variantType:string; imageUrl:string; badge:string; active:boolean; featured:boolean; alwaysShowAsFamily:boolean };
-const emptyForm:FamilyForm={slug:"",name:"",brand:"Magno Clean",category:"",description:"",variantType:"Presentación",imageUrl:"",badge:"",active:true,featured:false,alwaysShowAsFamily:false};
-const field="min-h-11 w-full rounded-xl border border-black/10 bg-white px-4 py-3 outline-none focus:border-[#19A2B6] focus:ring-2 focus:ring-[#19A2B6]/20";
-const slugify=(value:string)=>value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
+type Variant = {
+  id: string;
+  code: string;
+  name: string;
+  active: boolean;
+  stock: number;
+  reservedStock: number;
+  imageUrl?: string | null;
+  variantLabel: string | null;
+  variantSortOrder: number;
+};
+type Family = {
+  id: string;
+  slug: string;
+  name: string;
+  brand: string;
+  category: string;
+  description: string;
+  imageUrl?: string | null;
+  badge?: string | null;
+  featured: boolean;
+  active: boolean;
+  variantType: string;
+  alwaysShowAsFamily: boolean;
+  products: Variant[];
+};
+type Product = {
+  id: string;
+  code: string;
+  name: string;
+  familyId?: string | null;
+  family?: { id: string; name: string } | null;
+};
+type FamilyForm = {
+  slug: string;
+  name: string;
+  brand: string;
+  category: string;
+  description: string;
+  variantType: string;
+  imageUrl: string;
+  badge: string;
+  active: boolean;
+  featured: boolean;
+  alwaysShowAsFamily: boolean;
+};
+const emptyForm: FamilyForm = {
+  slug: "",
+  name: "",
+  brand: "Magno Clean",
+  category: "",
+  description: "",
+  variantType: "Presentación",
+  imageUrl: "",
+  badge: "",
+  active: true,
+  featured: false,
+  alwaysShowAsFamily: false,
+};
+const field = "min-h-11 w-full rounded-xl border border-black/10 bg-white px-4 py-3 outline-none focus:border-[#19A2B6] focus:ring-2 focus:ring-[#19A2B6]/20";
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 
-async function messageFrom(response:Response, fallback:string){ const data=await response.json().catch(()=>null); return data?.message||data?.error||fallback; }
+async function messageFrom(response: Response, fallback: string) {
+  const data = await response.json().catch(() => null);
+  return data?.message || data?.error || fallback;
+}
 
-export function AdminProductFamilies(){
-  const feedback=useAdminFeedback(); const [families,setFamilies]=useState<Family[]>([]); const [selectedId,setSelectedId]=useState<string|null>(null); const [loading,setLoading]=useState(true); const [saving,setSaving]=useState(false); const [search,setSearch]=useState(""); const [productSearch,setProductSearch]=useState(""); const [products,setProducts]=useState<Product[]>([]); const [form,setForm]=useState<FamilyForm>(emptyForm); const [editing,setEditing]=useState<string|null>(null); const [linkProductId,setLinkProductId]=useState(""); const [variantLabel,setVariantLabel]=useState(""); const [variantOrder,setVariantOrder]=useState("0"); const [variantDrafts,setVariantDrafts]=useState<Record<string,{label:string;order:string}>>({});
-  const selected=families.find((family)=>family.id===selectedId)||null;
-  const loadFamilies=useCallback(async()=>{const response=await apiFetch(`/api/admin/product-families?page=1&pageSize=100&search=${encodeURIComponent(search)}`);if(response.ok){const data=await response.json();setFamilies(data.families||[]);setSelectedId((current)=>current&&(data.families||[]).some((item:Family)=>item.id===current)?current:data.families?.[0]?.id||null)}else feedback.toast("error",await messageFrom(response,"No se pudieron cargar las familias"));setLoading(false)},[feedback,search]);
-  useEffect(()=>{
+export function AdminProductFamilies() {
+  const feedback = useAdminFeedback();
+  const [families, setFamilies] = useState<Family[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState("");
+  const [productSearch, setProductSearch] = useState("");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [form, setForm] = useState<FamilyForm>(emptyForm);
+  const [editing, setEditing] = useState<string | null>(null);
+  const [linkProductId, setLinkProductId] = useState("");
+  const [variantLabel, setVariantLabel] = useState("");
+  const [variantOrder, setVariantOrder] = useState("0");
+  const [variantDrafts, setVariantDrafts] = useState<Record<string, { label: string; order: string }>>({});
+  const selected = families.find((family) => family.id === selectedId) || null;
+  const loadFamilies = useCallback(async () => {
+    const response = await apiFetch(`/api/admin/product-families?page=1&pageSize=100&search=${encodeURIComponent(search)}`);
+    if (response.ok) {
+      const data = await response.json();
+      setFamilies(data.families || []);
+      setSelectedId((current) => (current && (data.families || []).some((item: Family) => item.id === current) ? current : data.families?.[0]?.id || null));
+    } else feedback.toast("error", await messageFrom(response, "No se pudieron cargar las familias"));
+    setLoading(false);
+  }, [feedback, search]);
+  useEffect(() => {
     // La carga sincroniza esta vista con la API administrativa al cambiar el filtro.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadFamilies();
-  },[loadFamilies]);
-  useEffect(()=>{const timer=window.setTimeout(async()=>{const response=await apiFetch(`/api/admin/products?page=1&pageSize=100&search=${encodeURIComponent(productSearch)}`);if(response.ok)setProducts((await response.json()).products||[])},250);return()=>window.clearTimeout(timer)},[productSearch]);
-  function editFamily(family:Family){setEditing(family.id);setForm({slug:family.slug,name:family.name,brand:family.brand,category:family.category,description:family.description,variantType:family.variantType,imageUrl:family.imageUrl||"",badge:family.badge||"",active:family.active,featured:family.featured,alwaysShowAsFamily:family.alwaysShowAsFamily})}
-  function resetForm(){setEditing(null);setForm(emptyForm)}
-  async function saveFamily(event:React.FormEvent){event.preventDefault();if(saving)return;setSaving(true);const payload={...form,imageUrl:form.imageUrl||null,badge:form.badge||null};const response=await apiFetch(editing?`/api/admin/product-families/${editing}`:"/api/admin/product-families",{method:editing?"PUT":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});if(response.ok){feedback.toast("success",editing?"Familia actualizada":"Familia creada");resetForm();await loadFamilies()}else feedback.toast("error",await messageFrom(response,"No se pudo guardar la familia"));setSaving(false)}
-  async function link(confirmMove=false){if(!selected||!linkProductId||!variantLabel.trim())return;setSaving(true);const response=await apiFetch(`/api/admin/product-families/${selected.id}/variants`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({productId:linkProductId,variantLabel:variantLabel.trim(),variantSortOrder:Number(variantOrder),confirmMove})});if(response.status===409&&!confirmMove){const product=products.find((item)=>item.id===linkProductId);feedback.confirm({title:"Cambiar producto de familia",description:`${product?.name||"Este producto"} ya pertenece a otra familia. El producto no será eliminado.`,confirmLabel:"Cambiar familia",action:()=>link(true)});setSaving(false);return}if(response.ok){feedback.toast("success","Variante vinculada");setLinkProductId("");setVariantLabel("");setVariantOrder("0");await loadFamilies()}else feedback.toast("error",await messageFrom(response,"No se pudo vincular"));setSaving(false)}
-  function unlink(product:Variant){if(!selected)return;feedback.confirm({title:"Desvincular variante",description:`${product.name} conservará su SKU, inventario e información.`,confirmLabel:"Desvincular",action:async()=>{const response=await apiFetch(`/api/admin/product-families/${selected.id}/variants/${product.id}`,{method:"DELETE"});if(response.ok){feedback.toast("success","Producto desvinculado");await loadFamilies()}else feedback.toast("error",await messageFrom(response,"No se pudo desvincular"))}})}
-  async function updateVariant(product:Variant){if(!selected)return;const draft=variantDrafts[product.id]||{label:product.variantLabel||"",order:String(product.variantSortOrder)};const response=await apiFetch(`/api/admin/product-families/${selected.id}/variants/${product.id}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({variantLabel:draft.label.trim(),variantSortOrder:Number(draft.order)})});if(response.ok){feedback.toast("success","Variante actualizada");await loadFamilies()}else feedback.toast("error",await messageFrom(response,"No se pudo actualizar la variante"))}
-  function removeFamily(family:Family){feedback.confirm({title:"Eliminar familia",description:`Los ${family.products.length} productos vinculados se conservarán y quedarán sin familia.`,destructive:true,confirmLabel:"Eliminar familia",action:async()=>{const response=await apiFetch(`/api/admin/product-families/${family.id}?confirmUnlink=true`,{method:"DELETE"});if(response.ok){feedback.toast("success","Familia eliminada");resetForm();await loadFamilies()}else feedback.toast("error",await messageFrom(response,"No se pudo eliminar"))}})}
-  return <section className="min-h-screen px-4 py-8 sm:px-5 sm:py-10 lg:px-8"><div className="mx-auto max-w-7xl"><AdminPageHeader eyebrow="Catálogo" title="Familias de producto" actions={<button type="button" onClick={resetForm} className="min-h-11 rounded-full bg-[#19A2B6] px-5 font-black text-white"><Plus className="mr-2 inline" size={18}/>Nueva familia</button>}/><p className="mt-3 max-w-3xl text-sm leading-6 text-black/55">Agrupa manualmente productos vendibles. Vincular o desvincular nunca elimina el producto ni modifica su inventario.</p>
-  <div className="mt-8 grid gap-6 xl:grid-cols-[360px_1fr]"><aside className="rounded-[1.5rem] bg-white p-5 shadow-sm"><label className="relative block"><Search className="absolute left-4 top-3.5 text-black/35" size={18}/><input value={search} onChange={(e)=>setSearch(e.target.value)} className={`${field} pl-11`} placeholder="Buscar familia..."/></label>{loading?<div className="mt-5"><AdminSkeleton/></div>:<div className="mt-4 grid gap-2">{families.map((family)=><button type="button" key={family.id} onClick={()=>setSelectedId(family.id)} className={`rounded-2xl border p-4 text-left ${selectedId===family.id?"border-[#19A2B6] bg-[#19A2B6]/5":"border-black/5"}`}><span className="font-black">{family.name}</span><span className="mt-1 block text-xs font-bold text-black/45">{family.products.length} variantes · {family.variantType}</span></button>)}{!families.length&&<p className="py-8 text-center text-sm text-black/45">Aún no hay familias.</p>}</div>}</aside>
-  <main className="grid gap-6"><form onSubmit={saveFamily} className="rounded-[1.5rem] bg-white p-6 shadow-sm"><div className="flex items-center justify-between"><h2 className="text-xl font-black">{editing?"Editar familia":"Crear familia"}</h2>{editing&&<button type="button" onClick={resetForm} className="text-sm font-black text-black/50">Cancelar</button>}</div><div className="mt-5 grid gap-4 md:grid-cols-2"><label className="font-bold">Nombre<input required className={`${field} mt-2`} value={form.name} onChange={(e)=>setForm({...form,name:e.target.value,slug:editing?form.slug:slugify(e.target.value)})}/></label><label className="font-bold">Slug<input required className={`${field} mt-2`} value={form.slug} onChange={(e)=>setForm({...form,slug:slugify(e.target.value)})}/></label><label className="font-bold">Marca<input required className={`${field} mt-2`} value={form.brand} onChange={(e)=>setForm({...form,brand:e.target.value})}/></label><label className="font-bold">Categoría<input required className={`${field} mt-2`} value={form.category} onChange={(e)=>setForm({...form,category:e.target.value})}/></label><label className="font-bold">Tipo de variante<input required className={`${field} mt-2`} value={form.variantType} onChange={(e)=>setForm({...form,variantType:e.target.value})}/></label><label className="font-bold">Imagen representativa (opcional)<input type="url" className={`${field} mt-2`} value={form.imageUrl} onChange={(e)=>setForm({...form,imageUrl:e.target.value})}/></label><label className="font-bold md:col-span-2">Descripción estructural<textarea required rows={4} className={`${field} mt-2`} value={form.description} onChange={(e)=>setForm({...form,description:e.target.value})}/></label></div><div className="mt-4 flex flex-wrap gap-5 text-sm font-bold">{([['active','Activa'],['featured','Destacada'],['alwaysShowAsFamily','Mostrar siempre como familia']] as const).map(([key,label])=><label key={key} className="flex items-center gap-2"><input type="checkbox" checked={form[key]} onChange={(e)=>setForm({...form,[key]:e.target.checked})}/>{label}</label>)}</div><button disabled={saving} className="mt-6 min-h-11 rounded-full bg-[#111] px-6 font-black text-white disabled:opacity-50">{saving?"Guardando...":"Guardar familia"}</button></form>
-  {selected&&<section className="rounded-[1.5rem] bg-white p-6 shadow-sm"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-2xl font-black">{selected.name}</h2><p className="text-sm font-bold text-black/45">{selected.slug} · {selected.products.length} variantes</p></div><div className="flex gap-2"><button type="button" onClick={()=>editFamily(selected)} className="min-h-11 rounded-full bg-black/5 px-4 font-black"><Pencil className="mr-2 inline" size={16}/>Editar</button><button type="button" onClick={()=>removeFamily(selected)} className="min-h-11 rounded-full bg-red-50 px-4 font-black text-red-600"><Trash2 className="mr-2 inline" size={16}/>Eliminar</button></div></div><div className="mt-6 grid gap-3">{selected.products.map((product)=>{const draft=variantDrafts[product.id]||{label:product.variantLabel||"",order:String(product.variantSortOrder)};return <div key={product.id} className="grid gap-3 rounded-2xl border border-black/5 p-4 md:grid-cols-[1fr_160px_100px_auto]"><div><p className="font-black">{product.name}</p><p className="text-xs font-bold text-black/45">{product.code} · stock disponible {product.stock-product.reservedStock}</p></div><input aria-label={`Etiqueta de ${product.name}`} className={field} value={draft.label} onChange={(e)=>setVariantDrafts({...variantDrafts,[product.id]:{...draft,label:e.target.value}})}/><input aria-label={`Orden de ${product.name}`} type="number" min="0" className={field} value={draft.order} onChange={(e)=>setVariantDrafts({...variantDrafts,[product.id]:{...draft,order:e.target.value}})}/><div className="flex gap-2"><button type="button" onClick={()=>void updateVariant(product)} className="min-h-11 rounded-full bg-[#19A2B6]/10 px-4 font-black text-[#147f8e]">Guardar</button><button type="button" aria-label={`Desvincular ${product.name}`} onClick={()=>unlink(product)} className="min-h-11 rounded-full bg-black/5 px-4 font-black"><Unlink size={16}/></button></div></div>})}{!selected.products.length&&<p className="rounded-2xl bg-black/[.03] p-6 text-center text-sm text-black/45">Vincula productos existentes; no se agrupa ninguno automáticamente.</p>}</div>
-  <div className="mt-7 border-t border-black/5 pt-6"><h3 className="font-black">Vincular producto existente</h3><div className="mt-4 grid gap-3 md:grid-cols-2"><input className={field} value={productSearch} onChange={(e)=>setProductSearch(e.target.value)} placeholder="Buscar por nombre o código..."/><select className={field} value={linkProductId} onChange={(e)=>setLinkProductId(e.target.value)}><option value="">Selecciona un producto</option>{products.map((product)=><option key={product.id} value={product.id}>{product.code} · {product.name}{product.family?` · ${product.family.name}`:""}</option>)}</select><input className={field} value={variantLabel} onChange={(e)=>setVariantLabel(e.target.value)} placeholder="Etiqueta, ej. 1 L"/><input type="number" min="0" className={field} value={variantOrder} onChange={(e)=>setVariantOrder(e.target.value)}/></div><button type="button" disabled={saving||!linkProductId||!variantLabel.trim()} onClick={()=>void link()} className="mt-4 min-h-11 rounded-full bg-[#19A2B6] px-5 font-black text-white disabled:opacity-40"><Link2 className="mr-2 inline" size={17}/>Vincular variante</button></div></section>}</main></div></div></section>
+  }, [loadFamilies]);
+  useEffect(() => {
+    const timer = window.setTimeout(async () => {
+      const response = await apiFetch(`/api/admin/products?page=1&pageSize=100&search=${encodeURIComponent(productSearch)}`);
+      if (response.ok) setProducts((await response.json()).products || []);
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [productSearch]);
+  function editFamily(family: Family) {
+    setEditing(family.id);
+    setForm({
+      slug: family.slug,
+      name: family.name,
+      brand: family.brand,
+      category: family.category,
+      description: family.description,
+      variantType: family.variantType,
+      imageUrl: family.imageUrl || "",
+      badge: family.badge || "",
+      active: family.active,
+      featured: family.featured,
+      alwaysShowAsFamily: family.alwaysShowAsFamily,
+    });
+  }
+  function resetForm() {
+    setEditing(null);
+    setForm(emptyForm);
+  }
+  async function saveFamily(event: React.FormEvent) {
+    event.preventDefault();
+    if (saving) return;
+    setSaving(true);
+    const payload = {
+      ...form,
+      imageUrl: form.imageUrl || null,
+      badge: form.badge || null,
+    };
+    const response = await apiFetch(editing ? `/api/admin/product-families/${editing}` : "/api/admin/product-families", {
+      method: editing ? "PUT" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (response.ok) {
+      feedback.toast("success", editing ? "Familia actualizada" : "Familia creada");
+      resetForm();
+      await loadFamilies();
+    } else feedback.toast("error", await messageFrom(response, "No se pudo guardar la familia"));
+    setSaving(false);
+  }
+  async function link(confirmMove = false) {
+    if (!selected || !linkProductId || !variantLabel.trim()) return;
+    setSaving(true);
+    const response = await apiFetch(`/api/admin/product-families/${selected.id}/variants`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        productId: linkProductId,
+        variantLabel: variantLabel.trim(),
+        variantSortOrder: Number(variantOrder),
+        confirmMove,
+      }),
+    });
+    if (response.status === 409 && !confirmMove) {
+      const product = products.find((item) => item.id === linkProductId);
+      feedback.confirm({
+        title: "Cambiar producto de familia",
+        description: `${product?.name || "Este producto"} ya pertenece a otra familia. El producto no será eliminado.`,
+        confirmLabel: "Cambiar familia",
+        action: () => link(true),
+      });
+      setSaving(false);
+      return;
+    }
+    if (response.ok) {
+      feedback.toast("success", "Variante vinculada");
+      setLinkProductId("");
+      setVariantLabel("");
+      setVariantOrder("0");
+      await loadFamilies();
+    } else feedback.toast("error", await messageFrom(response, "No se pudo vincular"));
+    setSaving(false);
+  }
+  function unlink(product: Variant) {
+    if (!selected) return;
+    feedback.confirm({
+      title: "Desvincular variante",
+      description: `${product.name} conservará su SKU, inventario e información.`,
+      confirmLabel: "Desvincular",
+      action: async () => {
+        const response = await apiFetch(`/api/admin/product-families/${selected.id}/variants/${product.id}`, { method: "DELETE" });
+        if (response.ok) {
+          feedback.toast("success", "Producto desvinculado");
+          await loadFamilies();
+        } else feedback.toast("error", await messageFrom(response, "No se pudo desvincular"));
+      },
+    });
+  }
+  async function updateVariant(product: Variant) {
+    if (!selected) return;
+    const draft = variantDrafts[product.id] || {
+      label: product.variantLabel || "",
+      order: String(product.variantSortOrder),
+    };
+    const response = await apiFetch(`/api/admin/product-families/${selected.id}/variants/${product.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        variantLabel: draft.label.trim(),
+        variantSortOrder: Number(draft.order),
+      }),
+    });
+    if (response.ok) {
+      feedback.toast("success", "Variante actualizada");
+      await loadFamilies();
+    } else feedback.toast("error", await messageFrom(response, "No se pudo actualizar la variante"));
+  }
+  function removeFamily(family: Family) {
+    feedback.confirm({
+      title: "Eliminar familia",
+      description: `Los ${family.products.length} productos vinculados se conservarán y quedarán sin familia.`,
+      destructive: true,
+      confirmLabel: "Eliminar familia",
+      action: async () => {
+        const response = await apiFetch(`/api/admin/product-families/${family.id}?confirmUnlink=true`, { method: "DELETE" });
+        if (response.ok) {
+          feedback.toast("success", "Familia eliminada");
+          resetForm();
+          await loadFamilies();
+        } else feedback.toast("error", await messageFrom(response, "No se pudo eliminar"));
+      },
+    });
+  }
+  return (
+    <section className="min-h-screen px-4 py-8 sm:px-5 sm:py-10 lg:px-8">
+      <div className="mx-auto min-w-0 max-w-7xl">
+        <AdminPageHeader
+          eyebrow="Catálogo"
+          title="Familias de producto"
+          actions={
+            <button type="button" onClick={resetForm} className="min-h-11 rounded-full bg-[#19A2B6] px-5 font-black text-white">
+              <Plus className="mr-2 inline" size={18} />
+              Nueva familia
+            </button>
+          }
+        />
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-black/55">Agrupa manualmente productos vendibles. Vincular o desvincular nunca elimina el producto ni modifica su inventario.</p>
+        <div className="mt-8 grid min-w-0 gap-6 xl:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
+          <aside className="min-w-0 rounded-[1.5rem] bg-white p-5 shadow-sm">
+            <label className="relative block min-w-0">
+              <Search className="absolute left-4 top-3.5 text-black/35" size={18} />
+              <input value={search} onChange={(e) => setSearch(e.target.value)} className={`${field} min-w-0 pl-11`} placeholder="Buscar familia..." />
+            </label>
+            {loading ? (
+              <div className="mt-5">
+                <AdminSkeleton />
+              </div>
+            ) : (
+              <div className="mt-4 grid min-w-0 gap-2">
+                {families.map((family) => (
+                  <button type="button" key={family.id} onClick={() => setSelectedId(family.id)} className={`min-w-0 rounded-2xl border p-4 text-left ${selectedId === family.id ? "border-[#19A2B6] bg-[#19A2B6]/5" : "border-black/5"}`}>
+                    <span className="block break-words font-black">{family.name}</span>
+                    <span className="mt-1 block break-words text-xs font-bold text-black/45">
+                      {family.products.length} variantes · {family.variantType}
+                    </span>
+                  </button>
+                ))}
+                {!families.length && <p className="py-8 text-center text-sm text-black/45">Aún no hay familias.</p>}
+              </div>
+            )}
+          </aside>
+          <main className="grid min-w-0 gap-6">
+            <form onSubmit={saveFamily} className="min-w-0 rounded-[1.5rem] bg-white p-6 shadow-sm">
+              <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+                <h2 className="min-w-0 break-words text-xl font-black">{editing ? "Editar familia" : "Crear familia"}</h2>
+                {editing && (
+                  <button type="button" onClick={resetForm} className="text-sm font-black text-black/50">
+                    Cancelar
+                  </button>
+                )}
+              </div>
+              <div className="mt-5 grid min-w-0 gap-4 md:grid-cols-2">
+                <label className="min-w-0 font-bold">
+                  Nombre
+                  <input
+                    required
+                    className={`${field} mt-2 min-w-0`}
+                    value={form.name}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        name: e.target.value,
+                        slug: editing ? form.slug : slugify(e.target.value),
+                      })
+                    }
+                  />
+                </label>
+                <label className="min-w-0 font-bold">
+                  Slug
+                  <input required className={`${field} mt-2 min-w-0`} value={form.slug} onChange={(e) => setForm({ ...form, slug: slugify(e.target.value) })} />
+                </label>
+                <label className="min-w-0 font-bold">
+                  Marca
+                  <input required className={`${field} mt-2 min-w-0`} value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} />
+                </label>
+                <label className="min-w-0 font-bold">
+                  Categoría
+                  <input required className={`${field} mt-2 min-w-0`} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+                </label>
+                <label className="min-w-0 font-bold">
+                  Tipo de variante
+                  <input required className={`${field} mt-2 min-w-0`} value={form.variantType} onChange={(e) => setForm({ ...form, variantType: e.target.value })} />
+                </label>
+                <label className="min-w-0 font-bold">
+                  Imagen representativa (opcional)
+                  <input type="url" className={`${field} mt-2 min-w-0`} value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} />
+                </label>
+                <label className="min-w-0 font-bold md:col-span-2">
+                  Descripción estructural
+                  <textarea required rows={4} className={`${field} mt-2 min-w-0`} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                </label>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-5 text-sm font-bold">
+                {(
+                  [
+                    ["active", "Activa"],
+                    ["featured", "Destacada"],
+                    ["alwaysShowAsFamily", "Mostrar siempre como familia"],
+                  ] as const
+                ).map(([key, label]) => (
+                  <label key={key} className="flex items-center gap-2">
+                    <input type="checkbox" checked={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.checked })} />
+                    {label}
+                  </label>
+                ))}
+              </div>
+              <button disabled={saving} className="mt-6 min-h-11 rounded-full bg-[#111] px-6 font-black text-white disabled:opacity-50">
+                {saving ? "Guardando..." : "Guardar familia"}
+              </button>
+            </form>
+            {selected && (
+              <section className="min-w-0 rounded-[1.5rem] bg-white p-6 shadow-sm">
+                <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="break-words text-2xl font-black">{selected.name}</h2>
+                    <p className="break-words text-sm font-bold text-black/45">
+                      {selected.slug} · {selected.products.length} variantes
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" onClick={() => editFamily(selected)} className="min-h-11 rounded-full bg-black/5 px-4 font-black">
+                      <Pencil className="mr-2 inline" size={16} />
+                      Editar
+                    </button>
+                    <button type="button" onClick={() => removeFamily(selected)} className="min-h-11 rounded-full bg-red-50 px-4 font-black text-red-600">
+                      <Trash2 className="mr-2 inline" size={16} />
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+                <div className="mt-6 grid min-w-0 gap-3">
+                  {selected.products.map((product) => {
+                    const draft = variantDrafts[product.id] || {
+                      label: product.variantLabel || "",
+                      order: String(product.variantSortOrder),
+                    };
+                    return (
+                      <div key={product.id} className="grid min-w-0 gap-3 rounded-2xl border border-black/5 p-4 md:grid-cols-[minmax(0,1fr)_minmax(0,160px)_minmax(0,100px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,160px)_minmax(0,100px)_auto]">
+                        <div className="min-w-0">
+                          <p className="break-words font-black">{product.name}</p>
+                          <p className="break-all text-xs font-bold text-black/45">
+                            {product.code} · stock disponible {product.stock - product.reservedStock}
+                          </p>
+                        </div>
+                        <input
+                          aria-label={`Etiqueta de ${product.name}`}
+                          className={`${field} min-w-0`}
+                          value={draft.label}
+                          onChange={(e) =>
+                            setVariantDrafts({
+                              ...variantDrafts,
+                              [product.id]: { ...draft, label: e.target.value },
+                            })
+                          }
+                        />
+                        <input
+                          aria-label={`Orden de ${product.name}`}
+                          type="number"
+                          min="0"
+                          className={`${field} min-w-0`}
+                          value={draft.order}
+                          onChange={(e) =>
+                            setVariantDrafts({
+                              ...variantDrafts,
+                              [product.id]: { ...draft, order: e.target.value },
+                            })
+                          }
+                        />
+                        <div className="flex min-w-0 flex-wrap gap-2 md:col-span-3 lg:col-span-1">
+                          <button type="button" onClick={() => void updateVariant(product)} className="min-h-11 rounded-full bg-[#19A2B6]/10 px-4 font-black text-[#147f8e]">
+                            Guardar
+                          </button>
+                          <button type="button" aria-label={`Desvincular ${product.name}`} onClick={() => unlink(product)} className="min-h-11 min-w-11 rounded-full bg-black/5 px-4 font-black">
+                            <Unlink size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {!selected.products.length && <p className="rounded-2xl bg-black/[.03] p-6 text-center text-sm text-black/45">Vincula productos existentes; no se agrupa ninguno automáticamente.</p>}
+                </div>
+                <div className="mt-7 min-w-0 border-t border-black/5 pt-6">
+                  <h3 className="font-black">Vincular producto existente</h3>
+                  <div className="mt-4 grid min-w-0 gap-3 md:grid-cols-2">
+                    <input className={`${field} min-w-0`} value={productSearch} onChange={(e) => setProductSearch(e.target.value)} placeholder="Buscar por nombre o código..." />
+                    <select className={`${field} min-w-0`} value={linkProductId} onChange={(e) => setLinkProductId(e.target.value)}>
+                      <option value="">Selecciona un producto</option>
+                      {products.map((product) => (
+                        <option key={product.id} value={product.id}>
+                          {product.code} · {product.name}
+                          {product.family ? ` · ${product.family.name}` : ""}
+                        </option>
+                      ))}
+                    </select>
+                    <input className={`${field} min-w-0`} value={variantLabel} onChange={(e) => setVariantLabel(e.target.value)} placeholder="Etiqueta, ej. 1 L" />
+                    <input type="number" min="0" className={`${field} min-w-0`} value={variantOrder} onChange={(e) => setVariantOrder(e.target.value)} />
+                  </div>
+                  <button type="button" disabled={saving || !linkProductId || !variantLabel.trim()} onClick={() => void link()} className="mt-4 min-h-11 rounded-full bg-[#19A2B6] px-5 font-black text-white disabled:opacity-40">
+                    <Link2 className="mr-2 inline" size={17} />
+                    Vincular variante
+                  </button>
+                </div>
+              </section>
+            )}
+          </main>
+        </div>
+      </div>
+    </section>
+  );
 }
