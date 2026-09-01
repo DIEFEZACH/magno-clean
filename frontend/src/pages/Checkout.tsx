@@ -4,6 +4,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCartStore } from "../store/cartStore";
 import { API_URL } from "../lib/api";
+import { Link } from "react-router-dom";
+import { useCheckoutAvailability } from "../hooks/useCheckoutAvailability";
+import { CheckoutUnavailable } from "../components/commerce/CheckoutUnavailable";
 
 const checkoutSchema = z.object({
   fullName: z.string().min(3, "Nombre requerido"),
@@ -23,6 +26,7 @@ export function Checkout() {
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
+  const { checkoutEnabled, loading: checkoutLoading } = useCheckoutAvailability();
 
   const {
     register,
@@ -42,6 +46,27 @@ export function Checkout() {
     style: "currency",
     currency: "MXN",
   }).format(subtotal);
+
+  if (checkoutLoading) {
+    return <section className="bg-[#F5F5F5] px-5 py-20 lg:px-8"><CheckoutUnavailable loading/></section>;
+  }
+
+  if (!checkoutEnabled) {
+    return <section className="bg-[#F5F5F5] px-5 py-20 lg:px-8"><CheckoutUnavailable returnTo={items.length ? "cart" : "catalog"}/></section>;
+  }
+
+  if (items.length === 0) {
+    return (
+      <section className="bg-[#F5F5F5] px-5 py-20 lg:px-8">
+        <div className="mx-auto max-w-3xl rounded-[2rem] bg-white p-6 text-center shadow-sm sm:p-10">
+          <p className="text-sm font-black uppercase tracking-[0.2em] text-[#19A2B6]">Tu carrito</p>
+          <h1 className="mt-3 text-3xl font-black sm:text-5xl">Aún no hay productos para comprar</h1>
+          <p className="mt-4 leading-7 text-black/60">Explora el catálogo y agrega los productos que necesites antes de continuar.</p>
+          <Link to="/productos" className="mt-7 inline-flex min-h-11 items-center rounded-full bg-[#111111] px-7 py-3 text-sm font-black text-white transition hover:bg-[#19A2B6]">Explorar productos</Link>
+        </div>
+      </section>
+    );
+  }
 
   async function onSubmit(data: CheckoutFormData) {
     if (items.length === 0) return setSubmitError("Tu carrito está vacío.");

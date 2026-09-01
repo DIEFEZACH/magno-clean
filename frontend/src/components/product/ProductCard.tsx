@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
 import { useCartStore } from "../../store/cartStore";
+import { useCheckoutAvailability } from "../../hooks/useCheckoutAvailability";
 
 type Product = {
   id: string;
@@ -21,6 +22,7 @@ type ProductCardProps = {
 
 export function ProductCard({ product }: ProductCardProps) {
   const addItem = useCartStore((state) => state.addItem);
+  const { checkoutEnabled } = useCheckoutAvailability();
 
   const formattedPrice = new Intl.NumberFormat("es-MX", {
     style: "currency",
@@ -88,16 +90,26 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={() => addItem(product)}
-          disabled={soldOut}
-          className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-black text-white transition hover:bg-[#19A2B6] disabled:cursor-not-allowed disabled:bg-black/20"
-        >
-          <ShoppingCart size={17} />
-          {soldOut ? "Agotado" : "Agregar"}
-        </button>
+        {checkoutEnabled ? (
+          <button
+            type="button"
+            onClick={() => addItem(product)}
+            disabled={soldOut}
+            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-black text-white transition hover:bg-[#19A2B6] disabled:cursor-not-allowed disabled:bg-black/20"
+          >
+            <ShoppingCart size={17} />
+            {soldOut ? "Agotado" : "Agregar"}
+          </button>
+        ) : (
+          <Link
+            to={`/producto/${product.slug}`}
+            className="inline-flex min-h-11 items-center rounded-full bg-black px-5 py-3 text-sm font-black text-white transition hover:bg-[#19A2B6]"
+          >
+            Ver producto
+          </Link>
+        )}
       </div>
+      {!checkoutEnabled && <p className="mt-4 text-sm font-bold text-[#EF8329]">Ventas temporalmente pausadas</p>}
     </article>
   );
 }

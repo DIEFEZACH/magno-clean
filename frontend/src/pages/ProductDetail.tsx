@@ -12,12 +12,15 @@ import { useCartStore } from "../store/cartStore";
 import { ProductCard } from "../components/product/ProductCard";
 import { Seo, siteUrl } from "../components/Seo";
 import { NotFound } from "./NotFound";
+import { useCheckoutAvailability } from "../hooks/useCheckoutAvailability";
+import { CheckoutUnavailable } from "../components/commerce/CheckoutUnavailable";
 
 export function ProductDetail() {
   const { slug } = useParams();
   const { products, loading, error, refetch } = useProducts();
   const addItem = useCartStore((state) => state.addItem);
   const [selectedImage,setSelectedImage]=useState<string|null>(null);
+  const { checkoutEnabled, loading: checkoutLoading } = useCheckoutAvailability();
 
   const product = products.find((item) => item.slug === slug);
 
@@ -65,7 +68,7 @@ export function ProductDetail() {
   const gallery=[...new Set([product.imageUrl,...(product.images||[]).map(image=>image.url)].filter((url):url is string=>Boolean(url)))];
   const mainImage=selectedImage||gallery[0]||null;
   const canonicalPath=`/producto/${encodeURIComponent(product.slug)}`;
-  const productJsonLd={"@context":"https://schema.org","@type":"Product","name":product.name,"description":product.description,"image":gallery,"sku":product.code,"brand":{"@type":"Brand","name":product.brand},"offers":{"@type":"Offer","url":`${siteUrl}${canonicalPath}`,"priceCurrency":"MXN","price":product.price,"availability":soldOut?"https://schema.org/OutOfStock":"https://schema.org/InStock","itemCondition":"https://schema.org/NewCondition"}};
+  const productJsonLd={"@context":"https://schema.org","@type":"Product","name":product.name,"description":product.description,"image":gallery,"sku":product.code,"brand":{"@type":"Brand","name":product.brand},...(checkoutEnabled?{"offers":{"@type":"Offer","url":`${siteUrl}${canonicalPath}`,"priceCurrency":"MXN","price":product.price,"availability":soldOut?"https://schema.org/OutOfStock":"https://schema.org/InStock","itemCondition":"https://schema.org/NewCondition"}}:{})};
   const breadcrumbJsonLd={"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Inicio","item":siteUrl},{"@type":"ListItem","position":2,"name":"Productos","item":`${siteUrl}/productos`},{"@type":"ListItem","position":3,"name":product.name,"item":`${siteUrl}${canonicalPath}`}]};
 
   return (
@@ -73,8 +76,8 @@ export function ProductDetail() {
       <div className="mx-auto max-w-7xl">
         <nav aria-label="Migas de pan" className="mb-10 flex flex-wrap items-center gap-2 text-sm font-bold text-black/45"><Link to="/">Inicio</Link><span aria-hidden="true">/</span><Link to="/productos">Productos</Link><span aria-hidden="true">/</span><span aria-current="page" className="text-[#19A2B6]">{product.name}</span></nav>
 
-        <div className="grid gap-12 lg:grid-cols-2">
-          <div className="rounded-[2.5rem] bg-[#F5F5F5] p-6">
+        <div className="grid min-w-0 gap-12 lg:grid-cols-2">
+          <div className="min-w-0 rounded-[2.5rem] bg-[#F5F5F5] p-6">
             <div className="flex aspect-square items-center justify-center rounded-[2rem] bg-gradient-to-br from-[#19A2B6]/10 to-[#EF8329]/10">
               <div className="flex h-80 w-80 items-center justify-center overflow-hidden rounded-[2.5rem] bg-white shadow-xl">
                 {mainImage ? (
@@ -96,7 +99,7 @@ export function ProductDetail() {
             {gallery.length>1&&<div className="mt-4 grid grid-cols-4 gap-3">{gallery.map((url,index)=><button type="button" aria-label={`Ver imagen ${index+1} de ${product.name}`} aria-pressed={mainImage===url} key={url} onClick={()=>setSelectedImage(url)} className="aspect-square overflow-hidden rounded-2xl border border-black/10 bg-white p-2 aria-pressed:border-[#19A2B6] aria-pressed:ring-2 aria-pressed:ring-[#19A2B6]/20"><img src={url} alt={`${product.name}, vista ${index+1}`} width="96" height="96" loading="lazy" decoding="async" className="h-full w-full object-contain"/></button>)}</div>}
           </div>
 
-          <div className="flex flex-col justify-center">
+          <div className="min-w-0 flex flex-col justify-center">
             {product.badge && (
               <span className="mb-5 w-fit rounded-full bg-[#EF8329] px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-white">
                 {product.badge}
@@ -129,7 +132,7 @@ export function ProductDetail() {
               )}
             </div>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            {checkoutEnabled ? <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <button
                 type="button"
                 onClick={() => addItem(product)}
@@ -148,7 +151,7 @@ export function ProductDetail() {
               >
                 Comprar ahora
               </button>
-            </div>
+            </div> : <div className="mt-8"><CheckoutUnavailable compact loading={checkoutLoading}/></div>}
 
             <div className="mt-10 grid gap-4 sm:grid-cols-3">
               <div className="rounded-3xl bg-[#F5F5F5] p-5">
