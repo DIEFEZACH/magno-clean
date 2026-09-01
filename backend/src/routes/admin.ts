@@ -8,7 +8,7 @@ import { prisma } from "../lib/prisma";
 import { authenticate, authorize } from "../middleware/auth";
 import { asyncHandler } from "../middleware/asyncHandler";
 import { validateBody } from "../middleware/validate";
-import { companySettingsSchema, importProductsSchema, orderNoteSchema, productActionSchema, productImagesSchema, updateOrderStatusSchema } from "../schemas/admin";
+import { companySettingsSchema, createProductFamilySchema, importProductsSchema, linkProductVariantSchema, orderNoteSchema, productActionSchema, productImagesSchema, updateOrderStatusSchema, updateProductFamilySchema, updateProductVariantSchema } from "../schemas/admin";
 import { releaseReservation } from "../services/inventory";
 import { deleteProductImage, uploadProductImage } from "../services/productImageStorage";
 
@@ -116,10 +116,92 @@ adminRouter.get("/customers/:email", asyncHandler(async (req, res) => {
   res.json({ customer: { name: orders[0].customerName, email, phone: orders[0].customerPhone, orders: orders.length, total: orders.filter((o) => paidStatuses.includes(o.status)).reduce((sum, o) => sum + o.total, 0), lastOrder: orders[0].createdAt, addresses }, orders });
 }));
 
+const familyVariants: Prisma.ProductFamily$productsArgs = { orderBy: [{ variantSortOrder: "asc" }, { name: "asc" }], select: { id: true, code: true, name: true, active: true, stock: true, reservedStock: true, imageUrl: true, variantLabel: true, variantSortOrder: true } };
+
+async function ensureCommercialSlugAvailable(slug: string, familyId?: string) {
+  const [product, family] = await Promise.all([
+    prisma.product.findUnique({ where: { slug }, select: { id: true } }),
+    prisma.productFamily.findUnique({ where: { slug }, select: { id: true } }),
+  ]);
+  if (product || (family && family.id !== familyId)) throw new AppError(409, "El slug ya está en uso");
+}
+
+adminRouter.get("/product-families", asyncHandler(async (req, res) => {
+  const { page, pageSize, skip } = paging(req.query);
+  const search = String(req.query.search || "").trim();
+  const where: Prisma.ProductFamilyWhereInput = search ? { OR: [{ name: { contains: search, mode: "insensitive" } }, { slug: { contains: search, mode: "insensitive" } }, { brand: { contains: search, mode: "insensitive" } }, { category: { contains: search, mode: "insensitive" } }] } : {};
+  const [families, total] = await Promise.all([
+    prisma.productFamily.findMany({ where, skip, take: pageSize, orderBy: { createdAt: "desc" }, include: { products: familyVariants } }),
+    prisma.productFamily.count({ where }),
+  ]);
+  res.json({ families, pagination: { page, pageSize, total, pages: Math.ceil(total / pageSize) } });
+}));
+
+adminRouter.post("/product-families", validateBody(createProductFamilySchema), asyncHandler(async (req, res) => {
+  await ensureCommercialSlugAvailable(req.body.slug);
+  const family = await prisma.productFamily.create({ data: req.body, include: { products: familyVariants } });
+  res.status(201).json({ family });
+}));
+
+adminRouter.get("/product-families/:id", asyncHandler(async (req, res) => {
+  const family = await prisma.productFamily.findUnique({ where: { id: String(req.params.id) }, include: { products: familyVariants } });
+  if (!family) throw new AppError(404, "Familia no encontrada");
+  res.json({ family });
+}));
+
+adminRouter.put("/product-families/:id", validateBody(updateProductFamilySchema), asyncHandler(async (req, res) => {
+  const id = String(req.params.id);
+  if (req.body.slug) await ensureCommercialSlugAvailable(req.body.slug, id);
+  const exists = await prisma.productFamily.findUnique({ where: { id }, select: { id: true } });
+  if (!exists) throw new AppError(404, "Familia no encontrada");
+  const family = await prisma.productFamily.update({ where: { id }, data: req.body, include: { products: familyVariants } });
+  res.json({ family });
+}));
+
+adminRouter.delete("/product-families/:id", asyncHandler(async (req, res) => {
+  const id = String(req.params.id);
+  const family = await prisma.productFamily.findUnique({ where: { id }, select: { id: true, _count: { select: { products: true } } } });
+  if (!family) throw new AppError(404, "Familia no encontrada");
+  if (family._count.products > 0 && req.query.confirmUnlink !== "true") throw new AppError(409, "La familia tiene productos vinculados; confirma la desvinculación");
+  await prisma.$transaction(async (tx) => {
+    await tx.product.updateMany({ where: { familyId: id }, data: { familyId: null, variantLabel: null, variantSortOrder: 0 } });
+    await tx.productFamily.delete({ where: { id } });
+  });
+  res.json({ message: "Familia eliminada; los productos se conservaron" });
+}));
+
+adminRouter.post("/product-families/:id/variants", validateBody(linkProductVariantSchema), asyncHandler(async (req, res) => {
+  const familyId = String(req.params.id); const { productId, variantLabel, variantSortOrder, confirmMove } = req.body;
+  const product = await prisma.$transaction(async (tx) => {
+    const [family, current] = await Promise.all([tx.productFamily.findUnique({ where: { id: familyId }, select: { id: true } }), tx.product.findUnique({ where: { id: productId }, select: { id: true, familyId: true } })]);
+    if (!family) throw new AppError(404, "Familia no encontrada");
+    if (!current) throw new AppError(404, "Producto no encontrado");
+    if (current.familyId && current.familyId !== familyId && !confirmMove) throw new AppError(409, "El producto pertenece a otra familia; confirma el cambio");
+    return tx.product.update({ where: { id: productId }, data: { familyId, variantLabel, variantSortOrder }, include: { family: { select: { id: true, name: true } } } });
+  });
+  res.json({ product });
+}));
+
+adminRouter.patch("/product-families/:id/variants/:productId", validateBody(updateProductVariantSchema), asyncHandler(async (req, res) => {
+  const familyId = String(req.params.id); const productId = String(req.params.productId);
+  const current = await prisma.product.findFirst({ where: { id: productId, familyId }, select: { id: true } });
+  if (!current) throw new AppError(404, "Variante no encontrada en esta familia");
+  const product = await prisma.product.update({ where: { id: productId }, data: req.body });
+  res.json({ product });
+}));
+
+adminRouter.delete("/product-families/:id/variants/:productId", asyncHandler(async (req, res) => {
+  const familyId = String(req.params.id); const productId = String(req.params.productId);
+  const current = await prisma.product.findFirst({ where: { id: productId, familyId }, select: { id: true } });
+  if (!current) throw new AppError(404, "Variante no encontrada en esta familia");
+  await prisma.product.update({ where: { id: productId }, data: { familyId: null, variantLabel: null, variantSortOrder: 0 } });
+  res.json({ message: "Producto desvinculado; no fue eliminado" });
+}));
+
 adminRouter.get("/products", asyncHandler(async (req, res) => {
   const { page, pageSize, skip } = paging(req.query); const search = String(req.query.search || "").trim(); const category = String(req.query.category || "");
   const where: Prisma.ProductWhereInput = { ...(search ? { OR: [{ name: { contains: search, mode: "insensitive" } }, { code: { contains: search, mode: "insensitive" } }, { slug: { contains: search, mode: "insensitive" } }] } : {}), ...(category ? { category } : {}) };
-  const [products, total] = await Promise.all([prisma.product.findMany({ where, skip, take: pageSize, orderBy: { createdAt: "desc" }, include: { images: { orderBy: { position: "asc" } } } }), prisma.product.count({ where })]);
+  const [products, total] = await Promise.all([prisma.product.findMany({ where, skip, take: pageSize, orderBy: { createdAt: "desc" }, include: { images: { orderBy: { position: "asc" } }, family: { select: { id: true, name: true } } } }), prisma.product.count({ where })]);
   res.json({ products: products.map((p) => ({ ...p, availableStock: p.stock - p.reservedStock })), pagination: { page, pageSize, total, pages: Math.ceil(total / pageSize) } });
 }));
 
@@ -142,15 +224,15 @@ adminRouter.post("/products/import", validateBody(importProductsSchema), asyncHa
 }));
 
 adminRouter.get("/products/:id", asyncHandler(async (req, res) => {
-  const product = await prisma.product.findUnique({ where: { id: String(req.params.id) }, include: { images: { orderBy: { position: "asc" } } } });
+  const product = await prisma.product.findUnique({ where: { id: String(req.params.id) }, include: { images: { orderBy: { position: "asc" } }, family: { select: { id: true, name: true } } } });
   if (!product) throw new AppError(404, "Producto no encontrado");
   res.json({ product: { ...product, availableStock: product.stock - product.reservedStock } });
 }));
 
 adminRouter.post("/products/:id/duplicate", asyncHandler(async (req, res) => {
   const source = await prisma.product.findUnique({ where: { id: String(req.params.id) }, include: { images: true } }); if (!source) throw new AppError(404, "Producto no encontrado");
-  const suffix = Date.now().toString().slice(-6); const { id: _id, createdAt: _c, updatedAt: _u, stock: _s, reservedStock: _r, images, ...data } = source;
-  const product = await prisma.product.create({ data: { ...data, name: `${source.name} copia`, slug: `${source.slug}-copia-${suffix}`, code: `${source.code}-COPY-${suffix}`, active: false, featured: false, stock: 0, images: { create: images.map((image, position) => ({ url: image.url, alt: image.alt, position })) } } });
+  const suffix = Date.now().toString().slice(-6); const { id: _id, createdAt: _c, updatedAt: _u, stock: _s, reservedStock: _r, familyId: _f, variantLabel: _vl, variantSortOrder: _vo, images, ...data } = source;
+  const product = await prisma.product.create({ data: { ...data, name: `${source.name} copia`, slug: `${source.slug}-copia-${suffix}`, code: `${source.code}-COPY-${suffix}`, active: false, featured: false, stock: 0, familyId: null, variantLabel: null, variantSortOrder: 0, images: { create: images.map((image, position) => ({ url: image.url, alt: image.alt, position })) } } });
   res.status(201).json({ product });
 }));
 
