@@ -1,4 +1,4 @@
-import { BarChart3, Boxes, ChevronRight, ClipboardList, Layers3, LogOut, Menu, Package, Settings, Users, X } from "lucide-react";
+import { BarChart3, Boxes, ChevronRight, ClipboardList, FilePenLine, Layers3, LogOut, Menu, Package, Settings, Users, X } from "lucide-react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../../store/authStore";
@@ -7,6 +7,7 @@ const links = [
   { to: "/admin", label: "Dashboard", Icon: BarChart3, end: true }, { to: "/admin/orders", label: "Pedidos", Icon: ClipboardList },
   { to: "/admin/customers", label: "Clientes", Icon: Users }, { to: "/admin/products", label: "Productos", Icon: Package },
   { to: "/admin/product-families", label: "Familias", Icon: Layers3 }, { to: "/admin/inventory", label: "Inventario", Icon: Boxes },
+  { to: "/admin/content", label: "Contenido", Icon: FilePenLine },
   { to: "/admin/settings", label: "Configuración", Icon: Settings },
 ];
 

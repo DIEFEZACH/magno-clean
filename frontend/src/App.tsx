@@ -7,7 +7,8 @@ const page = <T extends Record<string, unknown>>(loader: () => Promise<T>, name:
 const Home=page(()=>import("./pages/Home"),"Home"), Products=page(()=>import("./pages/Products"),"Products"), ProductDetail=page(()=>import("./pages/ProductDetail"),"ProductDetail"), Categories=page(()=>import("./pages/Categories"),"Categories"), About=page(()=>import("./pages/About"),"About"), Support=page(()=>import("./pages/Support"),"Support"), Contact=page(()=>import("./pages/Contact"),"Contact"), Cart=page(()=>import("./pages/Cart"),"Cart"), NotFound=page(()=>import("./pages/NotFound"),"NotFound"), Checkout=page(()=>import("./pages/Checkout"),"Checkout");
 const CheckoutResult = lazy(() => import("./pages/CheckoutResult").then(m => ({ default: m.CheckoutResult }))) as React.LazyExoticComponent<React.ComponentType<{ kind: "success" | "error" | "pending" }>>;
 const LegalPage = lazy(() => import("./pages/LegalPage").then(m => ({ default: m.LegalPage }))) as React.LazyExoticComponent<React.ComponentType<{ kind: "privacy" | "terms" | "returns" }>>;
-const AdminLogin=page(()=>import("./pages/AdminLogin"),"AdminLogin"), AdminDashboard=page(()=>import("./pages/AdminDashboard"),"AdminDashboard"), AdminOrders=page(()=>import("./pages/AdminOrders"),"AdminOrders"), AdminOrderDetail=page(()=>import("./pages/AdminOrderDetail"),"AdminOrderDetail"), AdminCustomers=page(()=>import("./pages/AdminCustomers"),"AdminCustomers"), AdminCustomerDetail=page(()=>import("./pages/AdminCustomerDetail"),"AdminCustomerDetail"), AdminProducts=page(()=>import("./pages/AdminProducts"),"AdminProducts"), AdminProductEdit=page(()=>import("./pages/AdminProductEdit"),"AdminProductEdit"), AdminProductFamilies=page(()=>import("./pages/AdminProductFamilies"),"AdminProductFamilies"), AdminInventory=page(()=>import("./pages/AdminInventory"),"AdminInventory"), AdminSettings=page(()=>import("./pages/AdminSettings"),"AdminSettings");
+const AdminLogin=page(()=>import("./pages/AdminLogin"),"AdminLogin"), AdminDashboard=page(()=>import("./pages/AdminDashboard"),"AdminDashboard"), AdminOrders=page(()=>import("./pages/AdminOrders"),"AdminOrders"), AdminOrderDetail=page(()=>import("./pages/AdminOrderDetail"),"AdminOrderDetail"), AdminCustomers=page(()=>import("./pages/AdminCustomers"),"AdminCustomers"), AdminCustomerDetail=page(()=>import("./pages/AdminCustomerDetail"),"AdminCustomerDetail"), AdminProducts=page(()=>import("./pages/AdminProducts"),"AdminProducts"), AdminProductEdit=page(()=>import("./pages/AdminProductEdit"),"AdminProductEdit"), AdminProductFamilies=page(()=>import("./pages/AdminProductFamilies"),"AdminProductFamilies"), AdminInventory=page(()=>import("./pages/AdminInventory"),"AdminInventory"), AdminSettings=page(()=>import("./pages/AdminSettings"),"AdminSettings"), AdminContent=page(()=>import("./pages/AdminContent"),"AdminContent");
+const AdminContentEditor = lazy(() => import("./pages/AdminContentEditor").then(m => ({ default: m.AdminContentEditor }))) as React.LazyExoticComponent<React.ComponentType<{ type: "family" | "product" }>>;
 
 export default function App() {
   return (
@@ -29,6 +30,9 @@ export default function App() {
               <Route path="products" element={<AdminProducts />} />
               <Route path="products/:id/edit" element={<AdminProductEdit />} />
               <Route path="product-families" element={<AdminProductFamilies />} />
+              <Route path="content" element={<AdminContent />} />
+              <Route path="content/families/:familyId" element={<AdminContentEditor type="family" />} />
+              <Route path="content/products/:productId" element={<AdminContentEditor type="product" />} />
               <Route path="inventory" element={<AdminInventory />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
