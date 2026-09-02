@@ -34,5 +34,5 @@ export type RevisionPayload = {
   title: string; shortDescription: string; longDescription: string;
   benefits: string[]; applications: string[]; usage: string[]; dilution: string[]; precautions: string[];
   pictograms: string[]; faq: Array<{ question: string; answer: string }>;
-  seoTitle: string; seoDescription: string; seoKeywords: string[]; technicalSheetUrl: string; sdsUrl: string;
+  seoTitle: string; seoDescription: string; seoKeywords: string[]; technicalSheetUrl: string | null; sdsUrl: string | null;
 };
