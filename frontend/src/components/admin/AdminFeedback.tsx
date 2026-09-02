@@ -17,6 +17,7 @@ export function AdminFeedbackProvider({ children }: { children: React.ReactNode 
   const [confirming, setConfirming] = useState(false);
   const returnFocus = useRef<HTMLElement | null>(null);
   const cancelRef = useRef<HTMLButtonElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
 
   const toast = useCallback((kind: ToastKind, message: string) => {
     const id = Date.now() + Math.random();
@@ -37,10 +38,19 @@ export function AdminFeedbackProvider({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     if (!confirmation) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     cancelRef.current?.focus();
-    const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") closeConfirm(); };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { closeConfirm(); return; }
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const nodes = [...dialogRef.current.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled])')];
+      const first = nodes[0]; const last = nodes[nodes.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", onKeyDown); };
   }, [confirmation, closeConfirm]);
 
   const icons = { success: CheckCircle2, error: AlertCircle, warning: TriangleAlert, info: Info };
@@ -52,10 +62,10 @@ export function AdminFeedbackProvider({ children }: { children: React.ReactNode 
       {toasts.map((item) => { const Icon = icons[item.kind]; return <div key={item.id} role={item.kind === "error" ? "alert" : "status"} className={`flex items-start gap-3 rounded-2xl border bg-white p-4 shadow-xl ${colors[item.kind]}`}><Icon size={20} className="mt-0.5 shrink-0"/><p className="flex-1 text-sm font-bold text-[#111]">{item.message}</p><button type="button" aria-label="Cerrar notificación" onClick={() => setToasts((current) => current.filter((toastItem) => toastItem.id !== item.id))}><X size={18}/></button></div>; })}
     </div>
     {confirmation && <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/45 p-4" role="dialog" aria-modal="true" aria-labelledby="confirm-title" onMouseDown={(event) => { if (event.target === event.currentTarget) closeConfirm(); }}>
-      <div className="w-full max-w-md rounded-[2rem] bg-white p-6 shadow-2xl">
+      <div ref={dialogRef} className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-[1.5rem] bg-white p-5 shadow-2xl sm:rounded-[2rem] sm:p-6">
         <h2 id="confirm-title" className="text-2xl font-black">{confirmation.title}</h2>
         <p className="mt-3 leading-7 text-black/55">{confirmation.description}</p>
-        <div className="mt-7 flex justify-end gap-3"><button ref={cancelRef} type="button" disabled={confirming} onClick={closeConfirm} className="rounded-full bg-black/5 px-5 py-3 font-black disabled:opacity-50">Cancelar</button><button type="button" disabled={confirming} onClick={async () => { setConfirming(true); try { await confirmation.action(); setConfirmation(null); window.setTimeout(() => returnFocus.current?.focus(), 0); } finally { setConfirming(false); } }} className={`rounded-full px-5 py-3 font-black text-white disabled:opacity-50 ${confirmation.destructive ? "bg-red-500" : "bg-[#19A2B6]"}`}>{confirming ? "Procesando..." : confirmation.confirmLabel || "Confirmar"}</button></div>
+        <div className="mt-7 grid gap-3 sm:flex sm:justify-end"><button ref={cancelRef} type="button" disabled={confirming} onClick={closeConfirm} className="min-h-11 rounded-full bg-black/5 px-5 py-3 font-black disabled:opacity-50">Cancelar</button><button type="button" disabled={confirming} onClick={async () => { setConfirming(true); try { await confirmation.action(); setConfirmation(null); window.setTimeout(() => returnFocus.current?.focus(), 0); } finally { setConfirming(false); } }} className={`min-h-11 rounded-full px-5 py-3 font-black text-white disabled:opacity-50 ${confirmation.destructive ? "bg-red-500" : "bg-[#19A2B6]"}`}>{confirming ? "Procesando..." : confirmation.confirmLabel || "Confirmar"}</button></div>
       </div>
     </div>}
   </FeedbackContext.Provider>;

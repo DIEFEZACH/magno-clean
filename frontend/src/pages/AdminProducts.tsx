@@ -144,14 +144,14 @@ export function AdminProducts() {
   }, [page, search, category]);
 
   return (
-    <section className="min-h-screen bg-[#F5F5F5] px-5 py-20 lg:px-8">
+    <section className="min-h-screen bg-[#F5F5F5] px-4 py-10 sm:px-5 sm:py-14 lg:px-8 lg:py-20">
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="mb-3 text-sm font-black uppercase tracking-[0.25em] text-[#19A2B6]">Admin</p>
-            <h1 className="text-5xl font-black tracking-[-0.05em]">Productos</h1>
+            <h1 className="text-4xl font-black tracking-[-0.05em] sm:text-5xl">Productos</h1>
           </div>
-          <div className="flex flex-wrap gap-2"><button type="button" onClick={exportProducts} className="rounded-full bg-white px-5 py-3 text-sm font-black">Exportar Excel/CSV</button><label className="cursor-pointer rounded-full bg-[#111] px-5 py-3 text-sm font-black text-white">Importar CSV<input type="file" accept=".csv,text/csv" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void importProducts(file); }} /></label><button type="button" onClick={toggleCreateForm} className="w-fit rounded-full bg-[#19A2B6] px-6 py-3 text-sm font-black text-white transition hover:bg-[#111111]">{showForm ? "Cerrar formulario" : "Nuevo producto"}</button></div>
+          <div className="grid gap-2 sm:flex sm:flex-wrap"><button type="button" onClick={exportProducts} className="min-h-11 rounded-full bg-white px-5 py-3 text-sm font-black">Exportar Excel/CSV</button><label className="flex min-h-11 cursor-pointer items-center justify-center rounded-full bg-[#111] px-5 py-3 text-sm font-black text-white">Importar CSV<input type="file" accept=".csv,text/csv" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void importProducts(file); }} /></label><button type="button" onClick={toggleCreateForm} className="min-h-11 rounded-full bg-[#19A2B6] px-6 py-3 text-sm font-black text-white transition hover:bg-[#111111]">{showForm ? "Cerrar formulario" : "Nuevo producto"}</button></div>
         </div>
 
         <AnimatePresence>

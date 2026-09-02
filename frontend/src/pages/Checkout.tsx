@@ -89,118 +89,124 @@ export function Checkout() {
   }
 
   return (
-    <section className="bg-[#F5F5F5] px-5 py-20 lg:px-8">
+    <section className="bg-[#F5F5F5] px-4 py-10 sm:px-5 sm:py-16 lg:px-8 lg:py-20">
       <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_420px]">
-        <div className="rounded-[2rem] bg-white p-8 shadow-sm">
+        <div className="min-w-0 rounded-[1.5rem] bg-white p-5 shadow-sm sm:rounded-[2rem] sm:p-8">
           <p className="mb-3 text-sm font-black uppercase tracking-[0.25em] text-[#19A2B6]">
             Pago seguro
           </p>
 
-          <h1 className="text-5xl font-black tracking-[-0.05em]">
+          <h1 className="text-4xl font-black tracking-[-0.05em] sm:text-5xl">
             Checkout
           </h1>
 
           <form onSubmit={handleSubmit(onSubmit)} className="mt-10 grid gap-5">
-            <div>
+            <label className="grid gap-2 font-bold">Nombre completo
               <input
                 {...register("fullName")}
+                autoComplete="name"
                 className="w-full rounded-2xl border border-black/10 px-5 py-4 font-semibold outline-none focus:border-[#19A2B6]"
-                placeholder="Nombre completo"
+                aria-invalid={!!errors.fullName}
               />
               {errors.fullName && (
                 <p className="mt-2 text-sm font-bold text-red-500">
                   {errors.fullName.message}
                 </p>
               )}
-            </div>
+            </label>
 
-            <div>
+            <label className="grid gap-2 font-bold">Correo electrónico
               <input
                 {...register("email")}
+                type="email" autoComplete="email" inputMode="email"
                 className="w-full rounded-2xl border border-black/10 px-5 py-4 font-semibold outline-none focus:border-[#19A2B6]"
-                placeholder="Correo electrónico"
+                aria-invalid={!!errors.email}
               />
               {errors.email && (
                 <p className="mt-2 text-sm font-bold text-red-500">
                   {errors.email.message}
                 </p>
               )}
-            </div>
+            </label>
 
-            <div>
+            <label className="grid gap-2 font-bold">Teléfono
               <input
                 {...register("phone")}
+                type="tel" autoComplete="tel" inputMode="tel"
                 className="w-full rounded-2xl border border-black/10 px-5 py-4 font-semibold outline-none focus:border-[#19A2B6]"
-                placeholder="Teléfono"
+                aria-invalid={!!errors.phone}
               />
               {errors.phone && (
                 <p className="mt-2 text-sm font-bold text-red-500">
                   {errors.phone.message}
                 </p>
               )}
-            </div>
+            </label>
 
-            <div>
+            <label className="grid gap-2 font-bold">Dirección de envío
               <input
                 {...register("address")}
+                autoComplete="street-address"
                 className="w-full rounded-2xl border border-black/10 px-5 py-4 font-semibold outline-none focus:border-[#19A2B6]"
-                placeholder="Dirección de envío"
+                aria-invalid={!!errors.address}
               />
               {errors.address && (
                 <p className="mt-2 text-sm font-bold text-red-500">
                   {errors.address.message}
                 </p>
               )}
-            </div>
+            </label>
 
             <div className="grid gap-5 md:grid-cols-2">
-              <div>
+              <label className="grid gap-2 font-bold">Ciudad
                 <input
                   {...register("city")}
+                  autoComplete="address-level2"
                   className="w-full rounded-2xl border border-black/10 px-5 py-4 font-semibold outline-none focus:border-[#19A2B6]"
-                  placeholder="Ciudad"
+                  aria-invalid={!!errors.city}
                 />
                 {errors.city && (
                   <p className="mt-2 text-sm font-bold text-red-500">
                     {errors.city.message}
                   </p>
                 )}
-              </div>
+              </label>
 
-              <div>
+              <label className="grid gap-2 font-bold">Código postal
                 <input
                   {...register("zipCode")}
+                  autoComplete="postal-code" inputMode="numeric"
                   className="w-full rounded-2xl border border-black/10 px-5 py-4 font-semibold outline-none focus:border-[#19A2B6]"
-                  placeholder="Código postal"
+                  aria-invalid={!!errors.zipCode}
                 />
                 {errors.zipCode && (
                   <p className="mt-2 text-sm font-bold text-red-500">
                     {errors.zipCode.message}
                   </p>
                 )}
-              </div>
+              </label>
             </div>
 
             <div className="grid gap-5 md:grid-cols-2">
-              <div>
-                <input {...register("state")} className="w-full rounded-2xl border border-black/10 px-5 py-4 font-semibold outline-none focus:border-[#19A2B6]" placeholder="Estado" />
+              <label className="grid gap-2 font-bold">Estado
+                <input {...register("state")} autoComplete="address-level1" aria-invalid={!!errors.state} className="w-full rounded-2xl border border-black/10 px-5 py-4 font-semibold outline-none focus:border-[#19A2B6]" />
                 {errors.state && <p className="mt-2 text-sm font-bold text-red-500">{errors.state.message}</p>}
-              </div>
-              <div>
-                <input {...register("country")} className="w-full rounded-2xl border border-black/10 px-5 py-4 font-semibold outline-none focus:border-[#19A2B6]" placeholder="País" />
+              </label>
+              <label className="grid gap-2 font-bold">País
+                <input {...register("country")} autoComplete="country-name" aria-invalid={!!errors.country} className="w-full rounded-2xl border border-black/10 px-5 py-4 font-semibold outline-none focus:border-[#19A2B6]" />
                 {errors.country && <p className="mt-2 text-sm font-bold text-red-500">{errors.country.message}</p>}
-              </div>
+              </label>
             </div>
 
             {submitError && <p role="alert" className="rounded-2xl bg-red-50 px-5 py-4 text-sm font-bold text-red-600">{submitError}</p>}
 
-            <button disabled={submitting || items.length === 0} className="mt-4 rounded-full bg-[#19A2B6] px-8 py-4 text-sm font-black text-white transition hover:bg-[#111111] disabled:cursor-not-allowed disabled:opacity-50">
+            <button disabled={submitting || items.length === 0} aria-busy={submitting} className="mt-4 min-h-12 rounded-full bg-[#19A2B6] px-8 py-4 text-sm font-black text-white transition hover:bg-[#111111] disabled:cursor-not-allowed disabled:opacity-50">
               {submitting ? "Creando pago seguro..." : "Continuar a Mercado Pago"}
             </button>
           </form>
         </div>
 
-        <aside className="h-fit rounded-[2rem] bg-white p-8 shadow-sm">
+        <aside className="min-w-0 h-fit rounded-[1.5rem] bg-white p-5 shadow-sm sm:rounded-[2rem] sm:p-8">
           <h2 className="text-3xl font-black">Resumen</h2>
 
           <div className="mt-8 space-y-5">
@@ -209,14 +215,14 @@ export function Checkout() {
                 key={item.id}
                 className="flex items-center justify-between gap-5 border-b border-black/5 pb-5"
               >
-                <div>
-                  <p className="font-black">{item.name}</p>
+                <div className="min-w-0">
+                  <p className="break-words font-black">{item.name}</p>
                   <p className="text-sm font-bold text-black/45">
                     Cantidad: {item.quantity}
                   </p>
                 </div>
 
-                <p className="font-black">
+                <p className="shrink-0 text-right font-black">
                   {new Intl.NumberFormat("es-MX", {
                     style: "currency",
                     currency: "MXN",
@@ -228,7 +234,7 @@ export function Checkout() {
 
           <div className="mt-8 flex items-center justify-between">
             <span className="text-lg font-bold text-black/60">Subtotal</span>
-            <span className="text-3xl font-black">{formattedSubtotal}</span>
+            <span className="break-all text-right text-2xl font-black sm:text-3xl">{formattedSubtotal}</span>
           </div>
         </aside>
       </div>

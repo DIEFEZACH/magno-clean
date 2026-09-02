@@ -6,6 +6,15 @@ html {
 
 body {
   margin: 0;
+  min-width: 320px;
+  overflow-x: clip;
+}
+
+img, svg { max-width: 100%; }
+button, input, select, textarea { font: inherit; }
+
+@media (pointer: coarse) {
+  button, a, input, select { touch-action: manipulation; }
 }
 
 :focus-visible {
