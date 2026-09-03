@@ -31,6 +31,7 @@ const envSchema = z.object({
   SUPABASE_URL: z.string().url(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(20),
   SUPABASE_PRODUCT_IMAGES_BUCKET: z.string().regex(/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/).default("product-images"),
+  SUPABASE_PRODUCT_MEDIA_BUCKET: z.literal("product-media").default("product-media"),
   PRODUCT_IMAGE_MAX_BYTES: z.coerce.number().int().positive().default(5_242_880),
   PRODUCT_IMAGE_MAX_COUNT: z.coerce.number().int().positive().max(50).default(20),
   DATABASE_SSL_REJECT_UNAUTHORIZED: z.enum(["true", "false"])

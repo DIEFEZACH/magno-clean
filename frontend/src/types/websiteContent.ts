@@ -7,9 +7,29 @@ export type WebsiteContentSource = {
   id: string;
   layer: WebsiteContentSourceLayer;
   sourceFile: string | null;
+  sourceSha256: string | null;
   data: unknown;
   reviewRequired: boolean;
   confidence: "LOW" | "MEDIUM" | "HIGH" | null;
+  createdAt: string;
+};
+export type WebsiteContentMediaRole = "HERO" | "BENEFITS" | "USAGE" | "SAFETY" | "INFOGRAPHIC";
+export type WebsiteContentMedia = {
+  id: string;
+  revisionId: string;
+  role: WebsiteContentMediaRole;
+  bucket: "product-media";
+  storagePath: string;
+  publicUrl: string;
+  alt: string;
+  position: number;
+  width: number | null;
+  height: number | null;
+  byteSize: number;
+  sha256: string;
+  mimeType: "image/webp";
+  reviewRequired: boolean;
+  editorialWarning: string | null;
   createdAt: string;
 };
 export type WebsiteContentEntry = { id: string; section: "BENEFIT" | "APPLICATION" | "USAGE" | "DILUTION" | "PRECAUTION" | "PICTOGRAM" | "SEO_KEYWORD"; value: string; position: number };
@@ -18,10 +38,18 @@ export type WebsiteContentRevision = {
   id: string; version: number; status: WebsiteContentStatus;
   title: string | null; shortDescription: string | null; longDescription: string | null;
   seoTitle: string | null; seoDescription: string | null; technicalSheetUrl: string | null; sdsUrl: string | null;
-  entries: WebsiteContentEntry[]; faq: WebsiteContentFaq[];
+  entries: WebsiteContentEntry[]; faq: WebsiteContentFaq[]; media: WebsiteContentMedia[];
   createdBy: EditorialUser; reviewedBy: EditorialUser | null; approvedBy: EditorialUser | null; publishedBy: EditorialUser | null;
   conflictsConfirmedBy: EditorialUser | null; conflictsConfirmationNote: string | null;
   reviewedAt: string | null; approvedAt: string | null; publishedAt: string | null; createdAt: string; updatedAt: string;
+};
+export type CreateWebsiteContentMediaPayload = {
+  role: WebsiteContentMediaRole;
+  bucket: "product-media";
+  storagePath: string;
+  alt: string;
+  position: number;
+  sha256: string;
 };
 export type WebsiteContent = {
   id: string; familyId: string | null; productId: string | null; publishedRevisionId: string | null;

@@ -166,6 +166,8 @@ test("publicación rechaza ambas descripciones faltantes", () => assert.throws((
 test("publicación rechaza pictograma fuera de GHS01–GHS09", () => assert.throws(() => validateRevisionForPublication(publicationRevision({ entries: [{ section: WebsiteContentSection.PICTOGRAM, value: "GHS10" }] }), {}), /requisitos/));
 test("publicación rechaza FAQ incompleta", () => assert.throws(() => validateRevisionForPublication(publicationRevision({ faq: [{ question: "", answer: "Respuesta" }] }), {}), /requisitos/));
 test("publicación rechaza URL inválida", () => assert.throws(() => validateRevisionForPublication(publicationRevision({ technicalSheetUrl: "javascript:alert(1)" }), {}), /requisitos/));
+test("publicación rechaza medios sin alt", () => assert.throws(() => validateRevisionForPublication(publicationRevision({ media: [{ alt: "", reviewRequired: false }] }), {}), /requisitos/));
+test("publicación trata un medio marcado como conflicto editorial", () => assert.throws(() => validateRevisionForPublication(publicationRevision({ media: [{ alt: "Texto", reviewRequired: true }] }), {}), /requisitos/));
 test("publicación rechaza conflicto sin confirmación", () => assert.throws(() => validateRevisionForPublication(publicationRevision({ content: { sources: [{ reviewRequired: true }] } }), {}), /requisitos/));
 test("publicación rechaza revisión completamente vacía", () => assert.throws(() => validateRevisionForPublication(publicationRevision({ title: null, shortDescription: null, longDescription: null }), {}), /requisitos/));
 

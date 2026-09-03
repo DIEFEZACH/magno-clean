@@ -12,6 +12,7 @@
 **/.env\ *.copy
 .cache/
 .tmp/
+.local/
 coverage/
 artifacts/
 *.pem
