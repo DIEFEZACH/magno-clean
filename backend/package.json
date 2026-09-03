@@ -14,7 +14,8 @@
     "inventory:release-expired": "node dist/scripts/releaseExpiredReservations.js",
     "inventory:release-expired:dev": "ts-node --transpile-only src/scripts/releaseExpiredReservations.ts",
     "backup:database": "sh scripts/backupDatabase.sh",
-    "test:inventory": "ts-node --transpile-only src/scripts/testInventory.ts"
+    "test:inventory": "ts-node --transpile-only src/scripts/testInventory.ts",
+    "media:sync": "npm run build --silent && node dist/scripts/syncProductMedia.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
