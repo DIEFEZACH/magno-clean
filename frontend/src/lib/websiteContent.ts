@@ -1,5 +1,5 @@
 import { apiFetch } from "./api";
-import type { ContentTargetType, RevisionPayload, WebsiteContent, WebsiteContentRevision } from "../types/websiteContent";
+import type { ContentTargetType, CreateWebsiteContentMediaPayload, RevisionPayload, WebsiteContent, WebsiteContentMedia, WebsiteContentRevision } from "../types/websiteContent";
 
 export const targetPath = (type: ContentTargetType, id: string) => `/api/admin/website-content/${type === "family" ? "families" : "products"}/${id}`;
 export async function fetchWebsiteContent(type: ContentTargetType, id: string): Promise<WebsiteContent | null> {
@@ -14,6 +14,16 @@ export async function updateDraft(id: string, payload: RevisionPayload) { return
 export async function transitionRevision(id: string, transition: "submit-review" | "approve", payload: object = {}) { return editorialRequest(`/api/admin/website-content/revisions/${id}/${transition}`, "POST", payload); }
 export async function publishRevision(id: string, payload: { confirmConflicts?: boolean; confirmationNote?: string }) { return editorialRequest(`/api/admin/website-content/revisions/${id}/publish`, "POST", payload); }
 export async function clonePublished(id: string) { return editorialRequest(`/api/admin/website-content/revisions/${id}/clone-draft`, "POST", {}); }
+export async function addRevisionMedia(revisionId: string, payload: CreateWebsiteContentMediaPayload) {
+  return mediaRequest(`/api/admin/website-content/revisions/${revisionId}/media`, "POST", payload);
+}
+export async function updateRevisionMedia(revisionId: string, mediaId: string, payload: Pick<WebsiteContentMedia, "role" | "alt" | "position">) {
+  return mediaRequest(`/api/admin/website-content/revisions/${revisionId}/media/${mediaId}`, "PUT", payload);
+}
+export async function removeRevisionMedia(revisionId: string, mediaId: string) {
+  const response = await apiFetch(`/api/admin/website-content/revisions/${revisionId}/media/${mediaId}`, { method: "DELETE" });
+  if (!response.ok) throw new Error((await response.json().catch(() => null))?.message || "No se pudo quitar el medio editorial");
+}
 const validationMessages: Record<string, string> = {
   technicalSheetUrl: "Ficha técnica: introduce una URL válida o déjalo vacío.",
   sdsUrl: "Hoja de seguridad: introduce una URL válida o déjalo vacío.",
@@ -46,6 +56,12 @@ async function editorialRequest(path: string, method: string, payload: object): 
   const data = await response.json().catch(() => null);
   if (!response.ok) throw new Error(validationMessage(data) || data?.message || "No se pudo completar la acción editorial");
   return data.revision;
+}
+async function mediaRequest(path: string, method: string, payload: object): Promise<WebsiteContentMedia> {
+  const response = await apiFetch(path, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+  const data = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(data?.message || "No se pudo completar la operación de medios");
+  return data.media;
 }
 export const entries = (revision: WebsiteContentRevision | null, section: WebsiteContentRevision["entries"][number]["section"]) => revision?.entries.filter((entry) => entry.section === section).sort((a, b) => a.position - b.position).map((entry) => entry.value) || [];
 export function payloadFromRevision(revision: WebsiteContentRevision | null): RevisionPayload {

@@ -48,8 +48,30 @@ export const publishWebsiteContentSchema = z.object({
 
 export const emptyTransitionSchema = z.object({}).strict();
 
+const websiteContentMediaRoleSchema = z.enum(["HERO", "BENEFITS", "USAGE", "SAFETY", "INFOGRAPHIC"]);
+const storagePathSchema = z.string().trim().min(3).max(512)
+  .regex(/^[a-z0-9][a-z0-9._/-]*\.webp$/, "Ruta de Storage inválida")
+  .refine((value) => !value.split("/").some((segment) => !segment || segment === "." || segment === ".."), "Ruta de Storage inválida");
+
+export const createWebsiteContentMediaSchema = z.object({
+  role: websiteContentMediaRoleSchema,
+  bucket: z.literal("product-media"),
+  storagePath: storagePathSchema,
+  alt: z.string().trim().max(300),
+  position: z.number().int().min(0).max(1000),
+  sha256: z.string().trim().regex(/^[0-9a-f]{64}$/, "SHA-256 inválido"),
+}).strict();
+
+export const updateWebsiteContentMediaSchema = z.object({
+  role: websiteContentMediaRoleSchema.optional(),
+  alt: z.string().trim().max(300).optional(),
+  position: z.number().int().min(0).max(1000).optional(),
+}).strict().refine((value) => Object.keys(value).length > 0, "Actualización vacía");
+
 export type WebsiteContentRevisionInput = z.infer<typeof websiteContentRevisionFieldsSchema>;
 export type PublishWebsiteContentInput = z.input<typeof publishWebsiteContentSchema>;
+export type CreateWebsiteContentMediaInput = z.infer<typeof createWebsiteContentMediaSchema>;
+export type UpdateWebsiteContentMediaInput = z.infer<typeof updateWebsiteContentMediaSchema>;
 
 export const sectionByField = {
   benefits: WebsiteContentSection.BENEFIT,

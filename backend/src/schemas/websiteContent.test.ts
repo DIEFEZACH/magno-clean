@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { updateWebsiteContentDraftSchema } from "./websiteContent";
+import { createWebsiteContentMediaSchema, updateWebsiteContentDraftSchema } from "./websiteContent";
 
 const validDraft = {
   title: "Contenido editorial",
@@ -30,4 +30,24 @@ test("rechaza una URL documental inválida no vacía", () => {
   });
   assert.equal(result.success, false);
   if (!result.success) assert.ok(result.error.flatten().fieldErrors.technicalSheetUrl?.length);
+});
+
+const validMedia = {
+  role: "HERO",
+  bucket: "product-media",
+  storagePath: "citrical/hero/hero-01.webp",
+  alt: "CITRICAL pre-lavador profesional",
+  position: 0,
+  sha256: "a".repeat(64),
+};
+
+test("acepta asociación editorial estricta a product-media", () => {
+  assert.equal(createWebsiteContentMediaSchema.safeParse(validMedia).success, true);
+});
+
+test("rechaza bucket, traversal, MIME o SHA-256 inválidos", () => {
+  assert.equal(createWebsiteContentMediaSchema.safeParse({ ...validMedia, bucket: "product-images" }).success, false);
+  assert.equal(createWebsiteContentMediaSchema.safeParse({ ...validMedia, storagePath: "../hero.webp" }).success, false);
+  assert.equal(createWebsiteContentMediaSchema.safeParse({ ...validMedia, mimeType: "image/png" }).success, false);
+  assert.equal(createWebsiteContentMediaSchema.safeParse({ ...validMedia, sha256: "abc" }).success, false);
 });

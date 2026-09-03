@@ -3,9 +3,12 @@ import { AppError } from "../errors/AppError";
 import { prisma } from "../lib/prisma";
 import {
   sectionByField,
+  type CreateWebsiteContentMediaInput,
   type PublishWebsiteContentInput,
+  type UpdateWebsiteContentMediaInput,
   type WebsiteContentRevisionInput,
 } from "../schemas/websiteContent";
+import { inspectWebsiteContentMedia, publicWebsiteContentMediaUrl } from "./websiteContentMediaStorage";
 
 type ContentTarget = { type: "family" | "product"; id: string };
 type DbClient = typeof prisma | Prisma.TransactionClient;
@@ -18,6 +21,7 @@ const revisionInclude = {
   approvedBy: { select: { id: true, name: true, email: true } },
   publishedBy: { select: { id: true, name: true, email: true } },
   conflictsConfirmedBy: { select: { id: true, name: true, email: true } },
+  media: { orderBy: [{ role: "asc" as const }, { position: "asc" as const }] },
 } satisfies Prisma.WebsiteContentRevisionInclude;
 
 const contentInclude = {
@@ -169,11 +173,31 @@ export async function clonePublishedRevision(revisionId: string, actorId: string
   return client.$transaction(async (tx: any) => {
     const revision = await tx.websiteContentRevision.findUnique({
       where: { id: revisionId },
-      include: { entries: true, faq: true },
+      include: { entries: true, faq: true, media: true },
     });
     if (!revision) throw new AppError(404, "Revisión no encontrada");
     if (revision.status !== WebsiteContentStatus.PUBLISHED) throw new AppError(409, "Sólo puede clonarse una revisión publicada");
-    return createRevision(tx, revision.contentId, actorId, inputFromRevision(revision));
+    const draft = await createRevision(tx, revision.contentId, actorId, inputFromRevision(revision));
+    if ((revision.media || []).length) {
+      await tx.websiteContentMedia.createMany({
+        data: revision.media.map((media: any) => ({
+          revisionId: draft.id,
+          role: media.role,
+          bucket: media.bucket,
+          storagePath: media.storagePath,
+          alt: media.alt,
+          position: media.position,
+          width: media.width,
+          height: media.height,
+          byteSize: media.byteSize,
+          sha256: media.sha256,
+          mimeType: media.mimeType,
+          reviewRequired: media.reviewRequired,
+          editorialWarning: media.editorialWarning,
+        })),
+      });
+    }
+    return tx.websiteContentRevision.findUniqueOrThrow({ where: { id: draft.id }, include: revisionInclude });
   }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 }
 
@@ -257,7 +281,10 @@ export function validateRevisionForPublication(revision: any, input: PublishWebs
     .filter((value: string) => !/^GHS0[1-9]$/.test(value));
   if (invalidPictograms.length) errors.push(`Pictograma inválido: ${invalidPictograms.join(", ")}`);
 
-  const hasConflicts = revision.content.sources.some((source: any) => source.reviewRequired);
+  const media = revision.media || [];
+  if (media.some((item: any) => !item.alt?.trim())) errors.push("Todos los medios requieren texto alternativo");
+  const hasConflicts = revision.content.sources.some((source: any) => source.reviewRequired)
+    || media.some((item: any) => item.reviewRequired);
   if (hasConflicts && !input.confirmConflicts) errors.push("Existen fuentes conflictivas pendientes de confirmación");
   if (hasConflicts && input.confirmConflicts && !input.confirmationNote?.trim()) errors.push("La nota de confirmación es obligatoria");
 
@@ -283,6 +310,7 @@ export async function publishWebsiteContent(
       include: {
         entries: true,
         faq: true,
+        media: true,
         content: { include: { sources: true } },
       },
     });
@@ -327,4 +355,101 @@ export async function resolvePublishedWebsiteContent(contentId: string, client: 
   });
   if (!content) throw new AppError(404, "Contenido editorial no encontrado");
   return content.publishedRevision;
+}
+
+async function assertDraftRevision(db: any, revisionId: string, lock = false) {
+  const revision = lock && typeof db.$queryRaw === "function"
+    ? (await db.$queryRaw(Prisma.sql`
+        SELECT "id", "status"
+        FROM "WebsiteContentRevision"
+        WHERE "id" = ${revisionId}
+        FOR UPDATE
+      `))[0]
+    : await db.websiteContentRevision.findUnique({ where: { id: revisionId }, select: { id: true, status: true } });
+  if (!revision) throw new AppError(404, "Revisión no encontrada");
+  if (revision.status !== WebsiteContentStatus.DRAFT) throw new AppError(409, "Los medios sólo pueden modificarse en una revisión DRAFT");
+}
+
+async function mediaTransaction<T>(client: any, operation: (tx: any) => Promise<T>) {
+  if (typeof client.$transaction !== "function") return operation(client);
+  return client.$transaction(operation, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+}
+
+function handleMediaConstraint(error: unknown): never {
+  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+    throw new AppError(409, "Ya existe un medio con ese role/orden o esa ruta en la revisión");
+  }
+  throw error;
+}
+
+export async function addWebsiteContentMedia(
+  revisionId: string,
+  input: CreateWebsiteContentMediaInput,
+  client: any = prisma,
+  inspect = inspectWebsiteContentMedia,
+) {
+  await assertDraftRevision(client, revisionId);
+  const verified = await inspect(input.bucket, input.storagePath, input.sha256);
+  try {
+    return await mediaTransaction(client, async (tx) => {
+      await assertDraftRevision(tx, revisionId, true);
+      return tx.websiteContentMedia.create({
+        data: {
+          revisionId,
+          role: input.role,
+          bucket: input.bucket,
+          storagePath: input.storagePath,
+          alt: input.alt,
+          position: input.position,
+          ...verified,
+        },
+      });
+    });
+  } catch (error) {
+    handleMediaConstraint(error);
+  }
+}
+
+export async function updateWebsiteContentMedia(
+  revisionId: string,
+  mediaId: string,
+  input: UpdateWebsiteContentMediaInput,
+  client: any = prisma,
+) {
+  try {
+    return await mediaTransaction(client, async (tx) => {
+      await assertDraftRevision(tx, revisionId, true);
+      const media = await tx.websiteContentMedia.findFirst({ where: { id: mediaId, revisionId }, select: { id: true } });
+      if (!media) throw new AppError(404, "Medio editorial no encontrado");
+      return tx.websiteContentMedia.update({ where: { id: mediaId }, data: input });
+    });
+  } catch (error) {
+    handleMediaConstraint(error);
+  }
+}
+
+export async function removeWebsiteContentMedia(revisionId: string, mediaId: string, client: any = prisma) {
+  return mediaTransaction(client, async (tx) => {
+    await assertDraftRevision(tx, revisionId, true);
+    const result = await tx.websiteContentMedia.deleteMany({ where: { id: mediaId, revisionId } });
+    if (result.count !== 1) throw new AppError(404, "Medio editorial no encontrado");
+  });
+}
+
+export function serializeWebsiteContentMedia(media: any) {
+  return { ...media, publicUrl: publicWebsiteContentMediaUrl(media.bucket, media.storagePath) };
+}
+
+export function serializeWebsiteContentRevision(revision: any) {
+  if (!revision) return revision;
+  return { ...revision, media: (revision.media || []).map(serializeWebsiteContentMedia) };
+}
+
+export function serializeWebsiteContent(content: any) {
+  if (!content) return content;
+  return {
+    ...content,
+    revisions: (content.revisions || []).map(serializeWebsiteContentRevision),
+    publishedRevision: serializeWebsiteContentRevision(content.publishedRevision),
+  };
 }
