@@ -1,6 +1,10 @@
 import { createHash } from "node:crypto";
 import { env } from "../config/env";
 import { AppError } from "../errors/AppError";
+import { publicStorageObjectUrl } from "./publicStorageUrl";
+import { assertSafeStoragePath } from "./storageObjectPath";
+
+export { assertSafeStoragePath } from "./storageObjectPath";
 
 const endpoint = `${env.SUPABASE_URL.replace(/\/$/, "")}/storage/v1`;
 const storageHeaders = {
@@ -9,23 +13,12 @@ const storageHeaders = {
 };
 export const WEBSITE_CONTENT_MEDIA_MAX_BYTES = 10 * 1024 * 1024;
 
-export function assertSafeStoragePath(storagePath: string) {
-  if (storagePath.length > 512 || storagePath.startsWith("/") || storagePath.endsWith("/")) {
-    throw new AppError(400, "Ruta de Storage inválida");
-  }
-  const segments = storagePath.split("/");
-  if (segments.length < 2 || segments.some((segment) => !/^[a-z0-9][a-z0-9._-]*$/.test(segment) || segment === "." || segment === "..")) {
-    throw new AppError(400, "Ruta de Storage inválida");
-  }
-  if (!storagePath.endsWith(".webp")) throw new AppError(400, "El medio debe ser un archivo WebP");
-}
-
 function encodedPath(storagePath: string) {
   return storagePath.split("/").map(encodeURIComponent).join("/");
 }
 
 export function publicWebsiteContentMediaUrl(bucket: string, storagePath: string) {
-  return `${endpoint}/object/public/${encodeURIComponent(bucket)}/${encodedPath(storagePath)}`;
+  return publicStorageObjectUrl(env.SUPABASE_URL, bucket, storagePath);
 }
 
 export function readWebpDimensions(buffer: Buffer) {
