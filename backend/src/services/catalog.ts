@@ -1,6 +1,11 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import type { CatalogQuery } from "../schemas/catalog";
+import {
+  resolvePublicWebsiteContent,
+  type PublicWebsiteContent,
+  type PublicWebsiteContentTarget,
+} from "./publicWebsiteContent";
 
 const publicProductSelect = {
   id: true, slug: true, code: true, brand: true, name: true, category: true, description: true,
@@ -22,6 +27,8 @@ export type CatalogVariant = { id:string; slug:string; code:string; name:string;
 export type CatalogFamily = { type:"FAMILY"; id:string; slug:string; name:string; brand:string; category:string; shortDescription:string; imageUrl:string|null; badge:string|null; featured:boolean; variantType:string; variantCount:number; priceFrom:number; available:boolean; availableStock:number; displayMode:"FAMILY"|"PRODUCT_LIKE"; variants:CatalogVariant[] };
 export type CatalogProduct = { type:"PRODUCT"; id:string; slug:string; code:string; brand:string; name:string; category:string; description:string; imageUrl:string|null; images:Array<{id:string;url:string;alt:string|null;position:number}>; price:number; oldPrice:number|null; badge:string|null; featured:boolean; available:boolean; availableStock:number };
 export type CatalogItem = CatalogFamily | CatalogProduct;
+export type CatalogDetail = { item:CatalogItem; selectedVariantId:string|null; canonicalSlug:string; websiteContent:PublicWebsiteContent|null };
+export type PublicWebsiteContentResolver = (target:PublicWebsiteContentTarget)=>Promise<PublicWebsiteContent|null>;
 
 export interface CatalogRepository {
   listFamilies(): Promise<CatalogFamilyRow[]>;
@@ -70,7 +77,10 @@ function toPublicItem(item:InternalCatalogItem):CatalogItem {
   return publicItem;
 }
 
-export function createCatalogService(repository:CatalogRepository=catalogRepository){return {
+export function createCatalogService(
+  repository:CatalogRepository=catalogRepository,
+  resolveWebsiteContent:PublicWebsiteContentResolver=(target)=>resolvePublicWebsiteContent(target,prisma),
+){return {
   async list(query:CatalogQuery){
     const [familyRows,productRows]=await Promise.all([repository.listFamilies(),repository.listIndependentProducts()]);
     const families=familyRows.map((row)=>{const item=mapFamily(row);return item?Object.assign(item,{_createdAt:row.createdAt,_searchTerms:row.products.flatMap((product)=>[product.name,product.code,product.slug])}):null}).filter(Boolean) as InternalCatalogItem[];
@@ -81,9 +91,9 @@ export function createCatalogService(repository:CatalogRepository=catalogReposit
     return {items,pagination:{page:query.page,pageSize:query.pageSize,total,pages:Math.ceil(total/query.pageSize)},filters:{categories,brands}};
   },
   async detail(slug:string){
-    const family=await repository.findFamily(slug); const mappedFamily=family?mapFamily(family):null; if(mappedFamily)return {item:mappedFamily,selectedVariantId:null,canonicalSlug:mappedFamily.slug};
+    const family=await repository.findFamily(slug); const mappedFamily=family?mapFamily(family):null; if(mappedFamily)return {item:mappedFamily,selectedVariantId:null,canonicalSlug:mappedFamily.slug,websiteContent:await resolveWebsiteContent({type:"family",id:mappedFamily.id})} satisfies CatalogDetail;
     const product=await repository.findProduct(slug); if(!product)return null;
-    if(product.family){const mapped=mapFamily(product.family);if(!mapped)return null;return {item:mapped,selectedVariantId:product.id,canonicalSlug:mapped.slug};}
-    const mapped=mapProduct(product);return {item:mapped,selectedVariantId:null,canonicalSlug:mapped.slug};
+    if(product.family){const mapped=mapFamily(product.family);if(!mapped)return null;return {item:mapped,selectedVariantId:product.id,canonicalSlug:mapped.slug,websiteContent:await resolveWebsiteContent({type:"family",id:mapped.id})} satisfies CatalogDetail;}
+    const mapped=mapProduct(product);return {item:mapped,selectedVariantId:null,canonicalSlug:mapped.slug,websiteContent:await resolveWebsiteContent({type:"product",id:mapped.id})} satisfies CatalogDetail;
   }
 };}

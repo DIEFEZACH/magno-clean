@@ -27,6 +27,6 @@ async function fetchCatalogDetail(slug:string):Promise<CatalogDetailResponse>{
 }
 
 export function useCatalogDetail(slug:string|undefined){
-  const query=useQuery({queryKey:["catalog-detail",slug],queryFn:()=>fetchCatalogDetail(slug!),enabled:Boolean(slug),retry:(count,error)=>error instanceof CatalogRequestError&&error.status===404?false:count<2});
+  const query=useQuery({queryKey:["catalog-detail",slug],queryFn:()=>fetchCatalogDetail(slug!),enabled:Boolean(slug),staleTime:60_000,retry:(count,error)=>error instanceof CatalogRequestError&&error.status===404?false:count<2});
   return {detail:query.data??null,loading:query.isPending,error:query.error instanceof Error?query.error.message:null,notFound:query.error instanceof CatalogRequestError&&query.error.status===404,refetch:query.refetch};
 }

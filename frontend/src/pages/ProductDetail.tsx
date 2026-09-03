@@ -9,6 +9,7 @@ import { Seo, siteUrl } from "../components/Seo";
 import { useCatalog, useCatalogDetail } from "../hooks/useCatalog";
 import { useCheckoutAvailability } from "../hooks/useCheckoutAvailability";
 import { buildGallery, selectInitialVariant } from "../lib/productDetail";
+import { firstEditorialHero } from "../lib/editorialMedia";
 import { useCartStore } from "../store/cartStore";
 import type { CatalogVariant } from "../types/catalog";
 import { NotFound } from "./NotFound";
@@ -41,17 +42,20 @@ export function ProductDetail(){
   const soldOut=availableStock<=0;
   const badge=selectedVariant?.badge??item.badge;
   const gallery=buildGallery(item,selectedVariant??undefined);
+  const editorialMedia=detail.websiteContent?.media??[];
+  const editorialHero=firstEditorialHero(editorialMedia);
   const canonicalPath=`/producto/${encodeURIComponent(detail.canonicalSlug)}`;
   const cartProduct=family?{id:selectedVariant!.id,slug:selectedVariant!.slug,name:selectedVariant!.name,category:family.category,price:selectedVariant!.price,oldPrice:selectedVariant!.oldPrice,badge:selectedVariant!.badge,description:selectedVariant!.description,imageUrl:selectedVariant!.imageUrl??family.imageUrl,availableStock:selectedVariant!.availableStock}:product!;
   const related=relatedQuery.items.filter((candidate)=>candidate.id!==item.id).slice(0,3);
   function selectVariant(variant:CatalogVariant){const next=new URLSearchParams(searchParams);next.set("variant",variant.code);setSearchParams(next,{replace:true});}
 
   const productJsonLd=item.type==="FAMILY"?{
-    "@context":"https://schema.org","@type":"ProductGroup","name":family!.name,"description":family!.shortDescription,"url":`${siteUrl}${canonicalPath}`,"productGroupID":family!.id,"variesBy":family!.variantType,"brand":{"@type":"Brand","name":family!.brand},"hasVariant":family!.variants.map((variant)=>({"@type":"Product","name":variant.name,"sku":variant.code,"image":[variant.imageUrl,...variant.images.map((image)=>image.url)].filter(Boolean),...(checkoutEnabled?{"offers":{"@type":"Offer","url":`${siteUrl}${canonicalPath}?variant=${encodeURIComponent(variant.code)}`,"priceCurrency":"MXN","price":variant.price,"availability":variant.available?"https://schema.org/InStock":"https://schema.org/OutOfStock","itemCondition":"https://schema.org/NewCondition"}}:{})}))
+    "@context":"https://schema.org","@type":"ProductGroup","name":family!.name,"description":family!.shortDescription,"url":`${siteUrl}${canonicalPath}`,"productGroupID":family!.id,"variesBy":family!.variantType,"brand":{"@type":"Brand","name":family!.brand},...(editorialHero?{"image":[editorialHero.url]}:{}),"hasVariant":family!.variants.map((variant)=>({"@type":"Product","name":variant.name,"sku":variant.code,"image":[variant.imageUrl,...variant.images.map((image)=>image.url)].filter(Boolean),...(checkoutEnabled?{"offers":{"@type":"Offer","url":`${siteUrl}${canonicalPath}?variant=${encodeURIComponent(variant.code)}`,"priceCurrency":"MXN","price":variant.price,"availability":variant.available?"https://schema.org/InStock":"https://schema.org/OutOfStock","itemCondition":"https://schema.org/NewCondition"}}:{})}))
   }:{"@context":"https://schema.org","@type":"Product","name":product!.name,"description":product!.description,"image":gallery.map((image)=>image.url),"sku":product!.code,"brand":{"@type":"Brand","name":product!.brand},...(checkoutEnabled?{"offers":{"@type":"Offer","url":`${siteUrl}${canonicalPath}`,"priceCurrency":"MXN","price":product!.price,"availability":product!.available?"https://schema.org/InStock":"https://schema.org/OutOfStock","itemCondition":"https://schema.org/NewCondition"}}:{})};
   const breadcrumbJsonLd={"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Inicio","item":siteUrl},{"@type":"ListItem","position":2,"name":"Productos","item":`${siteUrl}/productos`},{"@type":"ListItem","position":3,"name":name,"item":`${siteUrl}${canonicalPath}`}]};
 
-  return <><Seo title={name} description={description.slice(0,160)} path={canonicalPath} image={gallery[0]?.url} type="product" jsonLd={[productJsonLd,breadcrumbJsonLd]}/><section className="bg-white px-4 py-8 sm:px-5 sm:py-12 lg:px-8 lg:py-16"><div className="mx-auto max-w-7xl">
+  const seoImage=family?(editorialHero?.url??gallery[0]?.url):gallery[0]?.url;
+  return <><Seo title={name} description={description.slice(0,160)} path={canonicalPath} image={seoImage} type="product" jsonLd={[productJsonLd,breadcrumbJsonLd]}/><section className="bg-white px-4 py-8 sm:px-5 sm:py-12 lg:px-8 lg:py-16"><div className="mx-auto max-w-7xl">
     <nav aria-label="Migas de pan" className="mb-7 flex min-w-0 items-center gap-2 overflow-hidden text-xs font-bold text-black/45 sm:mb-10 sm:text-sm"><Link to="/" className="shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#19A2B6]">Inicio</Link><span aria-hidden="true">/</span><Link to="/productos" className="shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#19A2B6]">Productos</Link><span aria-hidden="true">/</span><span aria-current="page" className="truncate text-[#19A2B6]">{name}</span></nav>
     <div className="grid min-w-0 gap-8 md:grid-cols-2 md:items-start lg:gap-14">
       <ProductGallery key={selectedVariant?.id??product?.id} images={gallery} name={selectedVariant?.name??name}/>
@@ -65,7 +69,7 @@ export function ProductDetail(){
         <div className="mt-8">{checkoutEnabled?<button type="button" onClick={()=>addItem(cartProduct)} disabled={soldOut} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#111] px-8 py-4 text-sm font-black text-white transition hover:bg-[#19A2B6] disabled:cursor-not-allowed disabled:bg-black/20 sm:w-auto"><ShoppingCart size={18}/>{soldOut?"Agotado":"Agregar al carrito"}</button>:<CheckoutUnavailable compact loading={checkoutLoading}/>}</div>
       </div>
     </div>
-    <ProductContentSections content={{description}}/>
+    <ProductContentSections content={{description}} media={editorialMedia} resetKey={detail.canonicalSlug}/>
     {!relatedQuery.loading&&!relatedQuery.error&&related.length>0&&<section className="mt-16 border-t border-black/10 pt-12 sm:mt-20 sm:pt-14"><h2 className="text-3xl font-black tracking-[-0.04em] sm:text-4xl">Productos relacionados</h2><div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">{related.map((candidate)=><ProductCard key={`${candidate.type}-${candidate.id}`} product={candidate}/>)}</div></section>}
   </div></section></>;
 }
