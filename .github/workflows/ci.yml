@@ -40,6 +40,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
       - run: npx prisma generate
+      - run: npx prisma validate
       - run: npm run build
       - run: npm test
 
@@ -58,8 +59,6 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run lint
-      - run: npm run build
-        env:
-          VITE_API_URL: https://api.staging.invalid
-          VITE_SITE_URL: https://staging.invalid
-          SITEMAP_ALLOW_STALE: "true"
+      # Exercise prebuild against a deterministic paginated public-catalog fixture.
+      # Never reuse a committed sitemap from a different deployment origin.
+      - run: npm run build:ci

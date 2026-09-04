@@ -1,24 +1,42 @@
-import { access, mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import {
+  CatalogUnavailableError,
+  createSitemap,
+  fetchCatalog,
+  readSitemapConfig,
+  validateStaleSitemap,
+} from "./sitemap.mjs";
 
-const apiUrl=(process.env.VITE_API_URL||"http://localhost:4000").replace(/\/$/,"");
-const siteUrl=(process.env.VITE_SITE_URL||"http://localhost:5173").replace(/\/$/,"");
-const allowStale=process.env.SITEMAP_ALLOW_STALE==="true";
-const escapeXml=(value)=>String(value).replace(/[<>&'\"]/g,char=>({"<":"&lt;",">":"&gt;","&":"&amp;","'":"&apos;",'"':"&quot;"})[char]);
-let data;
-try {
-  const response=await fetch(`${apiUrl}/api/products`,{signal:AbortSignal.timeout(15000)});
-  if(!response.ok)throw new Error(`API respondió ${response.status}`);
-  data=await response.json();
-} catch(error) {
-  if(!allowStale)throw new Error(`No se pudo generar sitemap desde ${apiUrl}: ${error instanceof Error?error.message:String(error)}`);
-  await Promise.all([access(new URL("../public/sitemap.xml",import.meta.url)),access(new URL("../public/robots.txt",import.meta.url))]);
-  console.warn("API no disponible; se conservó el sitemap versionado porque SITEMAP_ALLOW_STALE=true.");
-  process.exit(0);
+export async function generateSitemap({ env = process.env, publicDirectory = new URL("../public/", import.meta.url), fetchImplementation = fetch, logger = console } = {}) {
+  const sitemapFile = new URL("sitemap.xml", publicDirectory);
+  const robotsFile = new URL("robots.txt", publicDirectory);
+  const config = readSitemapConfig(env);
+  let catalog;
+  try {
+    catalog = await fetchCatalog(config.apiUrl, fetchImplementation);
+  } catch (error) {
+    // Invalid catalog data must fail the build, even when stale is permitted.
+    if (!(error instanceof CatalogUnavailableError) || !config.allowStale) throw error;
+    const [xml, robots] = await Promise.all([
+      readFile(sitemapFile, "utf8"),
+      readFile(robotsFile, "utf8"),
+    ]);
+    await validateStaleSitemap(xml, robots, config.siteUrl);
+    logger.warn("API no disponible; se conservó el sitemap validado porque SITEMAP_ALLOW_STALE=true.");
+    return;
+  }
+
+  const { xml, robots, counts } = createSitemap(catalog, config.siteUrl);
+  await mkdir(publicDirectory, { recursive: true });
+  await Promise.all([writeFile(sitemapFile, xml), writeFile(robotsFile, robots)]);
+  logger.log(`Sitemap generado: ${counts.families} familias, ${counts.products} productos individuales, ${counts.categories} categorías, ${counts.urls} URLs.`);
 }
-const products=Array.isArray(data.products)?data.products.filter(product=>product.active):[];
-const categories=[...new Set(products.map(product=>product.category).filter(Boolean))];
-const staticPaths=["/","/productos","/categorias","/nosotros","/contacto","/soporte"];
-const urls=[...staticPaths.map(path=>({loc:`${siteUrl}${path}`,changefreq:path==="/"?"daily":"weekly",priority:path==="/"?"1.0":"0.8"})),...categories.map(category=>({loc:`${siteUrl}/productos?category=${encodeURIComponent(category)}`,changefreq:"weekly",priority:"0.7"})),...products.map(product=>({loc:`${siteUrl}/producto/${encodeURIComponent(product.slug)}`,lastmod:product.updatedAt?new Date(product.updatedAt).toISOString():undefined,changefreq:"weekly",priority:"0.8"}))];
-const xml=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(url=>`  <url>\n    <loc>${escapeXml(url.loc)}</loc>${url.lastmod?`\n    <lastmod>${escapeXml(url.lastmod)}</lastmod>`:""}\n    <changefreq>${url.changefreq}</changefreq>\n    <priority>${url.priority}</priority>\n  </url>`).join("\n")}\n</urlset>\n`;
-const robots=`User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /admin/\nDisallow: /checkout\nDisallow: /checkout/\nDisallow: /carrito\n\nSitemap: ${siteUrl}/sitemap.xml\n`;
-await mkdir(new URL("../public/",import.meta.url),{recursive:true});await Promise.all([writeFile(new URL("../public/sitemap.xml",import.meta.url),xml),writeFile(new URL("../public/robots.txt",import.meta.url),robots)]);console.log(`Sitemap generado: ${products.length} productos, ${categories.length} categorías, ${urls.length} URLs.`);
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  generateSitemap().catch((error) => {
+    console.error(error instanceof Error ? error.message : "No se pudo generar el sitemap.");
+    process.exitCode = 1;
+  });
+}
