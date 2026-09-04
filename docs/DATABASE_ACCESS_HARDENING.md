@@ -1,63 +1,79 @@
 # Application database access hardening — proposed security correction
 
-This is a separate security PR, based on frozen release `050f890f2704b0b6d6a57c7e76e5520525b8c835`. It does not authorize deployment or database changes. That release remains **NO_GO** until a reviewed correction is incorporated into a newly authorized, newly certified release SHA.
+This separate PR is based on frozen release `050f890f2704b0b6d6a57c7e76e5520525b8c835`. It has not been applied to a persistent database and does not authorize deployment. The release remains **NO_GO** until an authorized successor incorporates the correction, resolves the remaining blockers and is certified again.
 
-## Finding and scope
+## Confirmed finding and architecture
 
-Read-only metadata confirmed disabled RLS and effective `anon` SELECT/INSERT/UPDATE/DELETE grants on User, RefreshToken, Order, Payment, InventoryMovement and Product in both production and staging. This is pre-existing in production; the visible release has not been deployed there. Staging additionally confirmed ProductFamily and all six WebsiteContent tables with the same issue. No sensitive rows were read and no HTTP exploitation or writes were attempted. The actual exposed PostgREST schemas still need independent confirmation; the database privileges themselves are confirmed.
+Read-only metadata confirmed RLS disabled and effective `anon`, `authenticated` and `service_role` access to application objects in `public`. This includes legacy sensitive/commercial tables in production and the complete 20-table release schema in staging. Both Data APIs initially exposed `public` and `graphql_public`, with automatic exposure of new tables. A controlled staging-only containment test then disabled its Data API: authenticated zero-row REST and GraphQL probes changed to unavailable while Express/Prisma, frontend, sitemap and Storage checks stayed healthy. Production's Data API was only inspected and remains enabled. No sensitive row values or credentials were inspected.
 
-Express authentication and its PUBLISHED-only serializer do not protect a direct database API path if the schema is exposed. Supabase recommends enabling RLS and removing unnecessary client grants together. This application serves public and admin data through Express/Prisma, not through direct client-role access to its tables. [Supabase RLS guidance](https://supabase.com/docs/guides/database/postgres/row-level-security).
+Application traffic uses Express/Prisma with the `postgres` database role. Repository, CI and runtime inspection found no Supabase REST/GraphQL application access. `service_role` is used only against `/storage/v1`; its grants/defaults and managed objects in `storage` are preserved. Therefore none of the three Data API roles needs privileges on application objects in `public`.
 
-Migration `20260904090000_application_data_access_hardening` protects exactly these 19 Prisma models, plus Prisma migration metadata:
+## Exact reviewed scope
 
-- User, RefreshToken.
-- Order, OrderItem, Payment, OrderNote, OrderStatusHistory.
-- Product, ProductFamily, ProductImage.
-- WebsiteContent, WebsiteContentRevision, WebsiteContentMedia, WebsiteContentEntry, WebsiteContentFaq, WebsiteContentSource.
-- CompanySettings, InventoryReservation, InventoryMovement.
-- `_prisma_migrations`.
+Migration `20260904090000_application_data_access_hardening` expects the reviewed inventory exactly:
 
-It enables RLS and revokes ALL table privileges from PUBLIC and from existing `anon` / `authenticated` roles. It does not add client policies, use FORCE RLS, revoke owner/service_role grants, change role memberships, change global default privileges, touch auth/storage schemas, or modify rows, prices, stock, payments, editorial publication, storage objects, credentials or checkout settings. Existing migrations 1–9 and Prisma models are unchanged.
+- 19 Prisma model tables plus `_prisma_migrations`, all owned by `postgres`.
+- Three `postgres`-owned, zero-argument, invoker-rights trigger functions: `prevent_published_website_content_revision_mutation`, `prevent_published_website_content_child_mutation`, and `prevent_published_website_content_media_mutation`.
+- No views, materialized views, sequences, foreign/partitioned tables, routines with other signatures, extension-owned objects or row policies in `public`.
 
-## Failure and compatibility behavior
+Unexpected object kinds/names, missing client roles, owners, routine attributes, extension membership, policies, FORCE RLS, client-role memberships/elevation, creator identity or default-ACL grantees abort the entire statement. This prevents silently expanding into Supabase-managed or newly introduced objects. Existing migrations 1–9 and the Prisma schema are unchanged.
 
-- One DO statement makes the security change atomic: a missing expected table, any existing row-security policy, or remaining effective client privilege raises an exception, aborting the whole statement. Unexpected policies are preserved, neither activated nor deleted; review them before proposing a revised authorized plan.
-- Supabase roles absent from vanilla PostgreSQL are skipped; they are not created. PUBLIC grants are still removed.
-- The checks include inherited table privileges, including PostgreSQL 17 MAINTAIN, and column privileges. A custom inherited grant, ownership, elevated client role, or another grantor can make the migration fail closed. Investigate that role path; do not broaden the revocation or use CASCADE automatically. PostgreSQL table revocation also removes corresponding column grants. [PostgreSQL 17 REVOKE](https://www.postgresql.org/docs/17/sql-revoke.html).
-- Without FORCE RLS, table owners keep their normal access. BYPASSRLS roles such as service_role still require and retain their existing table grants. The actual backend database role must be an authorized owner/BYPASSRLS role with the needed grants; a custom non-owner role relying on PUBLIC would be denied and needs an explicit reviewed access design before application. No role values or connection strings should be printed. [PostgreSQL 17 row security](https://www.postgresql.org/docs/17/ddl-rowsecurity.html).
-- RLS provides a second row-level barrier if SELECT/INSERT/UPDATE/DELETE grants are accidentally restored. It is not a replacement for privilege revocation: table-wide operations such as TRUNCATE are not filtered by RLS.
-- ALTER TABLE obtains locks on the application tables. Plan a controlled maintenance window and inspect lock wait; do not kill unrelated sessions. No lock-time guarantee is asserted from the in-memory tests.
-- No automatic build/start migration hook is added. Public catalog, login and admin runtime code are unchanged. Storage access uses the existing backend path; auth and storage schema policies are deliberately out of scope.
+For all 20 tables, the migration enables RLS without FORCE and revokes table and explicit column privileges from PUBLIC, `anon`, `authenticated` and `service_role`. It verifies that no effective table/column privileges remain, including inherited `MAINTAIN`. For the three functions it revokes and verifies `EXECUTE` for the same principals. No policies are added: client access remains default-deny even if a row-level grant is later restored. Table-wide operations such as TRUNCATE still depend on the ACL revocation.
 
-## Required gates before any future application
+`postgres` remains owner and BYPASSRLS, retaining Prisma and migration access without a new grant. No users, memberships, credentials, rows, Storage objects, application settings or runtime code change.
 
-1. Review this PR, the frozen-release NO_GO report, the actual exposed Data API schemas and effective backend/client role paths.
-2. Obtain explicit authority for the new remediation/release plan, including a containment plan for direct Data API exposure during migration. Do not apply the originally blocked migrations 7–9 and leave an unprotected intermediate state. In production, tables 7–9 are currently absent; migration 10 intentionally requires them. A reviewer must choose a safe authorized deployment/containment sequence, not infer one from this document.
-3. Verify a current backup, frozen production deployment, target identity, owner/BYPASSRLS compatibility, all expected tables, absence of unexpected client-role memberships and unchanged checkout-disabled state. Never print credentials or read user/token rows for this purpose.
-4. Run the separate security correction through CI and controlled staging validation after authorization. This task applied it only to disposable in-memory PostgreSQL fixtures, never to local persistent, staging or production databases.
-5. After authorized application, verify all 20 table RLS flags, effective denial of table/column privileges for client roles and unchanged owner/service_role capability. Validate the public Express API contract and authenticated backend sessions; do not perform a real checkout or payment.
-6. Keep the release NO_GO until the security evidence and remaining certification blockers are resolved under a new approved SHA. Merely opening this PR is not mitigation of the current production permissions.
+## Future-object defaults and unavoidable global effect
 
-Read-only inspection should use table/role metadata only (`pg_class`, `pg_namespace`, `pg_roles`, `pg_policy`, `has_table_privilege`, `has_any_column_privilege`). Verify RLS=true, FORCE=false, no pre-existing policies, and all client access flags=false (including MAINTAIN) for every allowlisted table. Inspect exposed RPC/views separately if present; this table-only correction does not claim a full PostgREST surface audit.
+The real creator in both environments is `postgres`. Its current `public` default ACL grants tables, sequences and functions to all three Data API roles. The migration removes those schema-specific defaults and PUBLIC defaults for future `postgres`-created `public` tables/sequences/functions.
+
+PostgreSQL schema-specific defaults are additive: they cannot cancel the built-in global PUBLIC `EXECUTE` on newly created functions. The migration therefore performs one reviewed global default change:
+
+```sql
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
+```
+
+This does not change existing functions anywhere. It does affect every function created by `postgres` in the future, regardless of schema. The reviewed environments have 49 existing `postgres`-owned extension routines outside `public` (pgcrypto, pg_stat_statements and uuid-ossp); those objects and their ACLs remain untouched. `storage` has explicit schema defaults for `anon`, `authenticated` and `service_role`, so future Storage functions retain those grants despite the global revocation.
+
+Extension upgrades or other future tooling that creates a `postgres` function outside `public` must verify and, if genuinely required, apply an explicit narrow schema/object grant. Do not add blanket PUBLIC grants or compensating changes to `auth`, `storage`, `extensions`, `graphql_public` or other managed schemas. This upgrade gate is an intentional compatibility cost of denying implicit executable RPCs.
+
+Defaults owned by `supabase_admin`, `supabase_auth_admin` and every creator other than `postgres` are outside this correction and unchanged. Consequently, future application DDL must continue to use the reviewed `postgres` creator; creating an application object as another role requires a separate access review.
+
+## Atomicity and compatibility
+
+The migration is one `DO` statement. Any guard, revoke, effective-access verification or default-ACL postcondition failure rolls back RLS, table/column/function ACLs and default ACLs together. It neither swallows failures nor makes a partial inventory “best effort.”
+
+- No FORCE RLS or client policies.
+- No grants, ownership transfers, role creation/membership changes or CASCADE.
+- No changes to Supabase managed schemas, existing extension functions, Storage defaults/policies, global defaults of other creators or application data.
+- No build/start migration hook. Applying it still requires a controlled window because table ACL/RLS changes take locks.
+
+The real trigger functions are preserved and their PUBLISHED immutability behavior is exercised locally. Revoking direct EXECUTE does not prevent triggers from invoking them.
+
+## Required gates before application
+
+1. Keep the candidate NO_GO and review the exact SQL/diff plus the before-metadata reports.
+2. Use a successor SHA and authorized migration manifest that contains migrations 7–10 in the approved order; never leave tables 7–9 exposed in an intermediate release state.
+3. Confirm the target identity, `postgres` creator/owner, exact object inventory/default ACLs and absence of drift with read-only metadata immediately before application.
+4. Confirm the backend still connects as `postgres`, `service_role` remains Storage-only, CHECKOUT remains disabled, the current backup is accepted and the global function-default compatibility cost is approved.
+5. Run CI and isolated PostgreSQL tests. Apply only through an explicitly authorized staging step; this PR itself has made no persistent local, staging or production DB change.
+6. After application, verify all 20 RLS flags, absence of table/column/function/sequence/view access for all three Data API roles, creator defaults, unchanged managed-schema ACL/default snapshots, real Prisma/API/admin behavior and Storage access. Do not test a real checkout or payment.
+7. Production requires a separate authorization after staging evidence. Opening or merging this PR is not mitigation of current live permissions.
 
 ## Local verification
 
-The existing locked dependency tree contains `@electric-sql/pglite` 0.4.3 transitively through Prisma tooling. No dependency or lockfile changes were made. The new test imports it only in the test file and uses `new PGlite()` without a dataDir: isolated in-memory PostgreSQL 17.5, synthetic tables/roles/rows, no network, credentials or persisted database. Production/staging PostgreSQL 17.6 behavior still needs the authorized environment validation described above.
+The locked dependency tree already contains `@electric-sql/pglite` 0.4.3. Tests use only `new PGlite()` without a data directory: PostgreSQL-compatible, in-memory fixtures with synthetic roles/objects/rows, no network, credentials or persistent database.
 
-Executed locally:
+Coverage includes:
 
-```sh
-cd backend
-npm run build
-node --test dist/services/databaseAccessHardening.test.js
-```
+- Exact 20-table/three-function inventories and immutable checksums for migrations 7–9.
+- Table plus explicit-column revocation and real SELECT/INSERT/UPDATE/DELETE/TRUNCATE denial for `anon`, `authenticated` and `service_role` across all 20 tables.
+- Function EXECUTE denial, retained `postgres` CRUD and real PUBLISHED trigger behavior.
+- New table/view/materialized-view/sequence/invoker-function/SECURITY-DEFINER-function defaults.
+- Existing managed objects, Storage access/defaults and other creators remaining byte-for-byte equal in catalog snapshots; the separately documented global effect on future `postgres` functions is tested.
+- Atomic failure for missing/drifted objects, owner/type/signature/security drift, extension membership, policy/FORCE RLS, inherited table/column/MAINTAIN access, elevated/member client roles, unknown default grantees and a late default-ACL failure.
 
-Ten tests cover exact schema/allowlist coverage, RLS/grant SQL, scope restrictions, unchanged checksums for 7–9, real SQL execution, anon/authenticated SELECT/INSERT/UPDATE/DELETE/TRUNCATE denial across all 20 tables, owner and service_role CRUD preservation, default-deny row policies after restored grants, absent Supabase roles, and atomic failure for missing tables, inherited SELECT/MAINTAIN grants, or unexpected policies. The policy fixture verifies that prior ACL/RLS changes roll back and the original disabled policy remains untouched. Tests intentionally fail if the locked PGlite helper disappears; they do not silently skip security coverage.
+These fixtures prove SQL authorization/transaction behavior, not operational locks, PostgREST routing, production data or a real Supabase upgrade. Those require the gated environment checks above.
 
-Latest validation on 2026-09-04 after policy/MAINTAIN guards: TypeScript build passed; targeted suite passed 10/10 (0 skipped); full backend suite passed 228/228 (0 failed, 0 skipped; 3.88 seconds) with the complete synthetic environment from the existing CI workflow. An earlier local full-suite invocation omitted five required CI configuration fields and failed during configuration loading; supplying those synthetic fields fixed the invocation without any code/configuration-file change. No private environment file was loaded.
+## Rollback
 
-The embedded table fixtures test PostgreSQL authorization semantics, not production rows, real Supabase Data API routing, full FK/trigger behavior or operational lock contention. Those checks are not represented as completed here.
-
-## Operational rollback
-
-Do not disable RLS, restore public grants or run rollback.sql in response to an application rollback. Revert frontend/backend deployments only as appropriate and preserve hardening. If a custom backend role fails after application, stop and inspect the reviewed role design; any narrowly scoped grant change needs explicit review. There is no destructive rollback script in this PR and no database restore is required by this change.
+Do not disable RLS, restore client/PUBLIC grants or use destructive `rollback.sql` to revert application code. Preserve the hardening while reverting application deployments if necessary. A failed application should leave no partial changes because the statement is atomic; inspect metadata before any retry. Any exceptional application grant or extension-upgrade compatibility action requires its own narrow review and authorization.
