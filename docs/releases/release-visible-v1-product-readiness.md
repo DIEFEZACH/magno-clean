@@ -96,6 +96,7 @@ El JSON enumera cada path candidato y su alcance FAMILY/PRODUCT/VARIANT. Un VARI
 
 ## Bloqueos y advertencias que no se resuelven
 
+- SCN20 conserva la única referencia pública productiva autorizada previamente. Es una dependencia visual temporal de staging; no se copió ni modificó el objeto. El path exacto contiene un ID productivo y queda omitido de este reporte versionado. Sustituirlo por un asset propio de staging requiere autorización independiente.
 - CITRICAL: 250 GR sin SKU autorizado; Menta/Kiwi/Naranja no modelados; piezas PLCT2/PLCT3 con 1 KG; “Olor: Menta ligera” pendiente y discrepancia de olor PLCT1. Las advertencias se refieren a evidencia documental/medios candidatos, no prueban equivalencia con Cloudinary actual.
 - BIO WASH: imágenes comerciales compartidas entre aromas no resuelven la identidad de un futuro medio/ficha.
 - MULTIFIBRAS LYTPUS frente a LYPTUS y MULTIFIBRAS MENTA: no crear alias ni nuevas asociaciones por nombre aproximado.

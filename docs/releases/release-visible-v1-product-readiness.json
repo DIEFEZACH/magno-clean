@@ -4816,7 +4816,9 @@
           "slug": "neutro-car-20-lts",
           "image": {
             "host": "fxbgxjpgfkeuapbmgpmv.supabase.co",
-            "path": "/storage/v1/object/public/product-images/products/cmt9dps61002m6vvglh07mcqy/c7e19039-6edf-4469-89a9-dad1587fc2fd.png",
+            "path": null,
+            "referenceType": "PUBLIC_PRODUCTION_ASSET_REFERENCE",
+            "note": "SCN20-only pre-existing authorized read-only public reference. Exact path containing a production Product ID omitted from versioned audit; no object copied or modified. Temporary staging visual dependency, replace only with separate authorization.",
             "present": true,
             "contentVisuallyVerifiedForEveryVariant": false
           },
