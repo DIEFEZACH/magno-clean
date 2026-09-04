@@ -1,8 +1,9 @@
+import { createCatalogRequestBudget, requestCatalogPage } from "./catalogRequest.mjs";
+
+export { CatalogUnavailableError } from "./catalogRequest.mjs";
 export const PAGE_SIZE = 48;
 export const STATIC_PATHS = ["/", "/productos", "/categorias", "/nosotros", "/contacto", "/soporte"];
 const SITEMAP_NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9";
-
-export class CatalogUnavailableError extends Error {}
 
 function invariant(condition, message) {
   if (!condition) throw new Error(message);
@@ -63,8 +64,9 @@ function parsePage(data, page) {
   return { items, pagination, categories };
 }
 
-export async function fetchCatalog(apiUrl, fetchImplementation = fetch) {
+export async function fetchCatalog(apiUrl, fetchImplementation = fetch, requestOptions = {}) {
   const origin = normalizeOrigin(apiUrl, "VITE_API_URL");
+  const budget = createCatalogRequestBudget(requestOptions);
   const items = [];
   let firstPage;
   let page = 1;
@@ -73,18 +75,7 @@ export async function fetchCatalog(apiUrl, fetchImplementation = fetch) {
     const url = new URL("/api/catalog", origin);
     url.searchParams.set("page", String(page));
     url.searchParams.set("pageSize", String(PAGE_SIZE));
-    let response;
-    try {
-      response = await fetchImplementation(url.href, { signal: AbortSignal.timeout(15000) });
-    } catch {
-      throw new CatalogUnavailableError("No se pudo consultar la API pública del catálogo.");
-    }
-    if (!response.ok) {
-      if (response.status >= 500 || response.status === 429) throw new CatalogUnavailableError(`Catálogo no disponible (HTTP ${response.status}).`);
-      throw new Error(`La API del catálogo rechazó la consulta (HTTP ${response.status}).`);
-    }
-    let data;
-    try { data = await response.json(); } catch { throw new Error("Respuesta JSON del catálogo inválida."); }
+    const data = await requestCatalogPage(url.href, page, fetchImplementation, budget);
     const result = parsePage(data, page);
     if (!firstPage) firstPage = result;
     invariant(result.pagination.total === firstPage.pagination.total
