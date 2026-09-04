@@ -7,6 +7,7 @@ import test from "node:test";
 import { JSDOM } from "jsdom";
 import { CatalogUnavailableError, createSitemap, escapeXml, fetchCatalog, PAGE_SIZE, readSitemapConfig, STATIC_PATHS, validateStaleSitemap } from "./sitemap.mjs";
 import { generateSitemap } from "./generateSitemap.mjs";
+import { fakeCatalogRuntime } from "./testSupport/fakeCatalogRuntime.mjs";
 
 const SITE = "https://shop.example.invalid";
 const API = "https://api.example.invalid";
@@ -133,8 +134,9 @@ for (const [label, items] of [
 }
 
 test("unavailable API is distinguished from invalid data and client errors", async () => {
-  await assert.rejects(fetchCatalog(API, async () => { throw new Error("hidden upstream failure"); }), CatalogUnavailableError);
-  await assert.rejects(fetchCatalog(API, async () => ({ ok: false, status: 503 })), CatalogUnavailableError);
+  const requestOptions = () => ({ runtime: fakeCatalogRuntime().runtime, logger: { warn() {} } });
+  await assert.rejects(fetchCatalog(API, async () => { throw new Error("hidden upstream failure"); }, requestOptions()), CatalogUnavailableError);
+  await assert.rejects(fetchCatalog(API, async () => ({ ok: false, status: 503 }), requestOptions()), CatalogUnavailableError);
   for (const implementation of [async () => ({ ok: false, status: 404 }), async () => ({ ok: true, json: async () => { throw new Error("secret payload"); } })]) {
     await assert.rejects(fetchCatalog(API, implementation), (error) => !(error instanceof CatalogUnavailableError) && !error.message.includes("secret payload"));
   }
@@ -194,6 +196,7 @@ for (const scenario of ["fresh catalog", "matching stale", "wrong-origin stale",
     const messages = [];
     const options = {
       publicDirectory,
+      requestRuntime: fakeCatalogRuntime().runtime,
       env: { VITE_SITE_URL: SITE, VITE_API_URL: API, SITEMAP_ALLOW_STALE: scenario === "production unavailable" ? "false" : "true" },
       logger: { log: (message) => messages.push(message), warn: (message) => messages.push(message) },
       fetchImplementation: async () => {
