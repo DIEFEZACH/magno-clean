@@ -1,0 +1,1152 @@
+{
+  "baseSha": "050f890f2704b0b6d6a57c7e76e5520525b8c835",
+  "branch": "codex/post-v1-visual-polish",
+  "scope": "ISOLATED_AUTH_AND_API_FIXTURES_ONLY",
+  "liveAdminCertified": false,
+  "productionModified": false,
+  "releaseShaModified": false,
+  "viewportWidths": [
+    320,
+    360,
+    375,
+    390,
+    430,
+    600,
+    768,
+    820,
+    1024,
+    1280,
+    1366,
+    1440,
+    1920
+  ],
+  "runtimeFiles": [
+    "frontend/src/components/admin/AdminUi.tsx",
+    "frontend/src/pages/AdminOrders.tsx",
+    "frontend/src/pages/AdminProducts.tsx"
+  ],
+  "before": [
+    {
+      "width": 320,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 43
+        },
+        {
+          "text": "Fecha desde",
+          "height": 42
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 42
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 42
+        },
+        {
+          "text": "Monto máximo",
+          "height": 42
+        },
+        {
+          "text": "Anterior",
+          "height": 40
+        },
+        {
+          "text": "Siguiente",
+          "height": 40
+        }
+      ],
+      "orderAction": null
+    },
+    {
+      "width": 360,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 43
+        },
+        {
+          "text": "Fecha desde",
+          "height": 42
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 42
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 42
+        },
+        {
+          "text": "Monto máximo",
+          "height": 42
+        },
+        {
+          "text": "Anterior",
+          "height": 40
+        },
+        {
+          "text": "Siguiente",
+          "height": 40
+        }
+      ],
+      "orderAction": null
+    },
+    {
+      "width": 375,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 43
+        },
+        {
+          "text": "Fecha desde",
+          "height": 42
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 42
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 42
+        },
+        {
+          "text": "Monto máximo",
+          "height": 42
+        },
+        {
+          "text": "Anterior",
+          "height": 40
+        },
+        {
+          "text": "Siguiente",
+          "height": 40
+        }
+      ],
+      "orderAction": null
+    },
+    {
+      "width": 390,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 43
+        },
+        {
+          "text": "Fecha desde",
+          "height": 42
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 42
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 42
+        },
+        {
+          "text": "Monto máximo",
+          "height": 42
+        },
+        {
+          "text": "Anterior",
+          "height": 40
+        },
+        {
+          "text": "Siguiente",
+          "height": 40
+        }
+      ],
+      "orderAction": null
+    },
+    {
+      "width": 430,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 43
+        },
+        {
+          "text": "Fecha desde",
+          "height": 42
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 42
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 42
+        },
+        {
+          "text": "Monto máximo",
+          "height": 42
+        },
+        {
+          "text": "Anterior",
+          "height": 40
+        },
+        {
+          "text": "Siguiente",
+          "height": 40
+        }
+      ],
+      "orderAction": null
+    },
+    {
+      "width": 600,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 43
+        },
+        {
+          "text": "Fecha desde",
+          "height": 42
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 42
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 42
+        },
+        {
+          "text": "Monto máximo",
+          "height": 42
+        },
+        {
+          "text": "Anterior",
+          "height": 40
+        },
+        {
+          "text": "Siguiente",
+          "height": 40
+        }
+      ],
+      "orderAction": null
+    },
+    {
+      "width": 768,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 43
+        },
+        {
+          "text": "Fecha desde",
+          "height": 42
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 42
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 42
+        },
+        {
+          "text": "Monto máximo",
+          "height": 42
+        },
+        {
+          "text": "Anterior",
+          "height": 40
+        },
+        {
+          "text": "Siguiente",
+          "height": 40
+        }
+      ],
+      "orderAction": {
+        "x": 1048.375,
+        "right": 1077.828125,
+        "width": 29.453125,
+        "height": 19,
+        "wrapperLeft": 20,
+        "wrapperRight": 748,
+        "scrollWidth": 1078,
+        "clientWidth": 728,
+        "scrollLeft": 0,
+        "visibleWithoutHorizontalScroll": false
+      }
+    },
+    {
+      "width": 820,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 43
+        },
+        {
+          "text": "Fecha desde",
+          "height": 42
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 42
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 42
+        },
+        {
+          "text": "Monto máximo",
+          "height": 42
+        },
+        {
+          "text": "Anterior",
+          "height": 40
+        },
+        {
+          "text": "Siguiente",
+          "height": 40
+        }
+      ],
+      "orderAction": {
+        "x": 1048.375,
+        "right": 1077.828125,
+        "width": 29.453125,
+        "height": 19,
+        "wrapperLeft": 20,
+        "wrapperRight": 800,
+        "scrollWidth": 1078,
+        "clientWidth": 780,
+        "scrollLeft": 0,
+        "visibleWithoutHorizontalScroll": false
+      }
+    },
+    {
+      "width": 1024,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 43
+        },
+        {
+          "text": "Fecha desde",
+          "height": 42
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 42
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 42
+        },
+        {
+          "text": "Monto máximo",
+          "height": 42
+        },
+        {
+          "text": "Anterior",
+          "height": 40
+        },
+        {
+          "text": "Siguiente",
+          "height": 40
+        }
+      ],
+      "orderAction": {
+        "x": 1310.375,
+        "right": 1339.828125,
+        "width": 29.453125,
+        "height": 19,
+        "wrapperLeft": 282,
+        "wrapperRight": 992,
+        "scrollWidth": 1078,
+        "clientWidth": 710,
+        "scrollLeft": 0,
+        "visibleWithoutHorizontalScroll": false
+      }
+    },
+    {
+      "width": 1280,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 43
+        },
+        {
+          "text": "Fecha desde",
+          "height": 42
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 42
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 42
+        },
+        {
+          "text": "Monto máximo",
+          "height": 42
+        },
+        {
+          "text": "Anterior",
+          "height": 40
+        },
+        {
+          "text": "Siguiente",
+          "height": 40
+        }
+      ],
+      "orderAction": {
+        "x": 1310.375,
+        "right": 1339.828125,
+        "width": 29.453125,
+        "height": 19,
+        "wrapperLeft": 282,
+        "wrapperRight": 1248,
+        "scrollWidth": 1078,
+        "clientWidth": 966,
+        "scrollLeft": 0,
+        "visibleWithoutHorizontalScroll": false
+      }
+    },
+    {
+      "width": 1366,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 43
+        },
+        {
+          "text": "Fecha desde",
+          "height": 42
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 42
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 42
+        },
+        {
+          "text": "Monto máximo",
+          "height": 42
+        },
+        {
+          "text": "Anterior",
+          "height": 40
+        },
+        {
+          "text": "Siguiente",
+          "height": 40
+        }
+      ],
+      "orderAction": {
+        "x": 1310.375,
+        "right": 1339.828125,
+        "width": 29.453125,
+        "height": 19,
+        "wrapperLeft": 282,
+        "wrapperRight": 1334,
+        "scrollWidth": 1078,
+        "clientWidth": 1052,
+        "scrollLeft": 0,
+        "visibleWithoutHorizontalScroll": false
+      }
+    },
+    {
+      "width": 1440,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 43
+        },
+        {
+          "text": "Fecha desde",
+          "height": 42
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 42
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 42
+        },
+        {
+          "text": "Monto máximo",
+          "height": 42
+        },
+        {
+          "text": "Anterior",
+          "height": 40
+        },
+        {
+          "text": "Siguiente",
+          "height": 40
+        }
+      ],
+      "orderAction": {
+        "x": 1356.65625,
+        "right": 1386.109375,
+        "width": 29.453125,
+        "height": 19,
+        "wrapperLeft": 282,
+        "wrapperRight": 1408,
+        "scrollWidth": 1126,
+        "clientWidth": 1126,
+        "scrollLeft": 0,
+        "visibleWithoutHorizontalScroll": true
+      }
+    },
+    {
+      "width": 1920,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 43
+        },
+        {
+          "text": "Fecha desde",
+          "height": 42
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 42
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 42
+        },
+        {
+          "text": "Monto máximo",
+          "height": 42
+        },
+        {
+          "text": "Anterior",
+          "height": 40
+        },
+        {
+          "text": "Siguiente",
+          "height": 40
+        }
+      ],
+      "orderAction": {
+        "x": 1806.265625,
+        "right": 1835.71875,
+        "width": 29.453125,
+        "height": 19,
+        "wrapperLeft": 282,
+        "wrapperRight": 1888,
+        "scrollWidth": 1606,
+        "clientWidth": 1606,
+        "scrollLeft": 0,
+        "visibleWithoutHorizontalScroll": true
+      }
+    }
+  ],
+  "after": [
+    {
+      "width": 320,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 44
+        },
+        {
+          "text": "Fecha desde",
+          "height": 44
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 44
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 44
+        },
+        {
+          "text": "Monto máximo",
+          "height": 44
+        },
+        {
+          "text": "Anterior",
+          "height": 44
+        },
+        {
+          "text": "Siguiente",
+          "height": 44
+        }
+      ],
+      "orderAction": null
+    },
+    {
+      "width": 360,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 44
+        },
+        {
+          "text": "Fecha desde",
+          "height": 44
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 44
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 44
+        },
+        {
+          "text": "Monto máximo",
+          "height": 44
+        },
+        {
+          "text": "Anterior",
+          "height": 44
+        },
+        {
+          "text": "Siguiente",
+          "height": 44
+        }
+      ],
+      "orderAction": null
+    },
+    {
+      "width": 375,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 44
+        },
+        {
+          "text": "Fecha desde",
+          "height": 44
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 44
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 44
+        },
+        {
+          "text": "Monto máximo",
+          "height": 44
+        },
+        {
+          "text": "Anterior",
+          "height": 44
+        },
+        {
+          "text": "Siguiente",
+          "height": 44
+        }
+      ],
+      "orderAction": null
+    },
+    {
+      "width": 390,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 44
+        },
+        {
+          "text": "Fecha desde",
+          "height": 44
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 44
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 44
+        },
+        {
+          "text": "Monto máximo",
+          "height": 44
+        },
+        {
+          "text": "Anterior",
+          "height": 44
+        },
+        {
+          "text": "Siguiente",
+          "height": 44
+        }
+      ],
+      "orderAction": null
+    },
+    {
+      "width": 430,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 44
+        },
+        {
+          "text": "Fecha desde",
+          "height": 44
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 44
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 44
+        },
+        {
+          "text": "Monto máximo",
+          "height": 44
+        },
+        {
+          "text": "Anterior",
+          "height": 44
+        },
+        {
+          "text": "Siguiente",
+          "height": 44
+        }
+      ],
+      "orderAction": null
+    },
+    {
+      "width": 600,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 44
+        },
+        {
+          "text": "Fecha desde",
+          "height": 44
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 44
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 44
+        },
+        {
+          "text": "Monto máximo",
+          "height": 44
+        },
+        {
+          "text": "Anterior",
+          "height": 44
+        },
+        {
+          "text": "Siguiente",
+          "height": 44
+        }
+      ],
+      "orderAction": null
+    },
+    {
+      "width": 768,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 44
+        },
+        {
+          "text": "Fecha desde",
+          "height": 44
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 44
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 44
+        },
+        {
+          "text": "Monto máximo",
+          "height": 44
+        },
+        {
+          "text": "Anterior",
+          "height": 44
+        },
+        {
+          "text": "Siguiente",
+          "height": 44
+        }
+      ],
+      "orderAction": {
+        "x": 657.65625,
+        "right": 703.109375,
+        "width": 45.453125,
+        "height": 44,
+        "wrapperLeft": 20,
+        "wrapperRight": 748,
+        "scrollWidth": 1119,
+        "clientWidth": 728,
+        "scrollLeft": 0,
+        "visibleWithoutHorizontalScroll": true
+      }
+    },
+    {
+      "width": 820,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 44
+        },
+        {
+          "text": "Fecha desde",
+          "height": 44
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 44
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 44
+        },
+        {
+          "text": "Monto máximo",
+          "height": 44
+        },
+        {
+          "text": "Anterior",
+          "height": 44
+        },
+        {
+          "text": "Siguiente",
+          "height": 44
+        }
+      ],
+      "orderAction": {
+        "x": 709.65625,
+        "right": 755.109375,
+        "width": 45.453125,
+        "height": 44,
+        "wrapperLeft": 20,
+        "wrapperRight": 800,
+        "scrollWidth": 1119,
+        "clientWidth": 780,
+        "scrollLeft": 0,
+        "visibleWithoutHorizontalScroll": true
+      }
+    },
+    {
+      "width": 1024,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 44
+        },
+        {
+          "text": "Fecha desde",
+          "height": 44
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 44
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 44
+        },
+        {
+          "text": "Monto máximo",
+          "height": 44
+        },
+        {
+          "text": "Anterior",
+          "height": 44
+        },
+        {
+          "text": "Siguiente",
+          "height": 44
+        }
+      ],
+      "orderAction": {
+        "x": 901.65625,
+        "right": 947.109375,
+        "width": 45.453125,
+        "height": 44,
+        "wrapperLeft": 282,
+        "wrapperRight": 992,
+        "scrollWidth": 1119,
+        "clientWidth": 710,
+        "scrollLeft": 0,
+        "visibleWithoutHorizontalScroll": true
+      }
+    },
+    {
+      "width": 1280,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 44
+        },
+        {
+          "text": "Fecha desde",
+          "height": 44
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 44
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 44
+        },
+        {
+          "text": "Monto máximo",
+          "height": 44
+        },
+        {
+          "text": "Anterior",
+          "height": 44
+        },
+        {
+          "text": "Siguiente",
+          "height": 44
+        }
+      ],
+      "orderAction": {
+        "x": 1157.65625,
+        "right": 1203.109375,
+        "width": 45.453125,
+        "height": 44,
+        "wrapperLeft": 282,
+        "wrapperRight": 1248,
+        "scrollWidth": 1119,
+        "clientWidth": 966,
+        "scrollLeft": 0,
+        "visibleWithoutHorizontalScroll": true
+      }
+    },
+    {
+      "width": 1366,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 44
+        },
+        {
+          "text": "Fecha desde",
+          "height": 44
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 44
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 44
+        },
+        {
+          "text": "Monto máximo",
+          "height": 44
+        },
+        {
+          "text": "Anterior",
+          "height": 44
+        },
+        {
+          "text": "Siguiente",
+          "height": 44
+        }
+      ],
+      "orderAction": {
+        "x": 1243.65625,
+        "right": 1289.109375,
+        "width": 45.453125,
+        "height": 44,
+        "wrapperLeft": 282,
+        "wrapperRight": 1334,
+        "scrollWidth": 1119,
+        "clientWidth": 1052,
+        "scrollLeft": 0,
+        "visibleWithoutHorizontalScroll": true
+      }
+    },
+    {
+      "width": 1440,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 44
+        },
+        {
+          "text": "Fecha desde",
+          "height": 44
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 44
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 44
+        },
+        {
+          "text": "Monto máximo",
+          "height": 44
+        },
+        {
+          "text": "Anterior",
+          "height": 44
+        },
+        {
+          "text": "Siguiente",
+          "height": 44
+        }
+      ],
+      "orderAction": {
+        "x": 1317.65625,
+        "right": 1363.109375,
+        "width": 45.453125,
+        "height": 44,
+        "wrapperLeft": 282,
+        "wrapperRight": 1408,
+        "scrollWidth": 1126,
+        "clientWidth": 1126,
+        "scrollLeft": 0,
+        "visibleWithoutHorizontalScroll": true
+      }
+    },
+    {
+      "width": 1920,
+      "documentOverflow": false,
+      "controls": [
+        {
+          "text": "Todos los estadosPENDINGPAIDPROCESSINGSHIPPEDDELIVEREDCANCELLEDREFUNDED",
+          "height": 44
+        },
+        {
+          "text": "Fecha desde",
+          "height": 44
+        },
+        {
+          "text": "Fecha hasta",
+          "height": 44
+        },
+        {
+          "text": "Monto mínimo",
+          "height": 44
+        },
+        {
+          "text": "Monto máximo",
+          "height": 44
+        },
+        {
+          "text": "Anterior",
+          "height": 44
+        },
+        {
+          "text": "Siguiente",
+          "height": 44
+        }
+      ],
+      "orderAction": {
+        "x": 1752.171875,
+        "right": 1797.625,
+        "width": 45.453125,
+        "height": 44,
+        "wrapperLeft": 282,
+        "wrapperRight": 1888,
+        "scrollWidth": 1606,
+        "clientWidth": 1606,
+        "scrollLeft": 0,
+        "visibleWithoutHorizontalScroll": true
+      }
+    }
+  ],
+  "allRoutesBefore": 65,
+  "allRoutesAfter": 65,
+  "documentOverflowAfter": 0,
+  "artificialTitle768": {
+    "status": "NOT_REPRODUCED_EXACTLY",
+    "typographyChanged": false,
+    "lines": [
+      "Familia Demo ",
+      "con un ",
+      "nombre ",
+      "deliberadame",
+      "nte largo para ",
+      "validar el ",
+      "ajuste ",
+      "responsive"
+    ]
+  },
+  "tests": {
+    "unit": 23,
+    "sitemapScripts": 60,
+    "e2e": 35,
+    "newE2e": 27,
+    "failed": 0,
+    "skipped": 0
+  },
+  "commands": [
+    {
+      "name": "frontend-tests",
+      "seconds": 1.86,
+      "exitCode": 0
+    },
+    {
+      "name": "frontend-lint",
+      "seconds": 2.69,
+      "exitCode": 0
+    },
+    {
+      "name": "frontend-typescript",
+      "seconds": 2.24,
+      "exitCode": 0
+    },
+    {
+      "name": "frontend-all-e2e",
+      "seconds": 30.36,
+      "exitCode": 0
+    },
+    {
+      "name": "frontend-build",
+      "seconds": 2.67,
+      "exitCode": 0
+    }
+  ],
+  "screenshotsPrivate": true,
+  "screenshotsDirectory": ".local/reports/post-v1-visual-polish/screenshots/",
+  "buildMode": "Recorded public staging catalog fixture, staging URLs, no live API, no stale, no deployment",
+  "trackedGeneratedSeoRestored": true
+}

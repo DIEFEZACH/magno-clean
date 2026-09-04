@@ -258,7 +258,7 @@ export function AdminProducts() {
             <button type="button" onClick={clearFilters} className="mt-6 rounded-full bg-[#19A2B6] px-6 py-3 text-sm font-black text-white transition hover:bg-[#111111]">Limpiar filtros</button>
           </div>
         )}
-        <div className="mt-5 flex justify-end gap-3"><button disabled={page <= 1} onClick={() => setPage((value) => value - 1)} className="rounded-full bg-white px-5 py-2 font-black disabled:opacity-30">Anterior</button><span className="py-2 text-sm font-black">{page} / {pages}</span><button disabled={page >= pages} onClick={() => setPage((value) => value + 1)} className="rounded-full bg-white px-5 py-2 font-black disabled:opacity-30">Siguiente</button></div>
+        <div className="mt-5 flex justify-end gap-3"><button disabled={page <= 1} onClick={() => setPage((value) => value - 1)} className="min-h-11 rounded-full bg-white px-5 py-2 font-black disabled:opacity-30">Anterior</button><span className="py-2 text-sm font-black">{page} / {pages}</span><button disabled={page >= pages} onClick={() => setPage((value) => value + 1)} className="min-h-11 rounded-full bg-white px-5 py-2 font-black disabled:opacity-30">Siguiente</button></div>
       </div>
     </section>
   );
