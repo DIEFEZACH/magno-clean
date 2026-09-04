@@ -1,6 +1,6 @@
 # Application database access hardening — proposed security correction
 
-This separate PR is based on frozen release `050f890f2704b0b6d6a57c7e76e5520525b8c835`. It has not been applied to a persistent database and does not authorize deployment. The release remains **NO_GO** until an authorized successor incorporates the correction, resolves the remaining blockers and is certified again.
+This separate PR is based on frozen release `050f890f2704b0b6d6a57c7e76e5520525b8c835`. Its frozen migration was applied and verified only in staging on 2026-09-04; it has not been applied to production and does not authorize deployment. The release remains **NO_GO** until an authorized successor incorporates the correction, resolves the remaining blockers and is certified again.
 
 ## Confirmed finding and architecture
 
@@ -55,7 +55,7 @@ The real trigger functions are preserved and their PUBLISHED immutability behavi
 2. Use a successor SHA and authorized migration manifest that contains migrations 7–10 in the approved order; never leave tables 7–9 exposed in an intermediate release state.
 3. Confirm the target identity, `postgres` creator/owner, exact object inventory/default ACLs and absence of drift with read-only metadata immediately before application.
 4. Confirm the backend still connects as `postgres`, `service_role` remains Storage-only, CHECKOUT remains disabled, the current backup is accepted and the global function-default compatibility cost is approved.
-5. Run CI and isolated PostgreSQL tests. Apply only through an explicitly authorized staging step; this PR itself has made no persistent local, staging or production DB change.
+5. Run CI and isolated PostgreSQL tests. The authorized staging application is complete; any retry must first prove why it is required. Production application remains separately gated.
 6. After application, verify all 20 RLS flags, absence of table/column/function/sequence/view access for all three Data API roles, creator defaults, unchanged managed-schema ACL/default snapshots, real Prisma/API/admin behavior and Storage access. Do not test a real checkout or payment.
 7. Production requires a separate authorization after staging evidence. Opening or merging this PR is not mitigation of current live permissions.
 
@@ -73,6 +73,19 @@ Coverage includes:
 - Atomic failure for missing/drifted objects, owner/type/signature/security drift, extension membership, policy/FORCE RLS, inherited table/column/MAINTAIN access, elevated/member client roles, unknown default grantees and a late default-ACL failure.
 
 These fixtures prove SQL authorization/transaction behavior, not operational locks, PostgREST routing, production data or a real Supabase upgrade. Those require the gated environment checks above.
+
+## Staging evidence — 2026-09-04
+
+The exact migration with SHA-256 `d00b0982192923709ebbb36a99cee6fcf2323a6d36117ec32d57069a847fbabb` was applied through `prisma migrate deploy` to project `heqneuhptatgybddoply` using TLS `verify-full` and the official CA. `prisma migrate status` reports 10/10 and no pending migration.
+
+- All 20 reviewed tables have RLS enabled, FORCE disabled and zero policies.
+- Effective table and column privileges are absent for `anon`, `authenticated` and `service_role`. Controlled transactional tests received permission denial for SELECT, INSERT, UPDATE, DELETE and TRUNCATE on every table.
+- The three reviewed trigger functions deny direct EXECUTE to PUBLIC and all three client roles. Future table, view, materialized view, sequence and function defaults were tested inside a transaction and left no objects behind.
+- `postgres` selected all 20 tables; Express `/health`, `/ready`, `/api/products` and `/api/catalog` returned 200. A temporary staging-only admin completed login, `/me`, refresh, logout and six read-only admin routes, then its user and refresh tokens were removed.
+- Data API remains disabled: authenticated REST and GraphQL probes return `PGRST002`. Storage bucket metadata/listing and a public WebP HEAD remain 200; no Storage write was attempted.
+- Baseline stayed at 98 products, 25 families, 79 linked variants, zero stock/reserved stock and no orders/payments. Managed relation/function/default-ACL snapshots outside `public` are unchanged; `product-media` remains at 218 objects.
+- Security Advisor rerun: 0 errors, 3 warnings for mutable search paths on the invoker-rights trigger functions, and 20 informational `RLS Enabled No Policy` findings. The no-policy findings are intentional default-deny behavior. The search-path warnings remain documented hardening work; no function body or migration 7–9 was rewritten.
+- Production was audited read-only after the staging change and remained byte-for-byte equal in the captured metadata/count snapshot: six migrations, 98 products and Data API enabled. It was not changed.
 
 ## Rollback
 
