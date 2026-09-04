@@ -1,0 +1,594 @@
+{
+  "schemaVersion": 1,
+  "releaseSha": "050f890f2704b0b6d6a57c7e76e5520525b8c835",
+  "previousProductionSha": "f25412ab916549edee0cf4098bca6ad4e29e62c6",
+  "certificationDate": "2026-09-04",
+  "verdict": "NO_GO",
+  "reasons": [
+    {
+      "priority": "P0",
+      "id": "DIRECT_DB_CLIENT_PRIVILEGES",
+      "confirmed": "RLS disabled and effective anon/authenticated grants",
+      "httpExploitationTested": false,
+      "pr": 17
+    },
+    {
+      "priority": "P1",
+      "id": "LEGACY_WHOLESALE_PRICE_PUBLIC",
+      "pr": 15
+    },
+    {
+      "priority": "P1",
+      "id": "LEGAL_320_OVERFLOW",
+      "viewport": 320,
+      "scrollWidth": 338,
+      "pr": 16
+    }
+  ],
+  "releaseUnchanged": true,
+  "additionalMerges": 0,
+  "remoteDatabaseWrites": 0,
+  "storageWrites": 0,
+  "productionDeployments": 0,
+  "productionMigrationsApplied": 0,
+  "checkoutExecuted": false,
+  "mercadoPagoChanged": false,
+  "productionCheckoutEnabled": false,
+  "mercadoPagoLiveVerification": "UNCHANGED_FROM_AUTHORIZED_CONTEXT; NO_NEW_MP_CREDENTIAL_PROBE",
+  "mainCi": {
+    "url": "https://github.com/DIEFEZACH/magno-clean/actions/runs/33857764802",
+    "conclusion": "success"
+  },
+  "deployments": {
+    "stagingRender": {
+      "id": "dep-dad8q795efls73f1lg60",
+      "sha": "050f890f2704b0b6d6a57c7e76e5520525b8c835",
+      "status": "Live"
+    },
+    "stagingPages": {
+      "id": "9c2beae7-c85b-44e1-9058-b89448c0addd",
+      "sha": "050f890f2704b0b6d6a57c7e76e5520525b8c835",
+      "status": "success"
+    },
+    "productionRender": {
+      "id": "dep-daauc8nlk1mc73ag4he0",
+      "autoDeploy": false
+    },
+    "productionPages": {
+      "id": "33398ca5-6ca9-4240-a52c-390500faf08f",
+      "autoDeploy": false
+    }
+  },
+  "tests": {
+    "existing": {
+      "backend": 218,
+      "frontendUnit": 23,
+      "sitemap": 60,
+      "playwright": 8,
+      "total": 309,
+      "failed": 0,
+      "skipped": 0
+    },
+    "additionalIsolated": 22,
+    "productionLiveBuild": "BLOCKED_OLD_API_404",
+    "productionOfflineBuild": "PASS_EXPLICIT_FIXTURE_NOT_LIVE"
+  },
+  "publicQa": {
+    "routes": 19,
+    "widths": [
+      320,
+      360,
+      375,
+      390,
+      430,
+      600,
+      768,
+      820,
+      1024,
+      1280,
+      1366,
+      1440,
+      1920
+    ],
+    "actualViewportMeasurements": 247,
+    "withoutOverflow": 246,
+    "overflowFindings": 1,
+    "privateScreenshots": 42,
+    "consoleErrors": 0,
+    "networkErrors": 0,
+    "liveVariants": 18,
+    "validVariants": 18,
+    "invalidQueryFallbacks": 5,
+    "historicalRoutes": 5,
+    "liveChipInteraction": "SKIPPED_DISABLED_STOCK_ZERO",
+    "isolatedAvailableVariantInteraction": "PASS_EXISTING_E2E",
+    "layoutShiftSamples": 9,
+    "maxSampleShiftSum": 0.06630581717451522,
+    "safariPhysical": "NOT_TESTED",
+    "liveAdmin": "BLOCKED_SECURITY_NO_SEED_NO_SESSION",
+    "legalFixPreview": {
+      "pr": 16,
+      "branchSha": "69df9a6fc9af36b317457570c01beffcafd197f9",
+      "url": "https://3f0e1448.magno-clean-staging.pages.dev",
+      "measurements": 39,
+      "overflows": 0,
+      "notInRelease": true
+    }
+  },
+  "sitemap": {
+    "commercial": 41,
+    "families": 25,
+    "individuals": 16,
+    "categories": 1,
+    "static": 6,
+    "totalCalculated": 48,
+    "excludedVariants": 79,
+    "excludedInactive": 3,
+    "duplicates": 0,
+    "variantQuery": 0,
+    "localhost": 0,
+    "productionStaleAllowed": false
+  },
+  "staging": {
+    "projectRef": "heqneuhptatgybddoply",
+    "checkedAt": "2026-09-04T10:01:21.510Z",
+    "tables": {
+      "Product": 98,
+      "ProductFamily": 25,
+      "User": 0,
+      "RefreshToken": 0,
+      "Order": 0,
+      "OrderItem": 0,
+      "Payment": 0,
+      "InventoryReservation": 0,
+      "InventoryMovement": 0,
+      "ProductImage": 0,
+      "WebsiteContent": 0,
+      "WebsiteContentRevision": 0,
+      "WebsiteContentMedia": 0,
+      "WebsiteContentSource": 0,
+      "WebsiteContentEntry": 0,
+      "WebsiteContentFaq": 0
+    },
+    "products": {
+      "total": 98,
+      "active": 95,
+      "inactive": 3
+    },
+    "inventory": {
+      "stock": 0,
+      "reserved_stock": 0,
+      "linked": 79,
+      "active_individuals": 16
+    },
+    "migrations": [
+      {
+        "name": "20260825000000_baseline",
+        "finished": true,
+        "rolledBack": false,
+        "checksumMatchesRelease": true
+      },
+      {
+        "name": "20260825001000_auth_security",
+        "finished": true,
+        "rolledBack": false,
+        "checksumMatchesRelease": true
+      },
+      {
+        "name": "20260825002000_checkout_mercado_pago",
+        "finished": true,
+        "rolledBack": false,
+        "checksumMatchesRelease": true
+      },
+      {
+        "name": "20260826055734_inventory_reservations_movements",
+        "finished": true,
+        "rolledBack": false,
+        "checksumMatchesRelease": true
+      },
+      {
+        "name": "20260826060634_admin_erp",
+        "finished": true,
+        "rolledBack": false,
+        "checksumMatchesRelease": true
+      },
+      {
+        "name": "20260826064000_product_image_storage",
+        "finished": true,
+        "rolledBack": false,
+        "checksumMatchesRelease": true
+      },
+      {
+        "name": "20260831090000_product_families",
+        "finished": true,
+        "rolledBack": false,
+        "checksumMatchesRelease": true
+      },
+      {
+        "name": "20260901033000_editorial_website_content",
+        "finished": true,
+        "rolledBack": false,
+        "checksumMatchesRelease": true
+      },
+      {
+        "name": "20260902090000_editorial_media",
+        "finished": true,
+        "rolledBack": false,
+        "checksumMatchesRelease": true
+      }
+    ],
+    "editorialTriggers": [
+      {
+        "name": "WebsiteContentEntry_prevent_published_mutation",
+        "enabled": "O",
+        "table": "WebsiteContentEntry"
+      },
+      {
+        "name": "WebsiteContentFaq_prevent_published_mutation",
+        "enabled": "O",
+        "table": "WebsiteContentFaq"
+      },
+      {
+        "name": "WebsiteContentMedia_prevent_published_mutation",
+        "enabled": "O",
+        "table": "WebsiteContentMedia"
+      },
+      {
+        "name": "WebsiteContentRevision_prevent_published_delete",
+        "enabled": "O",
+        "table": "WebsiteContentRevision"
+      },
+      {
+        "name": "WebsiteContentRevision_prevent_published_update",
+        "enabled": "O",
+        "table": "WebsiteContentRevision"
+      }
+    ],
+    "storage": [
+      {
+        "bucket_id": "product-media",
+        "objects": 218
+      }
+    ],
+    "writeOperations": 0
+  },
+  "production": {
+    "projectRef": "fxbgxjpgfkeuapbmgpmv",
+    "checkedAt": "2026-09-04T10:01:26.283Z",
+    "tables": {
+      "Product": 98,
+      "ProductFamily": "ABSENT",
+      "User": 1,
+      "RefreshToken": 21,
+      "Order": 2,
+      "OrderItem": 2,
+      "Payment": 1,
+      "InventoryReservation": 0,
+      "InventoryMovement": 98,
+      "ProductImage": 1,
+      "WebsiteContent": "ABSENT",
+      "WebsiteContentRevision": "ABSENT",
+      "WebsiteContentMedia": "ABSENT",
+      "WebsiteContentSource": "ABSENT",
+      "WebsiteContentEntry": "ABSENT",
+      "WebsiteContentFaq": "ABSENT"
+    },
+    "products": {
+      "total": 98,
+      "active": 95,
+      "inactive": 3
+    },
+    "migrations": [
+      {
+        "name": "20260825000000_baseline",
+        "finished": true,
+        "rolledBack": false,
+        "checksumMatchesRelease": true
+      },
+      {
+        "name": "20260825001000_auth_security",
+        "finished": true,
+        "rolledBack": false,
+        "checksumMatchesRelease": true
+      },
+      {
+        "name": "20260825002000_checkout_mercado_pago",
+        "finished": true,
+        "rolledBack": false,
+        "checksumMatchesRelease": true
+      },
+      {
+        "name": "20260826055734_inventory_reservations_movements",
+        "finished": true,
+        "rolledBack": false,
+        "checksumMatchesRelease": true
+      },
+      {
+        "name": "20260826060634_admin_erp",
+        "finished": true,
+        "rolledBack": false,
+        "checksumMatchesRelease": true
+      },
+      {
+        "name": "20260826064000_product_image_storage",
+        "finished": true,
+        "rolledBack": false,
+        "checksumMatchesRelease": true
+      }
+    ],
+    "editorialTriggers": [],
+    "storage": [
+      {
+        "bucket_id": "product-images",
+        "objects": 1
+      }
+    ],
+    "writeOperations": 0
+  },
+  "health": {
+    "checkedAt": "2026-09-04T10:03:17.784Z",
+    "checks": [
+      {
+        "environment": "staging",
+        "path": "/health",
+        "status": 200,
+        "requestIdPresent": true,
+        "keys": [
+          "status"
+        ]
+      },
+      {
+        "environment": "staging",
+        "path": "/ready",
+        "status": 200,
+        "requestIdPresent": true,
+        "keys": [
+          "status"
+        ]
+      },
+      {
+        "environment": "staging",
+        "path": "/api/catalog",
+        "status": 200,
+        "requestIdPresent": true,
+        "keys": [
+          "items",
+          "pagination",
+          "filters"
+        ]
+      },
+      {
+        "environment": "staging",
+        "path": "/api/catalog/does-not-exist-cert",
+        "status": 404,
+        "requestIdPresent": true,
+        "keys": [
+          "message"
+        ]
+      },
+      {
+        "environment": "production",
+        "path": "/health",
+        "status": 200,
+        "requestIdPresent": true,
+        "keys": [
+          "status"
+        ]
+      },
+      {
+        "environment": "production",
+        "path": "/ready",
+        "status": 200,
+        "requestIdPresent": true,
+        "keys": [
+          "status"
+        ]
+      }
+    ]
+  },
+  "plan": {
+    "sha256": "686cec7028b355fcc171fad41d2881af4442c9cea68f3a13b576c957bcea0710",
+    "stagingDryRun": {
+      "operation": "PRODUCT_FAMILIES_DRY_RUN",
+      "environment": "staging",
+      "projectRef": "heqneuhptatgybddoply",
+      "planSha256": "686cec7028b355fcc171fad41d2881af4442c9cea68f3a13b576c957bcea0710",
+      "tlsCertificateValidation": "strict",
+      "schema": "CURRENT",
+      "familiesPlanned": 25,
+      "familiesToCreate": 0,
+      "familiesUnchanged": 25,
+      "variantsPlanned": 79,
+      "variantsToLink": 0,
+      "variantsUnchanged": 79,
+      "individuals": 16,
+      "excludedInactiveProducts": 3,
+      "conflicts": 0,
+      "unknownCodes": 0,
+      "inactiveProducts": 0,
+      "protectedFieldsThatWouldChange": 0,
+      "writesPlanned": 0,
+      "writesPerformed": 0,
+      "actualProducts": 98,
+      "actualActiveProducts": 95,
+      "actualInactiveProducts": 3,
+      "writeOperations": 0,
+      "conflictDetails": []
+    },
+    "productionDryRun": {
+      "operation": "PRODUCT_FAMILIES_DRY_RUN",
+      "environment": "production",
+      "projectRef": "fxbgxjpgfkeuapbmgpmv",
+      "planSha256": "686cec7028b355fcc171fad41d2881af4442c9cea68f3a13b576c957bcea0710",
+      "tlsCertificateValidation": "strict",
+      "schema": "PRE_MIGRATION",
+      "familiesPlanned": 25,
+      "familiesToCreate": 25,
+      "familiesUnchanged": 0,
+      "variantsPlanned": 79,
+      "variantsToLink": 79,
+      "variantsUnchanged": 0,
+      "individuals": 16,
+      "excludedInactiveProducts": 3,
+      "conflicts": 0,
+      "unknownCodes": 0,
+      "inactiveProducts": 0,
+      "protectedFieldsThatWouldChange": 0,
+      "writesPlanned": 104,
+      "writesPerformed": 0,
+      "actualProducts": 98,
+      "actualActiveProducts": 95,
+      "actualInactiveProducts": 3,
+      "writeOperations": 0,
+      "conflictDetails": []
+    }
+  },
+  "backup": {
+    "releaseSha": "050f890f2704b0b6d6a57c7e76e5520525b8c835",
+    "projectRef": "fxbgxjpgfkeuapbmgpmv",
+    "environment": "production",
+    "remoteWrites": 0,
+    "restoreExecuted": false,
+    "previousBackupsDeleted": false,
+    "offsiteCopy": false,
+    "status": "VERIFIED_LOGICAL_BACKUP_NOT_RESTORE_TEST",
+    "transactionReadOnly": "on",
+    "serverVersion": "17.6",
+    "migrationsBefore": 6,
+    "productsBefore": 98,
+    "versions": {
+      "pgDump": "pg_dump (PostgreSQL) 18.6",
+      "pgRestore": "pg_restore (PostgreSQL) 18.6"
+    },
+    "freeBytes": 47124557824,
+    "directory": "/Users/diegodiefezach/.local/share/magno-clean/backups/production/release-visible-v1-20260904T094814587Z",
+    "timestamp": "2026-09-04T09:48:14.588Z",
+    "file": "/Users/diegodiefezach/.local/share/magno-clean/backups/production/release-visible-v1-20260904T094814587Z/magno-clean-production-20260904T094814587Z.dump",
+    "durationMs": 22604,
+    "bytes": 260328,
+    "sha256": "a2addba48cfe529b028f392ce789d1d7b1a76b8cafdb9be6c20087bbdd471055",
+    "toc": {
+      "file": "/Users/diegodiefezach/.local/share/magno-clean/backups/production/release-visible-v1-20260904T094814587Z/archive-toc.txt",
+      "exitCode": 0,
+      "objects": 438
+    },
+    "criticalTables": {
+      "Product": true,
+      "User": true,
+      "Order": true,
+      "OrderItem": true,
+      "Payment": true,
+      "ProductImage": true,
+      "InventoryReservation": true,
+      "InventoryMovement": true,
+      "_prisma_migrations": true
+    },
+    "permissions": {
+      "directory": "700",
+      "dump": "600",
+      "checksum": "600",
+      "toc": "600"
+    },
+    "sslMode": "verify-full",
+    "dumpExitCode": 0,
+    "stderrLineCount": 0,
+    "temporaryPasswordFileRemoved": true,
+    "completedAt": "2026-09-04T09:48:37.213Z"
+  },
+  "readiness": {
+    "publications": 41,
+    "directResponsiveDetails": 6,
+    "sharedComponentInference": 35,
+    "publishedWebsiteContent": 0,
+    "mediaObjects": 218,
+    "mediaBytes": 44952174,
+    "mediaWrites": 0,
+    "allRemoteHashesRecomputed": false,
+    "citricalWarningsApproved": false
+  },
+  "repository": {
+    "changedPaths": 183,
+    "pdfFiles": 55,
+    "pdfBytes": 472125150,
+    "pdfCopiedToFrontendBundle": false,
+    "originalUnknownCopiesUntouched": 18,
+    "realSecretsDetected": 0,
+    "scanGuarantee": "BEST_EFFORT_PATTERN_AND_MANUAL_NOT_ABSOLUTE"
+  },
+  "roadmap": {
+    "comparisonFunctions": 31,
+    "functions": 24,
+    "nextBatches": 6,
+    "implemented": false
+  },
+  "pullRequests": [
+    {
+      "number": 15,
+      "branch": "codex/release-visible-v1-public-price-privacy",
+      "sha": "63ae09eb88889bfd6fb4c75552272138098b9b84",
+      "merged": false,
+      "ci": {
+        "backend": "success",
+        "frontend": "success",
+        "url": "https://github.com/DIEFEZACH/magno-clean/actions/runs/33861153385"
+      }
+    },
+    {
+      "number": 16,
+      "branch": "codex/release-visible-v1-legal-responsive",
+      "sha": "69df9a6fc9af36b317457570c01beffcafd197f9",
+      "merged": false,
+      "ci": {
+        "backend": "success",
+        "frontend": "success",
+        "url": "https://github.com/DIEFEZACH/magno-clean/actions/runs/33861154624"
+      }
+    },
+    {
+      "number": 17,
+      "branch": "codex/release-visible-v1-data-access-hardening",
+      "sha": "8045b4348199f2398f8914e3ed622e2bb937c426",
+      "merged": false,
+      "ci": {
+        "backend": "success",
+        "frontend": "success",
+        "url": "https://github.com/DIEFEZACH/magno-clean/actions/runs/33861837586"
+      }
+    },
+    {
+      "number": 18,
+      "branch": "codex/post-v1-visual-polish",
+      "sha": "f0a42d05ceb66b8a998b261f25d81715945b7a18",
+      "merged": false,
+      "ci": {
+        "backend": "success",
+        "frontend": "success",
+        "url": "https://github.com/DIEFEZACH/magno-clean/actions/runs/33861895184"
+      }
+    }
+  ],
+  "phase20": {
+    "branch": "codex/post-v1-visual-polish",
+    "pr": 18,
+    "status": "IMPLEMENTED_ISOLATED_NOT_IN_RELEASE",
+    "reproduced": [
+      "FILTER_PAGINATION_40_43PX",
+      "ORDERS_VIEW_INTERNAL_SCROLL"
+    ],
+    "notReproduced": [
+      "EXACT_ISOLATED_SINGLE_LETTER_768PX"
+    ],
+    "tests": {
+      "e2e": 35,
+      "frontend": 83,
+      "failed": 0
+    },
+    "authMode": "LOCAL_INTERCEPTED_FIXTURES_NOT_REAL_STAGING"
+  },
+  "operationalRelease": "BLOCKED_REQUIRES_NEW_APPROVED_SHA_AND_RECERTIFICATION",
+  "restorationExecuted": false,
+  "rollbackExecuted": false,
+  "temporaryAdminCreated": false,
+  "temporaryTokensCreated": false,
+  "cleanup": "NO_FIXTURES_CREATED_BASELINE_PRESERVED"
+}

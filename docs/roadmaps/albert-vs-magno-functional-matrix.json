@@ -1,0 +1,331 @@
+{
+  "schemaVersion": 1,
+  "releaseSha": "050f890f2704b0b6d6a57c7e76e5520525b8c835",
+  "referenceStatus": "AVAILABLE_UNVERSIONED_LOCAL_SOURCE",
+  "method": "Búsqueda limitada a dos niveles de carpetas dentro de Documents; inspección estática del proyecto descomprimido. Se excluyeron dependencias, compilados, cachés y .git. No se ejecutó Albert, no se leyeron credenciales y no se copió código ni assets.",
+  "referenceIdentity": "Albert and co (referencia local; sin SHA de despliegue certificado)",
+  "limitations": [
+    "Comparación funcional por lectura de fuente, no pentest, accesibilidad completa ni certificación de despliegue de Albert.",
+    "Las funciones demostrativas no se declaran productivas. Newsletter inspeccionada sólo cambia estado local; historial de cuenta no demostrado.",
+    "Las clasificaciones ALREADY_BETTER_IN_MAGNO son acotadas al aspecto indicado y no una valoración general."
+  ],
+  "summary": {
+    "ALREADY_BETTER_IN_MAGNO": 4,
+    "PORT_UX_ONLY": 7,
+    "PORT_FEATURE": 9,
+    "REQUIRES_BUSINESS_DECISION": 9,
+    "REJECT": 2
+  },
+  "functions": [
+    {
+      "area": "ADMIN",
+      "feature": "Publicaciones",
+      "referenceState": "Workbench con estados, búsqueda y exportación CSV.",
+      "magnoState": "Productos, familias y contenido en módulos separados.",
+      "classification": "PORT_UX_ONLY",
+      "referenceEvidence": "components/admin-workbench.tsx:150",
+      "magnoEvidence": "frontend/src/pages/AdminProducts.tsx",
+      "decision": "Unificar navegación por publicación comercial; conservar Product como SKU y ProductFamily como agrupación."
+    },
+    {
+      "area": "ADMIN",
+      "feature": "Completitud",
+      "referenceState": "publicationChecks calcula seis señales por producto.",
+      "magnoState": "No hay checklist consolidado visible.",
+      "classification": "PORT_UX_ONLY",
+      "referenceEvidence": "lib/admin-insights.ts:26",
+      "magnoEvidence": "frontend/src/pages/AdminProducts.tsx",
+      "decision": "Adaptar reglas: stock cero no bloquea el release visible cerrado; contenido publicado no equivale a borrador."
+    },
+    {
+      "area": "ADMIN",
+      "feature": "Acciones masivas",
+      "referenceState": "Selección múltiple y preparación de cambios en workbench.",
+      "magnoState": "Operación individual y herramientas controladas separadas.",
+      "classification": "PORT_FEATURE",
+      "referenceEvidence": "components/admin-workbench.tsx:129",
+      "magnoEvidence": "frontend/src/pages/AdminProductFamilies.tsx",
+      "decision": "Añadir sólo acciones aprobadas con preview, permisos y auditoría; nunca publicar ni cambiar inventario por selección implícita."
+    },
+    {
+      "area": "ADMIN",
+      "feature": "Métricas 7/30/90 y comparación",
+      "referenceState": "Periodo y comparación anterior presentes en businessMetrics/workbench.",
+      "magnoState": "Dashboard con hoy/semana/mes y rankings; sin selector equivalente.",
+      "classification": "PORT_FEATURE",
+      "referenceEvidence": "components/admin-workbench.tsx:524",
+      "magnoEvidence": "frontend/src/pages/AdminDashboard.tsx:6",
+      "decision": "Mantener SQL/Prisma y definiciones de venta; no portar agregación del catálogo de referencia."
+    },
+    {
+      "area": "ADMIN",
+      "feature": "Pedidos",
+      "referenceState": "Panel operativo y StoreOrder con seguimiento.",
+      "magnoState": "Pedidos/detalle/estados y relaciones de pagos/inventario.",
+      "classification": "ALREADY_BETTER_IN_MAGNO",
+      "referenceEvidence": "lib/operations.ts",
+      "magnoEvidence": "frontend/src/pages/AdminOrderDetail.tsx",
+      "decision": "Ventaja acotada al modelo relacional ya existente; no constituye comparación de calidad global."
+    },
+    {
+      "area": "ADMIN",
+      "feature": "Clientes",
+      "referenceState": "Cuenta pública y vista operativa; no se certificó CRM completo.",
+      "magnoState": "Lista y detalle administrativo calculados desde pedidos.",
+      "classification": "PORT_UX_ONLY",
+      "referenceEvidence": "app/mi-cuenta/page.tsx",
+      "magnoEvidence": "backend/src/routes/admin.ts:104",
+      "decision": "Reutilizar presentación, no reemplazar datos ni asumir identidad por correo."
+    },
+    {
+      "area": "ADMIN",
+      "feature": "Inventario",
+      "referenceState": "Estado sin stock/bajo y campos por producto.",
+      "magnoState": "Movimientos, reservas y operación ERP específica.",
+      "classification": "ALREADY_BETTER_IN_MAGNO",
+      "referenceEvidence": "lib/admin-insights.ts:70",
+      "magnoEvidence": "frontend/src/pages/AdminInventory.tsx",
+      "decision": "Conservar reservas y transacciones; no importar cambios globales de stock desde JSON."
+    },
+    {
+      "area": "ADMIN",
+      "feature": "Portada y video",
+      "referenceState": "SiteContent incluye video, créditos y hero editable.",
+      "magnoState": "Portada codificada; editorial actual orientado a productos/familias.",
+      "classification": "PORT_FEATURE",
+      "referenceEvidence": "lib/site-content.ts:9",
+      "magnoEvidence": "frontend/src/pages/Home.tsx",
+      "decision": "Empezar por configuración versionada/revisión; presupuesto multimedia y reduced motion."
+    },
+    {
+      "area": "ADMIN",
+      "feature": "Pagos",
+      "referenceState": "Funciones Mercado Pago y PayPal; rutas de verificación/captura.",
+      "magnoState": "Mercado Pago con infraestructura de órdenes; checkout cerrado.",
+      "classification": "REQUIRES_BUSINESS_DECISION",
+      "referenceEvidence": "netlify/functions/paypal-capture-order.mjs",
+      "magnoEvidence": "backend/src/routes/checkout.ts",
+      "decision": "No habilitar LIVE; requiere proveedor, conciliación, reembolsos y autorización independiente."
+    },
+    {
+      "area": "ADMIN",
+      "feature": "Envíos",
+      "referenceState": "shipping-quote y campos de seguimiento.",
+      "magnoState": "Dirección de pedido y operación administrativa; sin cotizador equivalente certificado.",
+      "classification": "REQUIRES_BUSINESS_DECISION",
+      "referenceEvidence": "netlify/functions/shipping-quote.mjs",
+      "magnoEvidence": "frontend/src/pages/AdminOrderDetail.tsx",
+      "decision": "Definir cobertura, empaques, paqueterías y tarifa antes de integración."
+    },
+    {
+      "area": "ADMIN",
+      "feature": "Concierge",
+      "referenceState": "Configuración y respuestas por reglas con WhatsApp.",
+      "magnoState": "No existe módulo equivalente.",
+      "classification": "REQUIRES_BUSINESS_DECISION",
+      "referenceEvidence": "components/store-concierge.tsx:110",
+      "magnoEvidence": "frontend/src/pages/Contact.tsx",
+      "decision": "No trasladar consejos de lujo a químicos; fuentes aprobadas y escalamiento humano."
+    },
+    {
+      "area": "ADMIN",
+      "feature": "Seguridad y arquitectura",
+      "referenceState": "Sesión administrativa HMAC propia y almacenamiento de contenido; cuenta usa proveedor externo.",
+      "magnoState": "Roles, refresh rotatorio y modelo relacional existentes.",
+      "classification": "REJECT",
+      "referenceEvidence": "netlify/functions/_shared/admin-auth.mjs:34",
+      "magnoEvidence": "backend/src/routes/auth.ts:15",
+      "decision": "Rechazar copia de arquitectura/autenticación; evaluar UX sin migrar plataforma ni afirmar auditoría integral de Albert."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "Hero/video",
+      "referenceState": "Video con fallback y créditos en home.",
+      "magnoState": "Hero comercial actual sin editor de video.",
+      "classification": "PORT_UX_ONLY",
+      "referenceEvidence": "app/page.tsx:123",
+      "magnoEvidence": "frontend/src/pages/Home.tsx",
+      "decision": "Inspiración visual opcional con poster, peso limitado y respeto reduced motion; no importar assets."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "Campañas",
+      "referenceState": "Secciones editoriales/campaña en home y lightbox.",
+      "magnoState": "Secciones de portada estáticas.",
+      "classification": "PORT_FEATURE",
+      "referenceEvidence": "app/page.tsx:333",
+      "magnoEvidence": "frontend/src/pages/Home.tsx",
+      "decision": "Definir objetivos y calendario; separar aprobación de contenidos técnicos."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "Carrito lateral",
+      "referenceState": "Revisar store-header para interacción; home muestra contador local demostrativo.",
+      "magnoState": "Carrito de SKU persistido y página dedicada.",
+      "classification": "PORT_UX_ONLY",
+      "referenceEvidence": "components/store-header.tsx",
+      "magnoEvidence": "frontend/src/store/cartStore.ts",
+      "decision": "No copiar contador demostrativo como comercio real; drawer sólo como presentación sobre store existente."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "Favoritos",
+      "referenceState": "Invitado local y cuenta con endpoint member-favorites.",
+      "magnoState": "Sin función pública equivalente.",
+      "classification": "PORT_FEATURE",
+      "referenceEvidence": "components/favorite-button.tsx",
+      "magnoEvidence": "frontend/src/pages/ProductDetail.tsx",
+      "decision": "Elegir publicación familiar frente a SKU y evitar guardar datos personales innecesarios."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "Cuenta",
+      "referenceState": "Proveedor de cuenta con estados loading/ready/unavailable.",
+      "magnoState": "Autenticación de backend; sin cuenta pública completa.",
+      "classification": "PORT_FEATURE",
+      "referenceEvidence": "lib/customer-account.tsx:98",
+      "magnoEvidence": "backend/src/routes/auth.ts",
+      "decision": "Extender identidad propia mediante PR separado; no introducir segundo proveedor por imitación."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "Verificación y recuperación",
+      "referenceState": "Callbacks de confirmación/recovery e interfaz de cuenta.",
+      "magnoState": "No hay rutas públicas register/forgot/reset en auth inspeccionado.",
+      "classification": "PORT_FEATURE",
+      "referenceEvidence": "lib/customer-account.tsx:58",
+      "magnoEvidence": "backend/src/routes/auth.ts",
+      "decision": "Tokens de un uso, caducidad, no enumeración y correo transaccional pendiente."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "Historial",
+      "referenceState": "No se encontró historial completo autenticado en cuenta revisada.",
+      "magnoState": "Pedidos administrativos; no historial público autenticado.",
+      "classification": "REQUIRES_BUSINESS_DECISION",
+      "referenceEvidence": "app/mi-cuenta/page.tsx",
+      "magnoEvidence": "backend/src/routes/orders.ts",
+      "decision": "No atribuir a Albert una función no comprobada; definir vinculación segura de pedidos históricos."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "Compartir producto",
+      "referenceState": "navigator.share y clipboard fallback.",
+      "magnoState": "Sin control equivalente observado en ProductDetail.",
+      "classification": "PORT_UX_ONLY",
+      "referenceEvidence": "app/producto/[slug]/page.tsx:99",
+      "magnoEvidence": "frontend/src/pages/ProductDetail.tsx",
+      "decision": "Compartir canonical familiar, decidir si variante es opt-in; nunca tokens ni URL administrativa."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "Galería",
+      "referenceState": "Galería con imágenes de categoría usadas como apoyo.",
+      "magnoState": "Galería de Product y medios editoriales PUBLISHED.",
+      "classification": "ALREADY_BETTER_IN_MAGNO",
+      "referenceEvidence": "app/producto/[slug]/page.tsx:82",
+      "magnoEvidence": "frontend/src/pages/ProductDetail.tsx:45",
+      "decision": "Ventaja acotada a datos SKU/medio editorial; no usar imágenes genéricas como evidencia del producto."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "Lightbox",
+      "referenceState": "Home editorial-lightbox.",
+      "magnoState": "Galería premium existente; ampliación a validar por UX.",
+      "classification": "PORT_UX_ONLY",
+      "referenceEvidence": "app/page.tsx:492",
+      "magnoEvidence": "frontend/src/components/product/ProductGallery.tsx",
+      "decision": "Sólo patrón accesible si añade valor; foco, Escape, retorno y scroll lock."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "Newsletter",
+      "referenceState": "Formulario sólo setSubscribed(true), sin envío en submit inspeccionado.",
+      "magnoState": "No suscripción real certificada.",
+      "classification": "REJECT",
+      "referenceEvidence": "app/page.tsx:412",
+      "magnoEvidence": "frontend/src/components/layout/Footer.tsx",
+      "decision": "Rechazar falsa confirmación; una newsletter real requiere consentimiento, doble opt-in y baja."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "WhatsApp",
+      "referenceState": "Concierge construye enlace wa.me configurable.",
+      "magnoState": "Página de contacto existente; integración específica por decidir.",
+      "classification": "REQUIRES_BUSINESS_DECISION",
+      "referenceEvidence": "components/store-concierge.tsx:315",
+      "magnoEvidence": "frontend/src/pages/Contact.tsx",
+      "decision": "Número comercial, horarios, mensaje y datos permitidos requieren dueño."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "Concierge",
+      "referenceState": "Respuestas por reglas y enlaces; no prueba de IA ni asesoría experta.",
+      "magnoState": "Sin equivalente certificado.",
+      "classification": "REQUIRES_BUSINESS_DECISION",
+      "referenceEvidence": "components/store-concierge.tsx:161",
+      "magnoEvidence": "frontend/src/pages/Support.tsx",
+      "decision": "Para químicos sólo información aprobada; no recomendar mezclas o usos sin validación."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "Idiomas",
+      "referenceState": "i18n y selector de idioma.",
+      "magnoState": "Interfaz española.",
+      "classification": "REQUIRES_BUSINESS_DECISION",
+      "referenceEvidence": "lib/i18n.tsx",
+      "magnoEvidence": "frontend/src/App.tsx",
+      "decision": "No traducir instrucciones de seguridad automáticamente; demanda y mantenimiento no medidos."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "Cotización de envío",
+      "referenceState": "Función shipping-quote y utilidades de dirección.",
+      "magnoState": "Sin cotizador equivalente certificado.",
+      "classification": "REQUIRES_BUSINESS_DECISION",
+      "referenceEvidence": "netlify/functions/shipping-quote.mjs",
+      "magnoEvidence": "frontend/src/pages/Checkout.tsx",
+      "decision": "Decidir reglas de productos químicos/peso/empaque, cobertura y proveedor."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "Seguimiento",
+      "referenceState": "trackingNumber en operaciones.",
+      "magnoState": "Estados administrativos de pedido.",
+      "classification": "PORT_FEATURE",
+      "referenceEvidence": "lib/operations.ts:38",
+      "magnoEvidence": "frontend/src/pages/AdminOrderDetail.tsx",
+      "decision": "Vista pública protegida; no exponer órdenes por identificador adivinable."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "Métodos de pago adicionales",
+      "referenceState": "PayPal y tarjeta además de Mercado Pago en funciones.",
+      "magnoState": "Proveedor actual; checkout deliberadamente cerrado.",
+      "classification": "REQUIRES_BUSINESS_DECISION",
+      "referenceEvidence": "netlify/functions/paypal-create-order.mjs",
+      "magnoEvidence": "backend/src/routes/checkout.ts",
+      "decision": "No activación en V1; contratos, manejo de errores, idempotencia y conciliación."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "Direcciones guardadas",
+      "referenceState": "Datos de checkout en almacenamiento local; no directorio persistente de cuenta certificado.",
+      "magnoState": "Dirección capturada por pedido.",
+      "classification": "PORT_FEATURE",
+      "referenceEvidence": "app/checkout/page.tsx:79",
+      "magnoEvidence": "backend/prisma/schema.prisma",
+      "decision": "Implementar bajo cuenta y política de retención; no equiparar localStorage con libreta segura."
+    },
+    {
+      "area": "PUBLICO",
+      "feature": "Agrupación de variantes",
+      "referenceState": "Catálogo de referencia orientado a piezas; no ProductFamily equivalente comprobado.",
+      "magnoState": "25 familias/79 variantes, slug histórico y canonical familiar.",
+      "classification": "ALREADY_BETTER_IN_MAGNO",
+      "referenceEvidence": "lib/products.ts",
+      "magnoEvidence": "backend/src/services/catalog.ts",
+      "decision": "Conservar separación comercial/SKU y no copiar límite de100 productos de referencia."
+    }
+  ]
+}

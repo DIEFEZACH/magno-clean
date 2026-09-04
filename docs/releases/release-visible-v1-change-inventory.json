@@ -1,0 +1,1480 @@
+{
+  "schemaVersion": 1,
+  "auditDate": "2026-09-04",
+  "releaseSha": "050f890f2704b0b6d6a57c7e76e5520525b8c835",
+  "productionComparison": {
+    "baseSha": "f25412ab916549edee0cf4098bca6ad4e29e62c6",
+    "providerVerification": "CONFIRMED_BOTH_PROVIDER_UI",
+    "render": {
+      "deploymentId": "dep-daauc8nlk1mc73ag4he0",
+      "commit": "f25412ab916549edee0cf4098bca6ad4e29e62c6"
+    },
+    "cloudflarePages": {
+      "deploymentId": "33398ca5-6ca9-4240-a52c-390500faf08f",
+      "commit": "f25412ab916549edee0cf4098bca6ad4e29e62c6"
+    },
+    "evidence": "Root agent inspected active production provider UI during this certification; no production deployments triggered."
+  },
+  "changedFileCount": 183,
+  "added": 146,
+  "modified": 37,
+  "deleted": 0,
+  "classificationRule": "Una categoría primaria por archivo; categorías temáticas pueden solaparse conceptualmente. Todos los archivos del diff incluidos una vez.",
+  "groups": {
+    "DATABASE_SCHEMA": {
+      "functionality": "Familias y editorial versionado con medios; esquema Prisma y migraciones 7–9.",
+      "impact": "Añade 7 tablas, 5 enums y 3 columnas a Product; sin DML de negocio.",
+      "compatibility": "Backend antiguo puede seguir leyendo/escribiendo campos antiguos; nuevo requiere 9/9. Frontend antiguo conserva contrato SKU.",
+      "migrations": [
+        7,
+        8,
+        9
+      ],
+      "variables": [
+        "DATABASE_URL"
+      ],
+      "risk": "P0: ProductFamily y tablas editoriales de staging tienen RLS ausente y grants cliente efectivos; bloquea release. DDL sigue aditivo.",
+      "rollback": "Conservar esquema aditivo y volver a deployments previos; no ejecutar rollback.sql.",
+      "executedDuringBuild": false,
+      "executedDuringStart": false,
+      "manualAction": "BLOQUEADO: no aplicar 7–9 del SHA congelado. Aprobar corrección y contención, nueva certificación y backup antes de definir otra secuencia.",
+      "touchesExistingData": "DDL sobre Product; default 0 en nueva columna; no cambia precios/stock/pedidos.",
+      "files": [
+        "backend/prisma/migrations/20260831090000_product_families/migration.sql",
+        "backend/prisma/migrations/20260901033000_editorial_website_content/migration.sql",
+        "backend/prisma/migrations/20260902090000_editorial_media/migration.sql",
+        "backend/prisma/schema.prisma"
+      ]
+    },
+    "BACKEND_RUNTIME": {
+      "functionality": "Registrar catálogo y editorial; default product-media.",
+      "impact": "Carga módulos en start; la conexión DB se usa en requests/readiness, no migra ni crea bucket.",
+      "compatibility": "Requiere nuevo esquema antes de servir /api/catalog; /ready SELECT 1 no demuestra schema completo.",
+      "migrations": [
+        7,
+        8,
+        9
+      ],
+      "variables": [
+        "SUPABASE_PRODUCT_MEDIA_BUCKET"
+      ],
+      "risk": "MEDIUM: /ready no sustituye verificación 9/9.",
+      "rollback": "Redeploy backend anterior, conservar DB.",
+      "executedDuringBuild": false,
+      "executedDuringStart": true,
+      "manualAction": "BLOQUEADO por NO_GO: ningún deploy del SHA congelado; replanificar sólo con corrección revisada y nuevo SHA certificado.",
+      "touchesExistingData": "No durante start; escrituras sólo mediante endpoints autorizados.",
+      "files": [
+        "backend/src/config/env.ts",
+        "backend/src/index.ts"
+      ]
+    },
+    "BACKEND_API": {
+      "functionality": "Listado y detalle agrupado; administración de familias y contratos validados.",
+      "impact": "Nuevos endpoints /api/catalog y familias admin; API SKU previa se conserva.",
+      "compatibility": "Frontend nuevo depende de catálogo; frontend previo continúa usando /api/products. Legacy wholesalePrice se reporta aparte.",
+      "migrations": [
+        7,
+        8,
+        9
+      ],
+      "variables": [],
+      "risk": "MEDIUM: orden backend → familias → frontend.",
+      "rollback": "Volver frontend primero, backend después; no borrar Product.",
+      "executedDuringBuild": false,
+      "executedDuringStart": true,
+      "manualAction": "BLOQUEADO por NO_GO para deployment; smoke READ-ONLY no levanta el bloqueo.",
+      "touchesExistingData": "Catálogo sólo lectura; admin puede editar familias/vínculos sólo por solicitud autenticada.",
+      "files": [
+        "backend/src/routes/admin.ts",
+        "backend/src/routes/catalog.ts",
+        "backend/src/schemas/admin.ts",
+        "backend/src/schemas/catalog.ts",
+        "backend/src/services/catalog.ts"
+      ]
+    },
+    "BACKEND_SECURITY": {
+      "functionality": "Estado checkout público no-store y guardia fail-closed; validación segura de paths.",
+      "impact": "Permite observar cierre sin ejecutar checkout; evita paths editoriales inseguros.",
+      "compatibility": "CHECKOUT_ENABLED=false mantiene cierre; no activa pagos.",
+      "migrations": [],
+      "variables": [
+        "CHECKOUT_ENABLED"
+      ],
+      "risk": "MEDIUM: no confundir disponibilidad de UI con autorización de pago.",
+      "rollback": "Mantener false también en despliegue previo.",
+      "executedDuringBuild": false,
+      "executedDuringStart": true,
+      "manualAction": "Confirmar false sin cambiar variables.",
+      "touchesExistingData": "No en startup; guardia evita flujo comercial cuando false.",
+      "files": [
+        "backend/src/middleware/checkoutAvailability.ts",
+        "backend/src/routes/checkout.ts",
+        "backend/src/services/storageObjectPath.ts"
+      ]
+    },
+    "FRONTEND_PUBLIC": {
+      "functionality": "Catálogo agrupado, selector, ProductDetail Premium, navegación y responsive; cierre comercial.",
+      "impact": "Cambia tarjetas y detalle usando IDs reales de variantes; rutas históricas resuelven canonical familiar.",
+      "compatibility": "Compatibilidad técnica del código auditado: requiere catálogo y agrupación del backend nuevo. No autoriza desplegar RELEASE_SHA; cualquier release corregido requiere nuevo SHA certificado.",
+      "migrations": [
+        7,
+        8,
+        9
+      ],
+      "variables": [
+        "VITE_API_URL",
+        "VITE_SITE_URL",
+        "CHECKOUT_ENABLED"
+      ],
+      "risk": "MEDIUM: orden de despliegue, SEO y responsive.",
+      "rollback": "Volver a deployment anterior de Pages antes que backend.",
+      "executedDuringBuild": false,
+      "executedDuringStart": false,
+      "manualAction": "Build local con variables explícitas permitido; deployment BLOQUEADO hasta corrección y nueva certificación.",
+      "touchesExistingData": "Lecturas públicas; las acciones de usuario pueden afectar carrito local. No checkout real en certificación.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/commerce/CheckoutUnavailable.tsx",
+        "frontend/src/components/layout/Header.tsx",
+        "frontend/src/components/product/ProductCard.tsx",
+        "frontend/src/components/product/ProductGallery.tsx",
+        "frontend/src/components/sections/CategoriesSection.tsx",
+        "frontend/src/components/sections/FeaturedProducts.tsx",
+        "frontend/src/hooks/useCatalog.ts",
+        "frontend/src/hooks/useCheckoutAvailability.ts",
+        "frontend/src/index.css",
+        "frontend/src/lib/productDetail.ts",
+        "frontend/src/pages/Cart.tsx",
+        "frontend/src/pages/Checkout.tsx",
+        "frontend/src/pages/Contact.tsx",
+        "frontend/src/pages/ProductDetail.tsx",
+        "frontend/src/pages/Products.tsx",
+        "frontend/src/pages/Support.tsx"
+      ]
+    },
+    "FRONTEND_ADMIN": {
+      "functionality": "Administración de familias y revisión responsive de vistas admin.",
+      "impact": "CRUD manual de familias/variantes, formularios y navegación interna.",
+      "compatibility": "Backend nuevo requerido para pantallas nuevas; rutas existentes mantienen API.",
+      "migrations": [
+        7,
+        8,
+        9
+      ],
+      "variables": [
+        "VITE_API_URL"
+      ],
+      "risk": "MEDIUM: funciones mutantes quedan detrás de ADMIN.",
+      "rollback": "Volver Pages previo; conservar datos/esquema.",
+      "executedDuringBuild": false,
+      "executedDuringStart": false,
+      "manualAction": "QA autenticado con admin temporal BLOQUEADO por exposición User/RefreshToken; ningún deployment hasta nueva certificación.",
+      "touchesExistingData": "Sólo interacción admin explícita; no ejecuta acciones de datos al construir.",
+      "files": [
+        "frontend/src/components/admin/AdminFeedback.tsx",
+        "frontend/src/components/admin/AdminLayout.tsx",
+        "frontend/src/pages/AdminCustomers.tsx",
+        "frontend/src/pages/AdminDashboard.tsx",
+        "frontend/src/pages/AdminInventory.tsx",
+        "frontend/src/pages/AdminLogin.tsx",
+        "frontend/src/pages/AdminOrders.tsx",
+        "frontend/src/pages/AdminProductFamilies.tsx",
+        "frontend/src/pages/AdminProducts.tsx",
+        "frontend/src/pages/AdminSettings.tsx"
+      ]
+    },
+    "SEO": {
+      "functionality": "Sitemap desde /api/catalog agrupado, deduplicación y validación de fallback/origen.",
+      "impact": "prebuild escribe frontend/public/sitemap.xml y robots.txt locales; GET API de catálogo.",
+      "compatibility": "Producción requiere generación normal con datos agrupados; stale de origen distinto se rechaza.",
+      "migrations": [
+        7
+      ],
+      "variables": [
+        "VITE_API_URL",
+        "VITE_SITE_URL",
+        "SITEMAP_ALLOW_STALE",
+        "SITEMAP_ENVIRONMENT"
+      ],
+      "risk": "MEDIUM: artefactos localhost versionados deben reemplazarse por prebuild.",
+      "rollback": "Volver deployment Pages previo; no reutilizar sitemap de otro origen.",
+      "executedDuringBuild": true,
+      "executedDuringStart": false,
+      "manualAction": "SITEMAP_ALLOW_STALE=false para liberación productiva; revisar 41 publicaciones.",
+      "touchesExistingData": "Sólo archivos locales generados; consultas HTTP públicas GET.",
+      "files": [
+        "frontend/scripts/generateSitemap.mjs",
+        "frontend/scripts/sitemap.mjs"
+      ]
+    },
+    "PRODUCT_FAMILY": {
+      "functionality": "Plan versionado de 25 familias, 79 variantes y 16 individuales.",
+      "impact": "Datos declarativos de agrupación, revisión y ayudas UI; no aplica plan por importarse.",
+      "compatibility": "Se verifica SHA-256 del plan y conteos antes de leer credenciales en herramienta manual.",
+      "migrations": [
+        7
+      ],
+      "variables": [],
+      "risk": "MEDIUM: aplicar sólo tras dry-run sin conflictos.",
+      "rollback": "Conservar agrupación en rollback normal; desvincular sólo con herramienta controlada y autorización.",
+      "executedDuringBuild": false,
+      "executedDuringStart": false,
+      "manualAction": "Plan APPLY separado, expresamente prohibido esta noche.",
+      "touchesExistingData": "El plan por sí mismo no escribe; APPLY controla familyId/variantLabel/variantSortOrder.",
+      "files": [
+        "docs/product-data/product-family-plan-review.md",
+        "docs/product-data/product-family-plan.json",
+        "frontend/src/components/product/VariantSelector.tsx",
+        "frontend/src/types/catalog.ts"
+      ]
+    },
+    "EDITORIAL": {
+      "functionality": "Ciclo DRAFT → REVIEW → APPROVED → PUBLISHED, histórico inmutable, fuentes privadas.",
+      "impact": "API admin y componentes editoriales; público obtiene medios sólo de revisión publicada y objetivo coincidente.",
+      "compatibility": "Esquema 8 y 9 requerido; ausencia de contenido publicado es compatible con V1 básico.",
+      "migrations": [
+        8,
+        9
+      ],
+      "variables": [
+        "SUPABASE_PRODUCT_MEDIA_BUCKET"
+      ],
+      "risk": "P0: Express ADMIN/PUBLISHED no protege el acceso directo si el schema está expuesto; grants sin RLS confirmados. Corrección separada obligatoria.",
+      "rollback": "Volver deployments conservando todo histórico/editorial; jamás borrar para rollback.",
+      "executedDuringBuild": false,
+      "executedDuringStart": true,
+      "manualAction": "Ninguna publicación autorizada en esta certificación.",
+      "touchesExistingData": "Servicios admin pueden escribir sólo ante llamadas explícitas autenticadas; no en start.",
+      "files": [
+        "backend/src/routes/websiteContent.ts",
+        "backend/src/schemas/websiteContent.ts",
+        "backend/src/services/websiteContent.ts",
+        "frontend/src/components/product/ProductContentSections.tsx",
+        "frontend/src/lib/websiteContent.ts",
+        "frontend/src/pages/AdminContent.tsx",
+        "frontend/src/pages/AdminContentEditor.tsx",
+        "frontend/src/types/websiteContent.ts"
+      ]
+    },
+    "MEDIA": {
+      "functionality": "Manifest y serialización/inspección de WebP editorial seguro.",
+      "impact": "Filtra roles/path/alt/dimensiones/MIME; URLs públicas limitadas por publicación; manifest no sube objetos.",
+      "compatibility": "Nuevo schema para asociación; backend arranca sin bucket si no se intenta inspección editorial.",
+      "migrations": [
+        9
+      ],
+      "variables": [
+        "SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_PRODUCT_MEDIA_BUCKET"
+      ],
+      "risk": "MEDIUM: no confundir existencia en Storage con autorización editorial.",
+      "rollback": "Conservar objetos y asociaciones; volver deployments.",
+      "executedDuringBuild": false,
+      "executedDuringStart": true,
+      "manualAction": "No crear bucket, subir ni asociar durante certificación.",
+      "touchesExistingData": "Inspección Storage GET sólo bajo acción manual; serialización pública sólo lectura.",
+      "files": [
+        "backend/src/services/publicStorageUrl.ts",
+        "backend/src/services/publicWebsiteContent.ts",
+        "backend/src/services/websiteContentMediaStorage.ts",
+        "docs/product-data/media-manifest.json",
+        "frontend/src/components/product/ProductEditorialMedia.tsx",
+        "frontend/src/lib/editorialMedia.ts"
+      ]
+    },
+    "TOOLING": {
+      "functionality": "CI, dependencias de pruebas, compilación, ignores y ejemplo de nueva variable.",
+      "impact": "Frontend añade devDependencies de tests/E2E; backend no cambia lock ni dependencias.",
+      "compatibility": "Locks presentes en ambos paquetes; Node 22 en CI; no actualización de dependencias durante certificación.",
+      "migrations": [],
+      "variables": [
+        "VITE_API_URL",
+        "VITE_SITE_URL",
+        "SUPABASE_PRODUCT_MEDIA_BUCKET"
+      ],
+      "risk": "LOW: reproducibilidad, instalación de dev tooling y fixture CI.",
+      "rollback": "Volver commits/artifact anteriores, no tocar datos.",
+      "executedDuringBuild": true,
+      "executedDuringStart": false,
+      "manualAction": "CI/build; configuración en archivos no implica despliegue.",
+      "touchesExistingData": "No datos remotos: build:ci usa servidor local fixture; prebuild sólo sitemap local.",
+      "files": [
+        ".github/workflows/ci.yml",
+        ".gitignore",
+        "backend/.env.example",
+        "backend/package.json",
+        "frontend/package-lock.json",
+        "frontend/package.json",
+        "frontend/playwright.config.ts",
+        "frontend/scripts/buildForCi.mjs",
+        "frontend/tsconfig.node.json",
+        "frontend/vitest.config.ts"
+      ]
+    },
+    "TEST": {
+      "functionality": "Pruebas backend de catálogos/gates/media/editorial y frontend/componentes/sitemap/E2E.",
+      "impact": "Aumenta cobertura; pruebas no equivalen a producción ni a QA autenticado.",
+      "compatibility": "Fixtures sintéticos; ejecutar sólo suites habituales, no test:inventory mutante.",
+      "migrations": [],
+      "variables": [],
+      "risk": "LOW: separar tests de seed/inventory scripts.",
+      "rollback": "Sin datos de producción a revertir.",
+      "executedDuringBuild": false,
+      "executedDuringStart": false,
+      "manualAction": "npm test y E2E explícitos; no se ejecutan automáticamente por npm run build/start.",
+      "touchesExistingData": "Fixtures locales/sintéticos; no autoriza datos baseline.",
+      "files": [
+        "backend/src/middleware/checkoutAvailability.test.ts",
+        "backend/src/schemas/productFamilies.test.ts",
+        "backend/src/schemas/websiteContent.test.ts",
+        "backend/src/services/catalog.test.ts",
+        "backend/src/services/mediaSync.test.ts",
+        "backend/src/services/mediaSyncReport.test.ts",
+        "backend/src/services/mediaSyncStorageAdapter.test.ts",
+        "backend/src/services/productFamilyPlan.test.ts",
+        "backend/src/services/productFamilyPlanConfig.test.ts",
+        "backend/src/services/productFamilyPlanRunner.test.ts",
+        "backend/src/services/publicWebsiteContent.test.ts",
+        "backend/src/services/stagingCatalog.test.ts",
+        "backend/src/services/stagingCatalogConfig.test.ts",
+        "backend/src/services/stagingCatalogImages.test.ts",
+        "backend/src/services/stagingCatalogRunner.test.ts",
+        "backend/src/services/websiteContent.test.ts",
+        "backend/src/services/websiteContentMedia.test.ts",
+        "frontend/e2e/product-detail-media.spec.ts",
+        "frontend/scripts/sitemap.test.mjs",
+        "frontend/src/components/product/ProductEditorialMedia.test.tsx",
+        "frontend/src/lib/editorialMedia.test.ts",
+        "frontend/src/pages/ProductDetail.test.tsx",
+        "frontend/src/test/setup.ts"
+      ]
+    },
+    "DOCUMENTATION": {
+      "functionality": "Guías de catálogo/staging/media/release y 55 fichas técnicas PDF.",
+      "impact": "472125150 bytes de PDFs: coste de Git/clone, no bundle frontend.",
+      "compatibility": "Documentos no importados por runtime ni copiados por scripts build.",
+      "migrations": [],
+      "variables": [],
+      "risk": "LOW runtime / MEDIUM clonación; evidencia editorial no implica aprobación.",
+      "rollback": "No borrar historial en esta tarea; separación PIM/LFS futura.",
+      "executedDuringBuild": false,
+      "executedDuringStart": false,
+      "manualAction": "Revisión humana de fuentes; ninguna publicación automática.",
+      "touchesExistingData": "No.",
+      "files": [
+        "docs/CATALOG_API.md",
+        "docs/Ficha y hoja de seguridad Gel apatologia y neutro conductor.pdf",
+        "docs/Ficha y hoja de seguridad acaba-ácaros.pdf",
+        "docs/Ficha y hoja de seguridad aditivo alcalin.pdf",
+        "docs/Ficha y hoja de seguridad aditom zuma.pdf",
+        "docs/Ficha y hoja de seguridad alto poder neutralizer.pdf",
+        "docs/Ficha y hoja de seguridad amoxi ultra.pdf",
+        "docs/Ficha y hoja de seguridad apc.pdf",
+        "docs/Ficha y hoja de seguridad arcilla lunar 300ml.pdf",
+        "docs/Ficha y hoja de seguridad arcilla lunar JUNIOR 300ml.pdf",
+        "docs/Ficha y hoja de seguridad arcilla lunar.pdf",
+        "docs/Ficha y hoja de seguridad bio wash enjuague.pdf",
+        "docs/Ficha y hoja de seguridad bio wash pre-lavador.pdf",
+        "docs/Ficha y hoja de seguridad blancolchon forte.pdf",
+        "docs/Ficha y hoja de seguridad chazam.pdf",
+        "docs/Ficha y hoja de seguridad citrical.pdf",
+        "docs/Ficha y hoja de seguridad citrimag.pdf",
+        "docs/Ficha y hoja de seguridad crema hidratadora.pdf",
+        "docs/Ficha y hoja de seguridad crema limpiadora.pdf",
+        "docs/Ficha y hoja de seguridad detergente z.pdf",
+        "docs/Ficha y hoja de seguridad don remigio.pdf",
+        "docs/Ficha y hoja de seguridad dry speed.pdf",
+        "docs/Ficha y hoja de seguridad enjuague multifibras orange.pdf",
+        "docs/Ficha y hoja de seguridad enjuague multifibras.pdf",
+        "docs/Ficha y hoja de seguridad espanta manchas.pdf",
+        "docs/Ficha y hoja de seguridad fine cleaner enjuague.pdf",
+        "docs/Ficha y hoja de seguridad fine cleaner pre-lavador.pdf",
+        "docs/Ficha y hoja de seguridad glicerina pura grado técnico.pdf",
+        "docs/Ficha y hoja de seguridad mag seal top.pdf",
+        "docs/Ficha y hoja de seguridad magbooster.pdf",
+        "docs/Ficha y hoja de seguridad magnifico.pdf",
+        "docs/Ficha y hoja de seguridad magno restorer.pdf",
+        "docs/Ficha y hoja de seguridad magno shine.pdf",
+        "docs/Ficha y hoja de seguridad mata olores enzimatico.pdf",
+        "docs/Ficha y hoja de seguridad neutralizador de olores.pdf",
+        "docs/Ficha y hoja de seguridad orange liquid.pdf",
+        "docs/Ficha y hoja de seguridad oximag.pdf",
+        "docs/Ficha y hoja de seguridad permag.pdf",
+        "docs/Ficha y hoja de seguridad pexidil.pdf",
+        "docs/Ficha y hoja de seguridad plimag.pdf",
+        "docs/Ficha y hoja de seguridad poder desoxidante.pdf",
+        "docs/Ficha y hoja de seguridad power cristal.pdf",
+        "docs/Ficha y hoja de seguridad protemag.pdf",
+        "docs/Ficha y hoja de seguridad repel apply wet.pdf",
+        "docs/Ficha y hoja de seguridad repel.pdf",
+        "docs/Ficha y hoja de seguridad resbala gotas 300ml.pdf",
+        "docs/Ficha y hoja de seguridad sarr OFF.pdf",
+        "docs/Ficha y hoja de seguridad seven neutro.pdf",
+        "docs/Ficha y hoja de seguridad shampoo alfombras.pdf",
+        "docs/Ficha y hoja de seguridad shampoo amonia magno.pdf",
+        "docs/Ficha y hoja de seguridad shampoo de carrocerías automotriz neutro.pdf",
+        "docs/Ficha y hoja de seguridad shampoo germicida.pdf",
+        "docs/Ficha y hoja de seguridad shine stone.pdf",
+        "docs/Ficha y hoja de seguridad ultra black.pdf",
+        "docs/Ficha y hoja de seguridad velero.pdf",
+        "docs/Ficha y hoja de seguridad viace clean.pdf",
+        "docs/MEDIA_SYNC.md",
+        "docs/STAGING_CATALOG_BASELINE.md",
+        "docs/release-visible-v1.md"
+      ]
+    },
+    "NON_RUNTIME_SCRIPT": {
+      "functionality": "Herramientas de media sync, baseline staging, ProductFamily y rollback SQL manual.",
+      "impact": "Compiladas por tsc pero no importadas por entrypoint de start ni invocadas por build; pueden mutar sólo al invocarse.",
+      "compatibility": "Flags/gates específicos, ProductFamily dry-run por defecto; rollback.sql destructivo está excluido de liberación.",
+      "migrations": [
+        7,
+        8,
+        9
+      ],
+      "variables": [
+        "DATABASE_URL",
+        "SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ],
+      "risk": "HIGH si se ejecutan manualmente en destino incorrecto; no autorun.",
+      "rollback": "No ejecutar rollback.sql; herramientas de cambios sólo con autorización y backup.",
+      "executedDuringBuild": "NO (TS compilado, no ejecutado)",
+      "executedDuringStart": false,
+      "manualAction": "Invocación manual separada. APPLY/sync/rollback no autorizados esta noche.",
+      "touchesExistingData": "Potencialmente sí al execute; dry-run ProductFamily tiene writeOperations=0 y conexión readonly.",
+      "files": [
+        "backend/prisma/migrations/20260831090000_product_families/rollback.sql",
+        "backend/prisma/migrations/20260901033000_editorial_website_content/rollback.sql",
+        "backend/prisma/migrations/20260902090000_editorial_media/rollback.sql",
+        "backend/src/scripts/applyProductFamilyPlan.ts",
+        "backend/src/scripts/applyStagingCatalog.ts",
+        "backend/src/scripts/exportStagingCatalog.ts",
+        "backend/src/scripts/syncProductMedia.ts",
+        "backend/src/services/mediaSync/config.ts",
+        "backend/src/services/mediaSync/localFile.ts",
+        "backend/src/services/mediaSync/manifest.ts",
+        "backend/src/services/mediaSync/report.ts",
+        "backend/src/services/mediaSync/runner.ts",
+        "backend/src/services/mediaSync/storageAdapter.ts",
+        "backend/src/services/mediaSync/types.ts",
+        "backend/src/services/productFamilyPlan/config.ts",
+        "backend/src/services/productFamilyPlan/plan.ts",
+        "backend/src/services/productFamilyPlan/readState.ts",
+        "backend/src/services/productFamilyPlan/runner.ts",
+        "backend/src/services/productFamilyPlan/safeError.ts",
+        "backend/src/services/productFamilyPlan/writer.ts",
+        "backend/src/services/stagingCatalog/applyRunner.ts",
+        "backend/src/services/stagingCatalog/config.ts",
+        "backend/src/services/stagingCatalog/imagePolicy.ts",
+        "backend/src/services/stagingCatalog/plan.ts",
+        "backend/src/services/stagingCatalog/privateFiles.ts",
+        "backend/src/services/stagingCatalog/readCatalog.ts",
+        "backend/src/services/stagingCatalog/safeError.ts",
+        "backend/src/services/stagingCatalog/snapshot.ts",
+        "backend/src/services/stagingCatalog/stagingWriter.ts",
+        "backend/src/services/stagingCatalog/types.ts"
+      ]
+    }
+  },
+  "files": [
+    {
+      "status": "M",
+      "file": ".github/workflows/ci.yml",
+      "category": "TOOLING"
+    },
+    {
+      "status": "M",
+      "file": ".gitignore",
+      "category": "TOOLING"
+    },
+    {
+      "status": "M",
+      "file": "backend/.env.example",
+      "category": "TOOLING"
+    },
+    {
+      "status": "M",
+      "file": "backend/package.json",
+      "category": "TOOLING"
+    },
+    {
+      "status": "A",
+      "file": "backend/prisma/migrations/20260831090000_product_families/migration.sql",
+      "category": "DATABASE_SCHEMA"
+    },
+    {
+      "status": "A",
+      "file": "backend/prisma/migrations/20260831090000_product_families/rollback.sql",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/prisma/migrations/20260901033000_editorial_website_content/migration.sql",
+      "category": "DATABASE_SCHEMA"
+    },
+    {
+      "status": "A",
+      "file": "backend/prisma/migrations/20260901033000_editorial_website_content/rollback.sql",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/prisma/migrations/20260902090000_editorial_media/migration.sql",
+      "category": "DATABASE_SCHEMA"
+    },
+    {
+      "status": "A",
+      "file": "backend/prisma/migrations/20260902090000_editorial_media/rollback.sql",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "M",
+      "file": "backend/prisma/schema.prisma",
+      "category": "DATABASE_SCHEMA"
+    },
+    {
+      "status": "M",
+      "file": "backend/src/config/env.ts",
+      "category": "BACKEND_RUNTIME"
+    },
+    {
+      "status": "M",
+      "file": "backend/src/index.ts",
+      "category": "BACKEND_RUNTIME"
+    },
+    {
+      "status": "M",
+      "file": "backend/src/middleware/checkoutAvailability.test.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "M",
+      "file": "backend/src/middleware/checkoutAvailability.ts",
+      "category": "BACKEND_SECURITY"
+    },
+    {
+      "status": "M",
+      "file": "backend/src/routes/admin.ts",
+      "category": "BACKEND_API"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/routes/catalog.ts",
+      "category": "BACKEND_API"
+    },
+    {
+      "status": "M",
+      "file": "backend/src/routes/checkout.ts",
+      "category": "BACKEND_SECURITY"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/routes/websiteContent.ts",
+      "category": "EDITORIAL"
+    },
+    {
+      "status": "M",
+      "file": "backend/src/schemas/admin.ts",
+      "category": "BACKEND_API"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/schemas/catalog.ts",
+      "category": "BACKEND_API"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/schemas/productFamilies.test.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/schemas/websiteContent.test.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/schemas/websiteContent.ts",
+      "category": "EDITORIAL"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/scripts/applyProductFamilyPlan.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/scripts/applyStagingCatalog.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/scripts/exportStagingCatalog.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/scripts/syncProductMedia.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/catalog.test.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/catalog.ts",
+      "category": "BACKEND_API"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/mediaSync.test.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/mediaSync/config.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/mediaSync/localFile.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/mediaSync/manifest.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/mediaSync/report.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/mediaSync/runner.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/mediaSync/storageAdapter.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/mediaSync/types.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/mediaSyncReport.test.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/mediaSyncStorageAdapter.test.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/productFamilyPlan.test.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/productFamilyPlan/config.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/productFamilyPlan/plan.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/productFamilyPlan/readState.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/productFamilyPlan/runner.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/productFamilyPlan/safeError.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/productFamilyPlan/writer.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/productFamilyPlanConfig.test.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/productFamilyPlanRunner.test.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/publicStorageUrl.ts",
+      "category": "MEDIA"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/publicWebsiteContent.test.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/publicWebsiteContent.ts",
+      "category": "MEDIA"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/stagingCatalog.test.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/stagingCatalog/applyRunner.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/stagingCatalog/config.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/stagingCatalog/imagePolicy.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/stagingCatalog/plan.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/stagingCatalog/privateFiles.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/stagingCatalog/readCatalog.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/stagingCatalog/safeError.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/stagingCatalog/snapshot.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/stagingCatalog/stagingWriter.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/stagingCatalog/types.ts",
+      "category": "NON_RUNTIME_SCRIPT"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/stagingCatalogConfig.test.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/stagingCatalogImages.test.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/stagingCatalogRunner.test.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/storageObjectPath.ts",
+      "category": "BACKEND_SECURITY"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/websiteContent.test.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/websiteContent.ts",
+      "category": "EDITORIAL"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/websiteContentMedia.test.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "backend/src/services/websiteContentMediaStorage.ts",
+      "category": "MEDIA"
+    },
+    {
+      "status": "A",
+      "file": "docs/CATALOG_API.md",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad Gel apatologia y neutro conductor.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad acaba-ácaros.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad aditivo alcalin.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad aditom zuma.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad alto poder neutralizer.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad amoxi ultra.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad apc.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad arcilla lunar 300ml.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad arcilla lunar JUNIOR 300ml.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad arcilla lunar.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad bio wash enjuague.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad bio wash pre-lavador.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad blancolchon forte.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad chazam.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad citrical.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad citrimag.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad crema hidratadora.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad crema limpiadora.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad detergente z.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad don remigio.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad dry speed.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad enjuague multifibras orange.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad enjuague multifibras.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad espanta manchas.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad fine cleaner enjuague.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad fine cleaner pre-lavador.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad glicerina pura grado técnico.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad mag seal top.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad magbooster.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad magnifico.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad magno restorer.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad magno shine.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad mata olores enzimatico.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad neutralizador de olores.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad orange liquid.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad oximag.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad permag.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad pexidil.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad plimag.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad poder desoxidante.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad power cristal.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad protemag.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad repel apply wet.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad repel.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad resbala gotas 300ml.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad sarr OFF.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad seven neutro.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad shampoo alfombras.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad shampoo amonia magno.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad shampoo de carrocerías automotriz neutro.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad shampoo germicida.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad shine stone.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad ultra black.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad velero.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/Ficha y hoja de seguridad viace clean.pdf",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/MEDIA_SYNC.md",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/STAGING_CATALOG_BASELINE.md",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "docs/product-data/media-manifest.json",
+      "category": "MEDIA"
+    },
+    {
+      "status": "A",
+      "file": "docs/product-data/product-family-plan-review.md",
+      "category": "PRODUCT_FAMILY"
+    },
+    {
+      "status": "A",
+      "file": "docs/product-data/product-family-plan.json",
+      "category": "PRODUCT_FAMILY"
+    },
+    {
+      "status": "A",
+      "file": "docs/release-visible-v1.md",
+      "category": "DOCUMENTATION"
+    },
+    {
+      "status": "A",
+      "file": "frontend/e2e/product-detail-media.spec.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "M",
+      "file": "frontend/package-lock.json",
+      "category": "TOOLING"
+    },
+    {
+      "status": "M",
+      "file": "frontend/package.json",
+      "category": "TOOLING"
+    },
+    {
+      "status": "A",
+      "file": "frontend/playwright.config.ts",
+      "category": "TOOLING"
+    },
+    {
+      "status": "A",
+      "file": "frontend/scripts/buildForCi.mjs",
+      "category": "TOOLING"
+    },
+    {
+      "status": "M",
+      "file": "frontend/scripts/generateSitemap.mjs",
+      "category": "SEO"
+    },
+    {
+      "status": "A",
+      "file": "frontend/scripts/sitemap.mjs",
+      "category": "SEO"
+    },
+    {
+      "status": "A",
+      "file": "frontend/scripts/sitemap.test.mjs",
+      "category": "TEST"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/App.tsx",
+      "category": "FRONTEND_PUBLIC"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/components/admin/AdminFeedback.tsx",
+      "category": "FRONTEND_ADMIN"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/components/admin/AdminLayout.tsx",
+      "category": "FRONTEND_ADMIN"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/components/commerce/CheckoutUnavailable.tsx",
+      "category": "FRONTEND_PUBLIC"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/components/layout/Header.tsx",
+      "category": "FRONTEND_PUBLIC"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/components/product/ProductCard.tsx",
+      "category": "FRONTEND_PUBLIC"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/components/product/ProductContentSections.tsx",
+      "category": "EDITORIAL"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/components/product/ProductEditorialMedia.test.tsx",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/components/product/ProductEditorialMedia.tsx",
+      "category": "MEDIA"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/components/product/ProductGallery.tsx",
+      "category": "FRONTEND_PUBLIC"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/components/product/VariantSelector.tsx",
+      "category": "PRODUCT_FAMILY"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/components/sections/CategoriesSection.tsx",
+      "category": "FRONTEND_PUBLIC"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/components/sections/FeaturedProducts.tsx",
+      "category": "FRONTEND_PUBLIC"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/hooks/useCatalog.ts",
+      "category": "FRONTEND_PUBLIC"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/hooks/useCheckoutAvailability.ts",
+      "category": "FRONTEND_PUBLIC"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/index.css",
+      "category": "FRONTEND_PUBLIC"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/lib/editorialMedia.test.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/lib/editorialMedia.ts",
+      "category": "MEDIA"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/lib/productDetail.ts",
+      "category": "FRONTEND_PUBLIC"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/lib/websiteContent.ts",
+      "category": "EDITORIAL"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/pages/AdminContent.tsx",
+      "category": "EDITORIAL"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/pages/AdminContentEditor.tsx",
+      "category": "EDITORIAL"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/pages/AdminCustomers.tsx",
+      "category": "FRONTEND_ADMIN"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/pages/AdminDashboard.tsx",
+      "category": "FRONTEND_ADMIN"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/pages/AdminInventory.tsx",
+      "category": "FRONTEND_ADMIN"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/pages/AdminLogin.tsx",
+      "category": "FRONTEND_ADMIN"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/pages/AdminOrders.tsx",
+      "category": "FRONTEND_ADMIN"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/pages/AdminProductFamilies.tsx",
+      "category": "FRONTEND_ADMIN"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/pages/AdminProducts.tsx",
+      "category": "FRONTEND_ADMIN"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/pages/AdminSettings.tsx",
+      "category": "FRONTEND_ADMIN"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/pages/Cart.tsx",
+      "category": "FRONTEND_PUBLIC"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/pages/Checkout.tsx",
+      "category": "FRONTEND_PUBLIC"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/pages/Contact.tsx",
+      "category": "FRONTEND_PUBLIC"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/pages/ProductDetail.test.tsx",
+      "category": "TEST"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/pages/ProductDetail.tsx",
+      "category": "FRONTEND_PUBLIC"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/pages/Products.tsx",
+      "category": "FRONTEND_PUBLIC"
+    },
+    {
+      "status": "M",
+      "file": "frontend/src/pages/Support.tsx",
+      "category": "FRONTEND_PUBLIC"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/test/setup.ts",
+      "category": "TEST"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/types/catalog.ts",
+      "category": "PRODUCT_FAMILY"
+    },
+    {
+      "status": "A",
+      "file": "frontend/src/types/websiteContent.ts",
+      "category": "EDITORIAL"
+    },
+    {
+      "status": "M",
+      "file": "frontend/tsconfig.node.json",
+      "category": "TOOLING"
+    },
+    {
+      "status": "A",
+      "file": "frontend/vitest.config.ts",
+      "category": "TOOLING"
+    }
+  ],
+  "automaticExecution": {
+    "backendBuild": "tsc",
+    "backendStart": "node dist/index.js",
+    "frontendBuild": "prebuild → sitemap GET/local files; tsc -b && vite build",
+    "frontendStart": "No start script; Pages sirve dist; preview es manual.",
+    "neverAutomatic": [
+      "media:sync",
+      "staging:catalog:apply",
+      "product-families:apply",
+      "import:products",
+      "seed:admin",
+      "seed:products",
+      "backup:database",
+      "inventory:release-expired",
+      "test:inventory",
+      "publicación WebsiteContent",
+      "rollback.sql",
+      "prisma:migrate"
+    ],
+    "scope": "Comprobado en package scripts, CI y src/index.ts; comandos externos de proveedores deben contrastarse en auditoría de configuración.",
+    "dependencyInstall": "npm ci puede ejecutar lifecycle scripts de dependencias, p. ej. generación cliente Prisma; no hay hook del proyecto que migre, siembre o aplique datos."
+  },
+  "knownIssues": [
+    {
+      "id": "LEGACY_CRITICAL_DB_PRIVILEGES",
+      "priority": "P0",
+      "classification": "MUST_FIX_BEFORE_RELEASE",
+      "preExistingProduction": true,
+      "confirmed": "Metadata READ-ONLY: User, RefreshToken, Order, Payment, InventoryMovement, Product en ambos entornos sin RLS y anon SELECT/INSERT/UPDATE/DELETE; authenticated SELECT. ProductFamily en staging igual.",
+      "notConfirmed": "Exposición efectiva PostgREST de schema no comprobada; sin explotación HTTP, sin lecturas de filas sensibles ni escrituras.",
+      "evidence": [
+        ".local/reports/release-visible-v1/production-readonly.json#criticalTableAccess",
+        ".local/reports/release-visible-v1/staging-readonly.json#criticalTableAccess"
+      ],
+      "fix": "PR separado para lista explícita de todas las tablas de aplicación; ENABLE RLS + REVOKE client/PUBLIC; preservar backend owner/service_role; no auth/storage/defaults globales; no apply remoto.",
+      "verdict": "NO_GO"
+    },
+    {
+      "id": "EDITORIAL_DIRECT_DATA_API_ACCESS",
+      "priority": "P0",
+      "classification": "MUST_FIX_BEFORE_RELEASE",
+      "finding": "Staging: seis tablas editoriales sin RLS; anon SELECT/INSERT/UPDATE/DELETE y authenticated SELECT/UPDATE efectivos. Cero filas hoy; riesgo de leer fuentes/auditoría o saltar workflow vía acceso directo.",
+      "evidence": "READ-ONLY 2026-09-04T09:44:38.938Z; .local/reports/release-visible-v1/staging-readonly.json#editorialAccess",
+      "tables": [
+        "WebsiteContent",
+        "WebsiteContentRevision",
+        "WebsiteContentSource",
+        "WebsiteContentEntry",
+        "WebsiteContentFaq",
+        "WebsiteContentMedia"
+      ],
+      "metadata": {
+        "rls": false,
+        "anonSelect": true,
+        "anonInsert": true,
+        "anonUpdate": true,
+        "anonDelete": true,
+        "authenticatedSelect": true,
+        "authenticatedUpdate": true
+      },
+      "exploitAttempted": false,
+      "productionTablesPresent": false,
+      "fix": "PR separado con migración nueva que habilite RLS y revoque privilegios anon/authenticated/PUBLIC; mantener backend autorizado. No aplicar ni modificar RELEASE_SHA.",
+      "verdict": "NO_GO"
+    },
+    {
+      "id": "LEGACY_PUBLIC_PRICE_FIELDS",
+      "severity": "P1_REVIEW",
+      "evidence": "backend/src/routes/products.ts:73",
+      "finding": "Legacy /api/products incluye wholesalePrice; preexistente en base y release. /api/catalog no lo expone.",
+      "gate": "Resolver clasificación antes de afirmar ausencia global de campos privados."
+    }
+  ],
+  "sources": [
+    {
+      "title": "npm lifecycle scripts",
+      "url": "https://docs.npmjs.com/cli/v11/using-npm/scripts/"
+    }
+  ],
+  "verdict": "NO_GO",
+  "deploymentGate": "NO_GO: secuencia original bloqueada. Antes de cualquier futura operación productiva se requiere corrección de seguridad revisada, contención de acceso directo durante la transición, autorización expresa y un nuevo SHA certificado; ni backup ni 9/9 por sí solos levantan este bloqueo."
+}

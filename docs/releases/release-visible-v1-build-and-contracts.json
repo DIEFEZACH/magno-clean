@@ -1,0 +1,1202 @@
+{
+  "releaseSha": "050f890f2704b0b6d6a57c7e76e5520525b8c835",
+  "generatedAt": "2026-09-04T09:49:43.845Z",
+  "runtime": {
+    "node": "v22.14.0",
+    "npm": "10.9.2"
+  },
+  "localSuite": {
+    "backend": {
+      "passed": 218,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontendVitest": {
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontendScriptsAndSitemap": {
+      "passed": 60,
+      "failed": 0,
+      "skipped": 0
+    },
+    "existingPlaywright": {
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    "existingTotal": {
+      "passed": 309,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "publicChecks": [
+    {
+      "name": "health and ready",
+      "status": "PASS"
+    },
+    {
+      "name": "checkout closed",
+      "status": "OBSERVED_STAGE_TEST_CONFIGURATION",
+      "qualification": "Staging currently reports true; zero stock keeps all95SKUunavailable. Root confirms existing stagingTEST configuration. Explicitclosed UI and middleware tested locally; noflagmodified."
+    },
+    {
+      "name": "Helmet and request id",
+      "status": "PASS"
+    },
+    {
+      "name": "CORS allowed origin and request id echoed",
+      "status": "PASS"
+    },
+    {
+      "name": "CORS unknown origin rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "allowed preflight",
+      "status": "PASS"
+    },
+    {
+      "name": "anonymous blocked /api/admin/products",
+      "status": "PASS"
+    },
+    {
+      "name": "anonymous blocked /api/admin/product-families",
+      "status": "PASS"
+    },
+    {
+      "name": "anonymous blocked /api/admin/website-content",
+      "status": "PASS"
+    },
+    {
+      "name": "invalid query rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "commercial counts",
+      "status": "PASS"
+    },
+    {
+      "name": "no duplicated variants as cards",
+      "status": "PASS"
+    },
+    {
+      "name": "all active SKU unavailable with zero stock",
+      "status": "PASS"
+    },
+    {
+      "name": "private fields absent from list",
+      "status": "PASS"
+    },
+    {
+      "name": "pagination page 1",
+      "status": "PASS"
+    },
+    {
+      "name": "pagination page 2",
+      "status": "PASS"
+    },
+    {
+      "name": "pagination page 3",
+      "status": "PASS"
+    },
+    {
+      "name": "pagination page 4",
+      "status": "PASS"
+    },
+    {
+      "name": "pagination complete and no duplicates",
+      "status": "PASS"
+    },
+    {
+      "name": "sort featured",
+      "status": "PASS"
+    },
+    {
+      "name": "sort name-asc",
+      "status": "PASS"
+    },
+    {
+      "name": "sort name-desc",
+      "status": "PASS"
+    },
+    {
+      "name": "sort price-asc",
+      "status": "PASS"
+    },
+    {
+      "name": "sort price-desc",
+      "status": "PASS"
+    },
+    {
+      "name": "sort newest",
+      "status": "PASS"
+    },
+    {
+      "name": "sort oldest",
+      "status": "PASS"
+    },
+    {
+      "name": "filter category=Magno",
+      "status": "PASS"
+    },
+    {
+      "name": "filter brand=Magno Clean",
+      "status": "PASS"
+    },
+    {
+      "name": "filter featured=true",
+      "status": "PASS"
+    },
+    {
+      "name": "filter featured=false",
+      "status": "PASS"
+    },
+    {
+      "name": "combined filters",
+      "status": "PASS"
+    },
+    {
+      "name": "cleared filters",
+      "status": "PASS"
+    },
+    {
+      "name": "search CITRICAL",
+      "status": "PASS"
+    },
+    {
+      "name": "search PLCT1",
+      "status": "PASS"
+    },
+    {
+      "name": "search PLCT2",
+      "status": "PASS"
+    },
+    {
+      "name": "search PLCT3",
+      "status": "PASS"
+    },
+    {
+      "name": "search CHAZAM",
+      "status": "PASS"
+    },
+    {
+      "name": "search PLCZ2",
+      "status": "PASS"
+    },
+    {
+      "name": "search ORANGE LIQUID",
+      "status": "PASS"
+    },
+    {
+      "name": "search PLOLG",
+      "status": "PASS"
+    },
+    {
+      "name": "search MULTIFIBRAS",
+      "status": "PASS",
+      "qualification": "Initial exact-one assertion was too narrow. Search correctly returns three distinct matching families, no duplicate SKU cards."
+    },
+    {
+      "name": "search EMLF20",
+      "status": "PASS"
+    },
+    {
+      "name": "search APC TNT",
+      "status": "PASS"
+    },
+    {
+      "name": "search APCG",
+      "status": "PASS"
+    },
+    {
+      "name": "search NEUTRO CAR",
+      "status": "PASS"
+    },
+    {
+      "name": "search SCN20",
+      "status": "PASS"
+    },
+    {
+      "name": "search termino-inexistente-zzzz",
+      "status": "PASS"
+    },
+    {
+      "name": "search CODE-DOES-NOT-EXIST-999",
+      "status": "PASS"
+    },
+    {
+      "name": "family detail citrical",
+      "status": "PASS"
+    },
+    {
+      "name": "historical PLCT1",
+      "status": "PASS"
+    },
+    {
+      "name": "historical PLCT2",
+      "status": "PASS"
+    },
+    {
+      "name": "historical PLCT3",
+      "status": "PASS"
+    },
+    {
+      "name": "family detail chazam",
+      "status": "PASS"
+    },
+    {
+      "name": "historical PLCZ1",
+      "status": "PASS"
+    },
+    {
+      "name": "historical PLCZ2",
+      "status": "PASS"
+    },
+    {
+      "name": "historical PLCZ3",
+      "status": "PASS"
+    },
+    {
+      "name": "family detail orange-liquid",
+      "status": "PASS"
+    },
+    {
+      "name": "historical PLOL1",
+      "status": "PASS"
+    },
+    {
+      "name": "historical PLOLG",
+      "status": "PASS"
+    },
+    {
+      "name": "historical PLOL5",
+      "status": "PASS"
+    },
+    {
+      "name": "historical PLOL20",
+      "status": "PASS"
+    },
+    {
+      "name": "family detail multifibras",
+      "status": "PASS"
+    },
+    {
+      "name": "historical EMLF1",
+      "status": "PASS"
+    },
+    {
+      "name": "historical EMLFG",
+      "status": "PASS"
+    },
+    {
+      "name": "historical EMLF5",
+      "status": "PASS"
+    },
+    {
+      "name": "historical EMLF20",
+      "status": "PASS"
+    },
+    {
+      "name": "family detail apc-tnt",
+      "status": "PASS"
+    },
+    {
+      "name": "historical APC1",
+      "status": "PASS"
+    },
+    {
+      "name": "historical APCG",
+      "status": "PASS"
+    },
+    {
+      "name": "historical APC5",
+      "status": "PASS"
+    },
+    {
+      "name": "historical APC20",
+      "status": "PASS"
+    },
+    {
+      "name": "NEUTRO CAR20 historical detail",
+      "status": "PASS",
+      "qualification": "Release plan groups SCN20 in NEUTRO CAR. Initial independent-product assumption corrected against versioned plan, not a runtime defect."
+    },
+    {
+      "name": "invalid slug",
+      "status": "PASS"
+    }
+  ],
+  "publicSupplement": [
+    {
+      "name": "real independent canonical/detail",
+      "status": "PASS",
+      "slug": "bio-wash-enjuague-kiwi-1-5-kg"
+    },
+    {
+      "name": "legacy public private-field guard",
+      "status": "FAIL",
+      "severity": "P1",
+      "httpStatus": 200,
+      "productCount": 98,
+      "wholesalePriceKeyPresentCount": 98,
+      "qualification": "Projection records presence only; no price values persisted. Preexistinglegacycontract; groupedcatalog doesnotexpose it."
+    }
+  ],
+  "liveSeo": {
+    "urls": 48,
+    "commercial": 41,
+    "families": 25,
+    "independentProducts": 16,
+    "excludedGroupedSlugs": 79,
+    "static": 6,
+    "categories": 1,
+    "duplicates": 0,
+    "variantQueries": 0,
+    "validXml": true,
+    "origin": "https://magno-clean-staging.pages.dev",
+    "robotsSitemapCorrect": true
+  },
+  "artifacts": [
+    {
+      "name": "dist-staging",
+      "simulation": false,
+      "apiUrl": "https://magno-clean-api-staging.onrender.com",
+      "siteUrl": "https://magno-clean-staging.pages.dev",
+      "totalAssetBytes": 750202,
+      "totalGzipBytes": 237520,
+      "chunkCount": 57,
+      "chunks": [
+        {
+          "file": "index-ByEzPzXV.js",
+          "bytes": 260466,
+          "gzipBytes": 82100
+        },
+        {
+          "file": "AdminProducts-Bae4PQpJ.js",
+          "bytes": 142019,
+          "gzipBytes": 44893
+        },
+        {
+          "file": "Checkout-BraiW_p2.js",
+          "bytes": 98837,
+          "gzipBytes": 28932
+        },
+        {
+          "file": "index-C6UTA8gY.css",
+          "bytes": 50985,
+          "gzipBytes": 9152
+        },
+        {
+          "file": "AdminContentEditor-Be3tafAK.js",
+          "bytes": 24364,
+          "gzipBytes": 6735
+        },
+        {
+          "file": "ProductDetail-Cmaz-2kx.js",
+          "bytes": 14145,
+          "gzipBytes": 4662
+        },
+        {
+          "file": "AdminProductFamilies-PFOl4501.js",
+          "bytes": 13367,
+          "gzipBytes": 4149
+        },
+        {
+          "file": "AdminProductEdit-BYBoCZv0.js",
+          "bytes": 12711,
+          "gzipBytes": 4002
+        },
+        {
+          "file": "AdminInventory-EJ9_VAZa.js",
+          "bytes": 9444,
+          "gzipBytes": 3019
+        },
+        {
+          "file": "jsx-runtime-B5yqYJvp.js",
+          "bytes": 8742,
+          "gzipBytes": 3341
+        },
+        {
+          "file": "useQuery-CEnaMFib.js",
+          "bytes": 8131,
+          "gzipBytes": 2969
+        },
+        {
+          "file": "Home-CghCvZO6.js",
+          "bytes": 7645,
+          "gzipBytes": 2543
+        },
+        {
+          "file": "AdminOrders-Dt9XxEAX.js",
+          "bytes": 7303,
+          "gzipBytes": 2119
+        },
+        {
+          "file": "AdminLayout-q0BQx7F_.js",
+          "bytes": 7140,
+          "gzipBytes": 2701
+        },
+        {
+          "file": "AdminContent-DIm6sKRh.js",
+          "bytes": 7125,
+          "gzipBytes": 2636
+        },
+        {
+          "file": "Products-WlBZdeWA.js",
+          "bytes": 6034,
+          "gzipBytes": 2092
+        },
+        {
+          "file": "AdminOrderDetail-DATB6T4r.js",
+          "bytes": 5871,
+          "gzipBytes": 1930
+        },
+        {
+          "file": "PublicLayout-Gl9WrflC.js",
+          "bytes": 5870,
+          "gzipBytes": 2211
+        },
+        {
+          "file": "Cart-BIMn0sv5.js",
+          "bytes": 4840,
+          "gzipBytes": 1624
+        },
+        {
+          "file": "AdminCustomers-CAJ5LrvX.js",
+          "bytes": 4356,
+          "gzipBytes": 1448
+        },
+        {
+          "file": "ProductCard-7wz8B4pa.js",
+          "bytes": 3836,
+          "gzipBytes": 1496
+        },
+        {
+          "file": "AdminDashboard-Bc_ri9od.js",
+          "bytes": 3324,
+          "gzipBytes": 1357
+        },
+        {
+          "file": "AdminSettings-Cv8rSHiX.js",
+          "bytes": 3102,
+          "gzipBytes": 1414
+        },
+        {
+          "file": "LegalPage-Bj--_QPI.js",
+          "bytes": 2990,
+          "gzipBytes": 1357
+        },
+        {
+          "file": "CheckoutResult-VkIUwoE-.js",
+          "bytes": 2973,
+          "gzipBytes": 1473
+        },
+        {
+          "file": "websiteContent-CHYrkx6m.js",
+          "bytes": 2939,
+          "gzipBytes": 1175
+        },
+        {
+          "file": "cartStore-BGea258b.js",
+          "bytes": 2556,
+          "gzipBytes": 1195
+        },
+        {
+          "file": "AdminCustomerDetail-BxYg5ayI.js",
+          "bytes": 2474,
+          "gzipBytes": 914
+        },
+        {
+          "file": "useMutation-DmHxVyz6.js",
+          "bytes": 2343,
+          "gzipBytes": 963
+        },
+        {
+          "file": "Contact-7X3nrcIG.js",
+          "bytes": 2305,
+          "gzipBytes": 987
+        },
+        {
+          "file": "Support-BDoUaPcp.js",
+          "bytes": 2179,
+          "gzipBytes": 1088
+        },
+        {
+          "file": "About-DOgXaJxK.js",
+          "bytes": 2072,
+          "gzipBytes": 1017
+        },
+        {
+          "file": "Seo-D8W8Gic1.js",
+          "bytes": 2017,
+          "gzipBytes": 836
+        },
+        {
+          "file": "AdminLogin-_v9iE4Kf.js",
+          "bytes": 1735,
+          "gzipBytes": 836
+        },
+        {
+          "file": "CategoriesSection-7CxKZKnZ.js",
+          "bytes": 1690,
+          "gzipBytes": 737
+        },
+        {
+          "file": "useCatalog-CEJGh7t7.js",
+          "bytes": 1408,
+          "gzipBytes": 743
+        },
+        {
+          "file": "NotFound-CA_EOTmj.js",
+          "bytes": 1376,
+          "gzipBytes": 702
+        },
+        {
+          "file": "CheckoutUnavailable-BNLKe1ih.js",
+          "bytes": 1334,
+          "gzipBytes": 738
+        },
+        {
+          "file": "AdminUi-CcSTWXNM.js",
+          "bytes": 1284,
+          "gzipBytes": 642
+        },
+        {
+          "file": "authStore-C_HslDVE.js",
+          "bytes": 1015,
+          "gzipBytes": 434
+        },
+        {
+          "file": "shield-check-CHrJbsVS.js",
+          "bytes": 671,
+          "gzipBytes": 394
+        },
+        {
+          "file": "react-bfeMMELt.js",
+          "bytes": 651,
+          "gzipBytes": 401
+        },
+        {
+          "file": "AdminRoute-BFbYRAHN.js",
+          "bytes": 546,
+          "gzipBytes": 381
+        },
+        {
+          "file": "file-pen-line-BRL_RkJu.js",
+          "bytes": 454,
+          "gzipBytes": 297
+        },
+        {
+          "file": "Categories-D0U8IaRf.js",
+          "bytes": 442,
+          "gzipBytes": 320
+        },
+        {
+          "file": "useCheckoutAvailability-BTA59W0m.js",
+          "bytes": 413,
+          "gzipBytes": 299
+        },
+        {
+          "file": "layers-DOX4RgYU.js",
+          "bytes": 410,
+          "gzipBytes": 234
+        },
+        {
+          "file": "api-B60ANSDM.js",
+          "bytes": 357,
+          "gzipBytes": 277
+        },
+        {
+          "file": "trash-2-ZwbgSPMr.js",
+          "bytes": 317,
+          "gzipBytes": 208
+        },
+        {
+          "file": "users-_UfU5hdk.js",
+          "bytes": 295,
+          "gzipBytes": 219
+        },
+        {
+          "file": "shopping-cart-DTSF0Mlu.js",
+          "bytes": 281,
+          "gzipBytes": 226
+        },
+        {
+          "file": "arrow-up-C5N13f0Y.js",
+          "bytes": 263,
+          "gzipBytes": 198
+        },
+        {
+          "file": "menu-CfZDdcS7.js",
+          "bytes": 178,
+          "gzipBytes": 147
+        },
+        {
+          "file": "search-DK5lGymH.js",
+          "bytes": 163,
+          "gzipBytes": 161
+        },
+        {
+          "file": "config-DMeldii0.js",
+          "bytes": 153,
+          "gzipBytes": 123
+        },
+        {
+          "file": "plus-CGOvTvPI.js",
+          "bytes": 142,
+          "gzipBytes": 141
+        },
+        {
+          "file": "chevron-right-CdoY_iHg.js",
+          "bytes": 119,
+          "gzipBytes": 132
+        }
+      ],
+      "seo": {
+        "urls": 48,
+        "commercial": 41,
+        "families": 25,
+        "independentProducts": 16,
+        "excludedGroupedSlugs": 79,
+        "static": 6,
+        "categories": 1,
+        "duplicates": 0,
+        "variantQueries": 0,
+        "validXml": true,
+        "origin": "https://magno-clean-staging.pages.dev",
+        "robotsSitemapCorrect": true
+      }
+    },
+    {
+      "name": "dist-production-fixture",
+      "simulation": true,
+      "apiUrl": "https://magno-clean-api.onrender.com",
+      "siteUrl": "https://www.magnoclean.com.mx",
+      "totalAssetBytes": 750186,
+      "totalGzipBytes": 237421,
+      "chunkCount": 57,
+      "chunks": [
+        {
+          "file": "index-DexEDCi-.js",
+          "bytes": 260466,
+          "gzipBytes": 82092
+        },
+        {
+          "file": "AdminProducts-BiwzPmsj.js",
+          "bytes": 142019,
+          "gzipBytes": 44889
+        },
+        {
+          "file": "Checkout-C3Vwcmoe.js",
+          "bytes": 98837,
+          "gzipBytes": 28930
+        },
+        {
+          "file": "index-C6UTA8gY.css",
+          "bytes": 50985,
+          "gzipBytes": 9152
+        },
+        {
+          "file": "AdminContentEditor-CdlRcbSm.js",
+          "bytes": 24364,
+          "gzipBytes": 6731
+        },
+        {
+          "file": "ProductDetail-DsiQMJH9.js",
+          "bytes": 14145,
+          "gzipBytes": 4663
+        },
+        {
+          "file": "AdminProductFamilies-CLqrVsjZ.js",
+          "bytes": 13367,
+          "gzipBytes": 4149
+        },
+        {
+          "file": "AdminProductEdit-CdOsmDmy.js",
+          "bytes": 12711,
+          "gzipBytes": 3998
+        },
+        {
+          "file": "AdminInventory-BTztfW6Y.js",
+          "bytes": 9444,
+          "gzipBytes": 3015
+        },
+        {
+          "file": "jsx-runtime-B5yqYJvp.js",
+          "bytes": 8742,
+          "gzipBytes": 3341
+        },
+        {
+          "file": "useQuery-BEe53flM.js",
+          "bytes": 8131,
+          "gzipBytes": 2967
+        },
+        {
+          "file": "Home-DzLq5SDH.js",
+          "bytes": 7645,
+          "gzipBytes": 2543
+        },
+        {
+          "file": "AdminOrders-DaAvvXZT.js",
+          "bytes": 7303,
+          "gzipBytes": 2114
+        },
+        {
+          "file": "AdminLayout-CRVOeS0M.js",
+          "bytes": 7140,
+          "gzipBytes": 2699
+        },
+        {
+          "file": "AdminContent-QoGDddem.js",
+          "bytes": 7125,
+          "gzipBytes": 2634
+        },
+        {
+          "file": "Products-C4pwLsSh.js",
+          "bytes": 6034,
+          "gzipBytes": 2091
+        },
+        {
+          "file": "AdminOrderDetail-Dh8D_Xt2.js",
+          "bytes": 5871,
+          "gzipBytes": 1926
+        },
+        {
+          "file": "PublicLayout-Bv5iG9qd.js",
+          "bytes": 5870,
+          "gzipBytes": 2209
+        },
+        {
+          "file": "Cart-D-1UiDof.js",
+          "bytes": 4840,
+          "gzipBytes": 1624
+        },
+        {
+          "file": "AdminCustomers-DkmH71Qp.js",
+          "bytes": 4356,
+          "gzipBytes": 1444
+        },
+        {
+          "file": "ProductCard-Ct1K6Ojg.js",
+          "bytes": 3836,
+          "gzipBytes": 1495
+        },
+        {
+          "file": "AdminDashboard-ssc2DoO3.js",
+          "bytes": 3324,
+          "gzipBytes": 1356
+        },
+        {
+          "file": "AdminSettings-C_s1N8ii.js",
+          "bytes": 3102,
+          "gzipBytes": 1411
+        },
+        {
+          "file": "LegalPage-CHM0YJb2.js",
+          "bytes": 2990,
+          "gzipBytes": 1359
+        },
+        {
+          "file": "CheckoutResult-ripHFnrN.js",
+          "bytes": 2973,
+          "gzipBytes": 1471
+        },
+        {
+          "file": "websiteContent-C-zVnQZo.js",
+          "bytes": 2939,
+          "gzipBytes": 1170
+        },
+        {
+          "file": "cartStore-BGea258b.js",
+          "bytes": 2556,
+          "gzipBytes": 1195
+        },
+        {
+          "file": "AdminCustomerDetail-SHNCdQOz.js",
+          "bytes": 2474,
+          "gzipBytes": 909
+        },
+        {
+          "file": "useMutation-MgPtwVqD.js",
+          "bytes": 2343,
+          "gzipBytes": 961
+        },
+        {
+          "file": "Contact-3qvt6_AI.js",
+          "bytes": 2305,
+          "gzipBytes": 985
+        },
+        {
+          "file": "Support-C8fzi2ss.js",
+          "bytes": 2179,
+          "gzipBytes": 1087
+        },
+        {
+          "file": "About-BWPp9BUS.js",
+          "bytes": 2072,
+          "gzipBytes": 1017
+        },
+        {
+          "file": "Seo-CYOzQ4_2.js",
+          "bytes": 2017,
+          "gzipBytes": 836
+        },
+        {
+          "file": "AdminLogin-DQcVfV_a.js",
+          "bytes": 1735,
+          "gzipBytes": 831
+        },
+        {
+          "file": "CategoriesSection-BFne_IjT.js",
+          "bytes": 1690,
+          "gzipBytes": 736
+        },
+        {
+          "file": "useCatalog-CW8GWm97.js",
+          "bytes": 1408,
+          "gzipBytes": 743
+        },
+        {
+          "file": "NotFound-6ZmqW5qH.js",
+          "bytes": 1376,
+          "gzipBytes": 701
+        },
+        {
+          "file": "CheckoutUnavailable-BPPOiW_0.js",
+          "bytes": 1334,
+          "gzipBytes": 736
+        },
+        {
+          "file": "AdminUi-CcSTWXNM.js",
+          "bytes": 1284,
+          "gzipBytes": 642
+        },
+        {
+          "file": "authStore-DA5mbZMp.js",
+          "bytes": 1015,
+          "gzipBytes": 435
+        },
+        {
+          "file": "shield-check-D-cJqCru.js",
+          "bytes": 671,
+          "gzipBytes": 391
+        },
+        {
+          "file": "react-bfeMMELt.js",
+          "bytes": 651,
+          "gzipBytes": 401
+        },
+        {
+          "file": "AdminRoute-CqxqD0hX.js",
+          "bytes": 546,
+          "gzipBytes": 379
+        },
+        {
+          "file": "file-pen-line-BtayX_DV.js",
+          "bytes": 454,
+          "gzipBytes": 296
+        },
+        {
+          "file": "Categories-CbX_khG6.js",
+          "bytes": 442,
+          "gzipBytes": 320
+        },
+        {
+          "file": "useCheckoutAvailability-k-TYSOX3.js",
+          "bytes": 413,
+          "gzipBytes": 301
+        },
+        {
+          "file": "layers-CuLZ8qXI.js",
+          "bytes": 410,
+          "gzipBytes": 231
+        },
+        {
+          "file": "api-CDBlyMti.js",
+          "bytes": 357,
+          "gzipBytes": 278
+        },
+        {
+          "file": "trash-2-E5oXz1bQ.js",
+          "bytes": 317,
+          "gzipBytes": 205
+        },
+        {
+          "file": "users-BTk_Q9_V.js",
+          "bytes": 295,
+          "gzipBytes": 216
+        },
+        {
+          "file": "shopping-cart-BnClx3HO.js",
+          "bytes": 281,
+          "gzipBytes": 224
+        },
+        {
+          "file": "arrow-up-CsT3ra7Q.js",
+          "bytes": 263,
+          "gzipBytes": 196
+        },
+        {
+          "file": "menu-KVcBzRNZ.js",
+          "bytes": 178,
+          "gzipBytes": 147
+        },
+        {
+          "file": "search-6tNkikxr.js",
+          "bytes": 163,
+          "gzipBytes": 158
+        },
+        {
+          "file": "plus-DC3rK6zP.js",
+          "bytes": 142,
+          "gzipBytes": 141
+        },
+        {
+          "file": "config-DDncmxCe.js",
+          "bytes": 137,
+          "gzipBytes": 119
+        },
+        {
+          "file": "chevron-right-CcPUxNuZ.js",
+          "bytes": 119,
+          "gzipBytes": 131
+        }
+      ],
+      "seo": {
+        "urls": 48,
+        "commercial": 41,
+        "families": 25,
+        "independentProducts": 16,
+        "excludedGroupedSlugs": 79,
+        "static": 6,
+        "categories": 1,
+        "duplicates": 0,
+        "variantQueries": 0,
+        "validXml": true,
+        "origin": "https://www.magnoclean.com.mx",
+        "robotsSitemapCorrect": true
+      }
+    }
+  ],
+  "productionBuild": {
+    "live": "BLOCKED_EXPECTED_DEPLOY_ORDER: productioncatalogHTTP404; no stale fallback; no output deployed",
+    "fixture": "PASS_ISOLATED_ARTIFACT_SIMULATION: productionURLenv, stagedpubliccatalogfixture, no productionnetwork during successfulbuild"
+  },
+  "localSecurity": {
+    "scope": "isolated local app with loopback nonexistentDB and fabricatedcredentials; no remote writes, no checkout POST",
+    "results": [
+      {
+        "name": "invalid Content-Type returns415 before route",
+        "status": "PASS"
+      },
+      {
+        "name": "invalid JSON payload returns400 before database",
+        "status": "PASS"
+      },
+      {
+        "name": "malformed JSON returns400 before database",
+        "status": "PASS"
+      },
+      {
+        "name": "anonymous admin returns401",
+        "status": "PASS"
+      },
+      {
+        "name": "signed isolatedCUSTOMER fixture admin returns403 without DBwrites",
+        "status": "PASS"
+      },
+      {
+        "name": "moderate local auth limiter returns429 onfourthattempt",
+        "status": "PASS"
+      },
+      {
+        "name": "local checkout status false",
+        "status": "PASS"
+      }
+    ]
+  },
+  "localCommerce": {
+    "scope": "local browser, recorded public catalog, allAPI mocked, allnonGET blocked, nocheckoutsubmitted",
+    "results": [
+      {
+        "mode": "false",
+        "path": "/checkout",
+        "status": "PASS"
+      },
+      {
+        "mode": "true",
+        "path": "/checkout",
+        "status": "PASS"
+      },
+      {
+        "mode": "true",
+        "path": "/carrito",
+        "status": "PASS"
+      },
+      {
+        "mode": "error",
+        "path": "/checkout",
+        "status": "PASS"
+      },
+      {
+        "mode": "timeout",
+        "path": "/checkout",
+        "status": "PASS"
+      },
+      {
+        "mode": "pending",
+        "path": "/checkout",
+        "status": "PASS"
+      },
+      {
+        "mode": "true",
+        "path": "/producto/citrical?variant=PLCT2",
+        "status": "PASS"
+      },
+      {
+        "mode": "false",
+        "path": "/producto/citrical?variant=INVALID",
+        "status": "PASS"
+      }
+    ],
+    "forbiddenWrites": 0,
+    "pendingQualification": "The hook has no explicit fetch deadline. Pending transport remains loading and non-purchasable; transport timeout failure retries then failsclosed."
+  },
+  "warnings": [
+    "npmci deprecated backend transitives: inflight1.0.6,rimraf2.7.1,glob7.2.3",
+    "Vite outDir outside project root warning intentional to preserve worktree; generated tracked SEO restored byte-identical",
+    "No explicitdeadline in checkoutstatusfetch: pendingrequest staysloading/failclosed; transporttimeout tested",
+    "Priorproductionbundlemetric unavailable; no comparable baseline build captured"
+  ],
+  "publicRequests": {
+    "initialGetAndOptions": 69,
+    "additionalLegacyGet": 1,
+    "supplementGet": 2,
+    "buildStagingCatalogGet": 1,
+    "frontendSeoGet": 2,
+    "additionalSupplementReplayGet": 2,
+    "totalBackendStagingRequests": 75
+  },
+  "isolatedCommands": [
+    {
+      "name": "frontend-npm-ci",
+      "started": "2026-09-04T09:39:53.087Z",
+      "seconds": 421.3,
+      "exitCode": 0
+    },
+    {
+      "name": "backend-npm-ci",
+      "started": "2026-09-04T09:39:53.080Z",
+      "seconds": 421.67,
+      "exitCode": 0
+    },
+    {
+      "name": "prisma-format-check",
+      "started": "2026-09-04T09:47:47.570Z",
+      "seconds": 1.29,
+      "exitCode": 0
+    },
+    {
+      "name": "prisma-validate",
+      "started": "2026-09-04T09:47:48.866Z",
+      "seconds": 0.78,
+      "exitCode": 0
+    },
+    {
+      "name": "prisma-generate",
+      "started": "2026-09-04T09:47:49.643Z",
+      "seconds": 0.82,
+      "exitCode": 0
+    },
+    {
+      "name": "backend-build",
+      "started": "2026-09-04T09:47:50.467Z",
+      "seconds": 2.45,
+      "exitCode": 0
+    },
+    {
+      "name": "backend-tests",
+      "started": "2026-09-04T09:47:52.913Z",
+      "seconds": 0.38,
+      "exitCode": 0
+    },
+    {
+      "name": "frontend-tests",
+      "started": "2026-09-04T09:47:48.659Z",
+      "seconds": 1.85,
+      "exitCode": 0
+    },
+    {
+      "name": "frontend-lint",
+      "started": "2026-09-04T09:47:50.510Z",
+      "seconds": 2.82,
+      "exitCode": 0
+    },
+    {
+      "name": "frontend-typescript",
+      "started": "2026-09-04T09:47:53.326Z",
+      "seconds": 2.03,
+      "exitCode": 0
+    },
+    {
+      "name": "frontend-playwright",
+      "started": "2026-09-04T09:47:55.354Z",
+      "seconds": 6.91,
+      "exitCode": 0
+    },
+    {
+      "name": "frontend-staging-build",
+      "started": "2026-09-04T09:43:46.466Z",
+      "seconds": 3.4,
+      "exitCode": 0
+    },
+    {
+      "name": "frontend-production-live-build",
+      "started": "2026-09-04T09:43:49.872Z",
+      "seconds": 0.64,
+      "exitCode": 1
+    },
+    {
+      "name": "frontend-production-fixture-build",
+      "started": "2026-09-04T09:45:20.531Z",
+      "seconds": 2.66,
+      "exitCode": 0
+    }
+  ],
+  "localSortFixtures": {
+    "scope": "isolatedrepositoryfixturesactualreleaseCatalogService;noDBreadsorwrites",
+    "results": [
+      {
+        "sort": "featured",
+        "status": "PASS"
+      },
+      {
+        "sort": "name-asc",
+        "status": "PASS"
+      },
+      {
+        "sort": "name-desc",
+        "status": "PASS"
+      },
+      {
+        "sort": "price-asc",
+        "status": "PASS"
+      },
+      {
+        "sort": "price-desc",
+        "status": "PASS"
+      },
+      {
+        "sort": "newest",
+        "status": "PASS"
+      },
+      {
+        "sort": "oldest",
+        "status": "PASS"
+      }
+    ]
+  }
+}
