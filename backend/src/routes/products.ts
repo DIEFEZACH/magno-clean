@@ -55,23 +55,70 @@ function productData(body: Record<string, unknown>, creating = false) {
   return data;
 }
 
+const publicProductSourceSelect = {
+  id: true,
+  slug: true,
+  code: true,
+  brand: true,
+  name: true,
+  category: true,
+  description: true,
+  imageUrl: true,
+  retailPrice: true,
+  digitalPrice: true,
+  price: true,
+  oldPrice: true,
+  badge: true,
+  featured: true,
+  active: true,
+  createdAt: true,
+  updatedAt: true,
+  stock: true,
+  reservedStock: true,
+  images: {
+    select: { id: true, url: true, alt: true, position: true },
+    orderBy: { position: "asc" as const },
+  },
+} satisfies Prisma.ProductSelect;
+
+type PublicProductSource = Prisma.ProductGetPayload<{ select: typeof publicProductSourceSelect }>;
+
+function serializePublicProduct(product: PublicProductSource) {
+  return {
+    id: product.id,
+    slug: product.slug,
+    code: product.code,
+    brand: product.brand,
+    name: product.name,
+    category: product.category,
+    description: product.description,
+    imageUrl: product.imageUrl,
+    retailPrice: product.retailPrice,
+    digitalPrice: product.digitalPrice,
+    price: product.price,
+    oldPrice: product.oldPrice,
+    badge: product.badge,
+    featured: product.featured,
+    active: product.active,
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
+    images: product.images.map((image) => ({
+      id: image.id,
+      url: image.url,
+      alt: image.alt,
+      position: image.position,
+    })),
+    availableStock: Math.max(0, product.stock - product.reservedStock),
+  };
+}
+
 productsRouter.get("/", asyncHandler(async (_req, res) => {
   const products = await prisma.product.findMany({
-    select: {
-      id: true, slug: true, code: true, brand: true, name: true, category: true,
-      description: true, imageUrl: true, unitPrice: true, wholesalePrice: true,
-      retailPrice: true, digitalPrice: true, price: true, oldPrice: true, badge: true,
-      featured: true, active: true, createdAt: true, updatedAt: true,
-      stock: true, reservedStock: true,
-      images: { select: { id: true, url: true, alt: true, position: true }, orderBy: { position: "asc" } },
-    },
+    select: publicProductSourceSelect,
     orderBy: { createdAt: "desc" },
   });
 
-  res.json({ products: products.map(({ stock, reservedStock, ...product }) => ({
-    ...product,
-    availableStock: Math.max(0, stock - reservedStock),
-  })) });
+  res.json({ products: products.map(serializePublicProduct) });
 }));
 
 productsRouter.post("/", authenticate, authorize(Role.ADMIN), validateBody(createProductSchema), asyncHandler(async (req, res) => {
