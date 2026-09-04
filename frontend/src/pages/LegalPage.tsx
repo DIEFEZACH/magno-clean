@@ -80,7 +80,7 @@ export function LegalPage({ kind }: { kind: Kind }) {
           <p className="text-sm font-black uppercase tracking-[.25em] text-[#19A2B6]">
             Información legal
           </p>
-          <h1 className="mt-4 text-5xl font-black tracking-[-.05em]">
+          <h1 className="mt-4 break-words text-3xl font-black tracking-[-.05em] sm:text-5xl">
             {page.title}
           </h1>
           <div className="mt-7 rounded-2xl border border-amber-200 bg-amber-50 p-5 font-bold text-amber-900">
