@@ -39,6 +39,12 @@ BEGIN
             RAISE EXCEPTION 'Application access hardening requires every expected table';
         END IF;
 
+        -- A policy can exist even while RLS is disabled. Do not activate an
+        -- unexpected permissive policy or remove somebody else's policy.
+        IF EXISTS (SELECT 1 FROM pg_policy WHERE polrelid = target_relation) THEN
+            RAISE EXCEPTION 'Application access hardening found unexpected row security policies';
+        END IF;
+
         -- No FORCE: the table owner/backend remains able to use Prisma.
         -- No client policy: client access is denied independently of Express.
         EXECUTE format('ALTER TABLE %I.%I ENABLE ROW LEVEL SECURITY', 'public', application_table);
@@ -53,7 +59,7 @@ BEGIN
 
             -- Fail closed if custom membership/ownership or another grantor
             -- still gives effective access. Do not revoke unrelated roles.
-            IF has_table_privilege(client_role, target_relation, 'SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER')
+            IF has_table_privilege(client_role, target_relation, 'SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER, MAINTAIN')
                 OR has_any_column_privilege(client_role, target_relation, 'SELECT, INSERT, UPDATE, REFERENCES') THEN
                 RAISE EXCEPTION 'Application access hardening found remaining client privileges';
             END IF;

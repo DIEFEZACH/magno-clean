@@ -21,9 +21,9 @@ It enables RLS and revokes ALL table privileges from PUBLIC and from existing `a
 
 ## Failure and compatibility behavior
 
-- One DO statement makes the security change atomic: a missing expected table or remaining effective client privilege raises an exception, aborting the whole statement.
+- One DO statement makes the security change atomic: a missing expected table, any existing row-security policy, or remaining effective client privilege raises an exception, aborting the whole statement. Unexpected policies are preserved, neither activated nor deleted; review them before proposing a revised authorized plan.
 - Supabase roles absent from vanilla PostgreSQL are skipped; they are not created. PUBLIC grants are still removed.
-- The checks include inherited table and column privileges. A custom inherited grant, ownership, elevated client role, or another grantor can make the migration fail closed. Investigate that role path; do not broaden the revocation or use CASCADE automatically. PostgreSQL table revocation also removes corresponding column grants. [PostgreSQL 17 REVOKE](https://www.postgresql.org/docs/17/sql-revoke.html).
+- The checks include inherited table privileges, including PostgreSQL 17 MAINTAIN, and column privileges. A custom inherited grant, ownership, elevated client role, or another grantor can make the migration fail closed. Investigate that role path; do not broaden the revocation or use CASCADE automatically. PostgreSQL table revocation also removes corresponding column grants. [PostgreSQL 17 REVOKE](https://www.postgresql.org/docs/17/sql-revoke.html).
 - Without FORCE RLS, table owners keep their normal access. BYPASSRLS roles such as service_role still require and retain their existing table grants. The actual backend database role must be an authorized owner/BYPASSRLS role with the needed grants; a custom non-owner role relying on PUBLIC would be denied and needs an explicit reviewed access design before application. No role values or connection strings should be printed. [PostgreSQL 17 row security](https://www.postgresql.org/docs/17/ddl-rowsecurity.html).
 - RLS provides a second row-level barrier if SELECT/INSERT/UPDATE/DELETE grants are accidentally restored. It is not a replacement for privilege revocation: table-wide operations such as TRUNCATE are not filtered by RLS.
 - ALTER TABLE obtains locks on the application tables. Plan a controlled maintenance window and inspect lock wait; do not kill unrelated sessions. No lock-time guarantee is asserted from the in-memory tests.
@@ -38,7 +38,7 @@ It enables RLS and revokes ALL table privileges from PUBLIC and from existing `a
 5. After authorized application, verify all 20 table RLS flags, effective denial of table/column privileges for client roles and unchanged owner/service_role capability. Validate the public Express API contract and authenticated backend sessions; do not perform a real checkout or payment.
 6. Keep the release NO_GO until the security evidence and remaining certification blockers are resolved under a new approved SHA. Merely opening this PR is not mitigation of the current production permissions.
 
-Read-only inspection should use table/role metadata only (`pg_class`, `pg_namespace`, `pg_roles`, `has_table_privilege`, `has_any_column_privilege`). Verify RLS=true, FORCE=false, and all client access flags=false for every allowlisted table. No public allow policy is expected. Inspect exposed RPC/views separately if present; this table-only correction does not claim a full PostgREST surface audit.
+Read-only inspection should use table/role metadata only (`pg_class`, `pg_namespace`, `pg_roles`, `pg_policy`, `has_table_privilege`, `has_any_column_privilege`). Verify RLS=true, FORCE=false, no pre-existing policies, and all client access flags=false (including MAINTAIN) for every allowlisted table. Inspect exposed RPC/views separately if present; this table-only correction does not claim a full PostgREST surface audit.
 
 ## Local verification
 
@@ -52,9 +52,9 @@ npm run build
 node --test dist/services/databaseAccessHardening.test.js
 ```
 
-Nine tests cover exact schema/allowlist coverage, RLS/grant SQL, scope restrictions, unchanged checksums for 7–9, real SQL execution, anon/authenticated SELECT/INSERT/UPDATE/DELETE/TRUNCATE denial across all 20 tables, owner and service_role CRUD preservation, default-deny row policies after restored grants, absent Supabase roles, and atomic failure for missing tables/inherited grants. Tests intentionally fail if the locked PGlite helper disappears; they do not silently skip security coverage.
+Ten tests cover exact schema/allowlist coverage, RLS/grant SQL, scope restrictions, unchanged checksums for 7–9, real SQL execution, anon/authenticated SELECT/INSERT/UPDATE/DELETE/TRUNCATE denial across all 20 tables, owner and service_role CRUD preservation, default-deny row policies after restored grants, absent Supabase roles, and atomic failure for missing tables, inherited SELECT/MAINTAIN grants, or unexpected policies. The policy fixture verifies that prior ACL/RLS changes roll back and the original disabled policy remains untouched. Tests intentionally fail if the locked PGlite helper disappears; they do not silently skip security coverage.
 
-Validation on 2026-09-04: TypeScript build passed; targeted suite passed 9/9 (0 skipped); full backend suite passed 227/227 (0 failed, 0 skipped; 2.96 seconds) with the complete synthetic environment from the existing CI workflow. A first local full-suite invocation omitted five required CI configuration fields and failed during configuration loading; supplying those synthetic fields fixed the invocation without any code/configuration-file change. No private environment file was loaded.
+Latest validation on 2026-09-04 after policy/MAINTAIN guards: TypeScript build passed; targeted suite passed 10/10 (0 skipped); full backend suite passed 228/228 (0 failed, 0 skipped; 3.88 seconds) with the complete synthetic environment from the existing CI workflow. An earlier local full-suite invocation omitted five required CI configuration fields and failed during configuration loading; supplying those synthetic fields fixed the invocation without any code/configuration-file change. No private environment file was loaded.
 
 The embedded table fixtures test PostgreSQL authorization semantics, not production rows, real Supabase Data API routing, full FK/trigger behavior or operational lock contention. Those checks are not represented as completed here.
 

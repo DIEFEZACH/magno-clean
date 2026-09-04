@@ -31,6 +31,7 @@ test("hardening enables default-deny RLS and revokes both direct and PUBLIC gran
   assert.match(sql, /SELECT rolname FROM pg_roles WHERE rolname IN \('anon', 'authenticated'\)/);
   assert.match(sql, /REVOKE ALL PRIVILEGES ON TABLE %I\.%I FROM %I/);
   assert.match(sql, /IF has_table_privilege\(client_role, target_relation,/);
+  assert.match(sql, /TRUNCATE, REFERENCES, TRIGGER, MAINTAIN/);
   assert.match(sql, /OR has_any_column_privilege\(client_role, target_relation,/);
   assert.match(sql, /RAISE EXCEPTION 'Application access hardening found remaining client privileges'/);
 });
@@ -40,12 +41,13 @@ test("hardening is portable, atomic, fail-closed and uses identifier quoting", (
   assert.match(sql, /END;\s*\$application_data_access\$;\s*$/);
   assert.match(sql, /to_regclass\(format\('%I\.%I', 'public', application_table\)\)/);
   assert.match(sql, /IF target_relation IS NULL THEN\s*RAISE EXCEPTION/);
+  assert.match(sql, /IF EXISTS \(SELECT 1 FROM pg_policy WHERE polrelid = target_relation\) THEN\s*RAISE EXCEPTION/);
   assert.equal((sql.match(/EXECUTE format\(/g) || []).length, 3);
   assert.doesNotMatch(sql, /EXCEPTION\s+WHEN|IF\s+EXISTS\s+.*TABLE/i, "Never swallow failures or skip missing tables");
 });
 
 test("hardening preserves backend owner and service-role access and does not widen scope", () => {
-  assert.doesNotMatch(sql, /FORCE ROW LEVEL SECURITY|DISABLE ROW LEVEL SECURITY|CREATE POLICY|ALTER POLICY/i);
+  assert.doesNotMatch(sql, /FORCE ROW LEVEL SECURITY|DISABLE ROW LEVEL SECURITY|CREATE POLICY|ALTER POLICY|DROP POLICY/i);
   assert.doesNotMatch(sql, /\bGRANT\b|ALTER DEFAULT PRIVILEGES|ALL TABLES IN SCHEMA|\bCASCADE\b/i);
   assert.doesNotMatch(sql, /CREATE ROLE|ALTER ROLE|DROP ROLE|OWNER TO|SET ROLE|SET SESSION AUTHORIZATION/i);
   assert.doesNotMatch(sql, /'service_role'|'postgres'|'auth'|'storage'/);
@@ -122,7 +124,7 @@ test("embedded SQL denies anon/authenticated CRUD on all 20 tables and preserves
       assert.deepEqual(state.rows, [{ relrowsecurity: true, relforcerowsecurity: false }]);
       for (const role of ["anon", "authenticated"]) {
         const grants = await db.query(
-          "SELECT has_table_privilege($1::name, $2::regclass, 'SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER') AS table_access, has_any_column_privilege($1::name, $2::regclass, 'SELECT, INSERT, UPDATE, REFERENCES') AS column_access",
+          "SELECT has_table_privilege($1::name, $2::regclass, 'SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER, MAINTAIN') AS table_access, has_any_column_privilege($1::name, $2::regclass, 'SELECT, INSERT, UPDATE, REFERENCES') AS column_access",
           [role, target],
         );
         assert.deepEqual(grants.rows, [{ table_access: false, column_access: false }]);
@@ -188,5 +190,25 @@ test("embedded hardening aborts atomically on missing tables or inherited client
     await assert.rejects(db.exec(migration), /remaining client privileges/);
     assert.deepEqual((await db.query('SELECT relrowsecurity FROM pg_class WHERE oid = \'public."User"\'::regclass')).rows, [{ relrowsecurity: false }]);
     assert.deepEqual((await db.query('SELECT has_table_privilege(\'anon\', \'public."User"\', \'SELECT\') AS access')).rows, [{ access: true }]);
+  });
+  await withMemoryDatabase(async (db) => {
+    await createFixture(db);
+    await db.exec('CREATE ROLE inherited_maintainer; GRANT MAINTAIN ON public."_prisma_migrations" TO inherited_maintainer; GRANT inherited_maintainer TO anon;');
+    await assert.rejects(db.exec(migration), /remaining client privileges/);
+    assert.deepEqual((await db.query('SELECT relrowsecurity FROM pg_class WHERE oid = \'public."User"\'::regclass')).rows, [{ relrowsecurity: false }]);
+    assert.deepEqual((await db.query('SELECT has_table_privilege(\'anon\', \'public."_prisma_migrations"\', \'MAINTAIN\') AS access')).rows, [{ access: true }]);
+  });
+});
+
+test("embedded hardening aborts atomically without activating or deleting unexpected policies", async () => {
+  await withMemoryDatabase(async (db) => {
+    await createFixture(db);
+    // The last table proves earlier table/ACL changes also roll back on failure.
+    await db.exec('CREATE POLICY unexpected_public_read ON public."_prisma_migrations" FOR SELECT TO PUBLIC USING (true);');
+    await assert.rejects(db.exec(migration), /unexpected row security policies/);
+    assert.deepEqual((await db.query('SELECT relrowsecurity FROM pg_class WHERE oid = \'public."User"\'::regclass')).rows, [{ relrowsecurity: false }]);
+    assert.deepEqual((await db.query('SELECT has_table_privilege(\'anon\', \'public."User"\', \'SELECT\') AS access')).rows, [{ access: true }]);
+    assert.deepEqual((await db.query('SELECT polname FROM pg_policy WHERE polrelid = \'public."_prisma_migrations"\'::regclass')).rows, [{ polname: "unexpected_public_read" }]);
+    assert.deepEqual((await db.query('SELECT relrowsecurity FROM pg_class WHERE oid = \'public."_prisma_migrations"\'::regclass')).rows, [{ relrowsecurity: false }]);
   });
 });
