@@ -57,12 +57,12 @@ test "$RELEASE_TARGET_SHA" != "050f890f2704b0b6d6a57c7e76e5520525b8c835"
 git status --short
 cd backend
 env -i PATH="$PATH" HOME="$HOME" DOTENV_CONFIG_PATH=/dev/null \
-  DATABASE_URL=postgresql://codegen:codegen@127.0.0.1:5432/magno_clean_codegen npm ci
+  DATABASE_URL=postgresql://127.0.0.1:1/postgres npm ci
 env -i PATH="$PATH" HOME="$HOME" DOTENV_CONFIG_PATH=/dev/null \
-  DATABASE_URL=postgresql://codegen:codegen@127.0.0.1:5432/magno_clean_codegen \
+  DATABASE_URL=postgresql://127.0.0.1:1/postgres \
   node node_modules/prisma/build/index.js generate --config prisma.config.ts
 env -i PATH="$PATH" HOME="$HOME" DOTENV_CONFIG_PATH=/dev/null \
-  DATABASE_URL=postgresql://codegen:codegen@127.0.0.1:5432/magno_clean_codegen npm run build
+  DATABASE_URL=postgresql://127.0.0.1:1/postgres npm run build
 ```
 
 La URL loopback anterior contiene valores ficticios y sólo satisface la validación local de configuración de Prisma durante instalación/generación/build; no apunta a producción y no autoriza una conexión ni migración. El entorno se limita a PATH, HOME, la URL ficticia y dotenv deshabilitado; no hereda NODE_OPTIONS ni PG*. Revisar los lifecycle scripts del SHA sucesor antes de instalar. La comprobación visual de git status debe ser vacía.

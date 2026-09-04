@@ -99,7 +99,7 @@ Correcciones abiertas y separadas:
 - [PR17: acceso directo DB](https://github.com/DIEFEZACH/magno-clean/pull/17), propuesta nueva migración de seguridad **no aplicada**; 10 pruebas PostgreSQL aislado en memoria, 228 backend; sin entornos persistentes.
 - [PR18: P2 visual](https://github.com/DIEFEZACH/magno-clean/pull/18), `codex/post-v1-visual-polish`, fuera del candidato. Dos P2 reproducidos y corregidos; 35 E2E y 83 frontend; letra aislada exacta no reproducida, sin cambiar ProductDetail.
 
-La CI de cada PR es independiente de la CI verde del release; debe revisarse en su SHA final. Ningún PR abierto cuenta como corrección del sistema live.
+Backend/frontend de GitHub Actions pasan en los cuatro PR de corrección, en los SHA registrados en el JSON. La CI de cada PR es independiente de la CI verde del release; debe volver a revisarse si cambia su SHA. Cloudflare Preview y 39 mediciones reales del arreglo legal también pasan. Ningún PR abierto cuenta como corrección del sistema live.
 
 ## Readiness, medios y trabajo posterior
 

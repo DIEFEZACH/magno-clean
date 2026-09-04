@@ -105,7 +105,15 @@
     "layoutShiftSamples": 9,
     "maxSampleShiftSum": 0.06630581717451522,
     "safariPhysical": "NOT_TESTED",
-    "liveAdmin": "BLOCKED_SECURITY_NO_SEED_NO_SESSION"
+    "liveAdmin": "BLOCKED_SECURITY_NO_SEED_NO_SESSION",
+    "legalFixPreview": {
+      "pr": 16,
+      "branchSha": "69df9a6fc9af36b317457570c01beffcafd197f9",
+      "url": "https://3f0e1448.magno-clean-staging.pages.dev",
+      "measurements": 39,
+      "overflows": 0,
+      "notInRelease": true
+    }
   },
   "sitemap": {
     "commercial": 41,
@@ -518,25 +526,45 @@
       "number": 15,
       "branch": "codex/release-visible-v1-public-price-privacy",
       "sha": "63ae09eb88889bfd6fb4c75552272138098b9b84",
-      "merged": false
+      "merged": false,
+      "ci": {
+        "backend": "success",
+        "frontend": "success",
+        "url": "https://github.com/DIEFEZACH/magno-clean/actions/runs/33861153385"
+      }
     },
     {
       "number": 16,
       "branch": "codex/release-visible-v1-legal-responsive",
       "sha": "69df9a6fc9af36b317457570c01beffcafd197f9",
-      "merged": false
+      "merged": false,
+      "ci": {
+        "backend": "success",
+        "frontend": "success",
+        "url": "https://github.com/DIEFEZACH/magno-clean/actions/runs/33861154624"
+      }
     },
     {
       "number": 17,
       "branch": "codex/release-visible-v1-data-access-hardening",
       "sha": "8045b4348199f2398f8914e3ed622e2bb937c426",
-      "merged": false
+      "merged": false,
+      "ci": {
+        "backend": "success",
+        "frontend": "success",
+        "url": "https://github.com/DIEFEZACH/magno-clean/actions/runs/33861837586"
+      }
     },
     {
       "number": 18,
       "branch": "codex/post-v1-visual-polish",
       "sha": "f0a42d05ceb66b8a998b261f25d81715945b7a18",
-      "merged": false
+      "merged": false,
+      "ci": {
+        "backend": "success",
+        "frontend": "success",
+        "url": "https://github.com/DIEFEZACH/magno-clean/actions/runs/33861895184"
+      }
     }
   ],
   "phase20": {

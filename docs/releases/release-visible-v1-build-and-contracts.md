@@ -105,4 +105,3 @@ JSON versionado acompañante: `release-visible-v1-build-and-contracts.json`. Evi
 Las primeras aserciones demasiado estrictas sobre MULTIFIBRAS y NEUTRO CAR se mantienen en el log bruto y están interpretadas explícitamente en el resumen JSON. No se suman como defectos del release ni se ocultan.
 
 Esta lane hizo 75 solicitudes de backend staging entre contrato inicial, ampliaciones, prebuild y repetición del resumen; dos pares de lecturas del sitemap/robots del frontend. La única consulta de API productiva fue la lectura pública que el prebuild normal necesitó y que recibió 404. No hay mutaciones productivas, migraciones, APPLY, deployment, DNS, Mercado Pago LIVE, stock, usuarios, Storage ni contenido editorial.
-
