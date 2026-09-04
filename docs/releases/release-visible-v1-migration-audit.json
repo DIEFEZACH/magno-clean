@@ -1,0 +1,696 @@
+{
+  "schemaVersion": 1,
+  "auditDate": "2026-09-04",
+  "releaseSha": "050f890f2704b0b6d6a57c7e76e5520525b8c835",
+  "verdict": "NO_GO",
+  "scope": "Lectura completa de las 355 líneas de migration.sql 7–9; no ejecución DDL ni cambios de datos.",
+  "classificationPolicy": "Las tres migraciones son BLOCKING_RISK por nuevas tablas con RLS ausente y grants cliente efectivos observados en staging; también requieren orden de deploy. Forward SQL sigue aditivo sin DML/destrucción no documentados. P0 de tablas críticas legacy es preexistente en producción.",
+  "migrations": [
+    {
+      "file": "backend/prisma/migrations/20260831090000_product_families/migration.sql",
+      "lines": 34,
+      "tables": [
+        {
+          "name": "ProductFamily",
+          "columns": [
+            "\"id\" TEXT NOT NULL",
+            "\"slug\" TEXT NOT NULL",
+            "\"name\" TEXT NOT NULL",
+            "\"brand\" TEXT NOT NULL",
+            "\"category\" TEXT NOT NULL",
+            "\"description\" TEXT NOT NULL",
+            "\"imageUrl\" TEXT",
+            "\"badge\" TEXT",
+            "\"featured\" BOOLEAN NOT NULL DEFAULT false",
+            "\"active\" BOOLEAN NOT NULL DEFAULT true",
+            "\"variantType\" TEXT NOT NULL DEFAULT 'Presentación'",
+            "\"alwaysShowAsFamily\" BOOLEAN NOT NULL DEFAULT false",
+            "\"createdAt\" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP",
+            "\"updatedAt\" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP"
+          ],
+          "constraints": [
+            "CONSTRAINT \"ProductFamily_pkey\" PRIMARY KEY (\"id\")"
+          ]
+        }
+      ],
+      "enums": [],
+      "indexes": [
+        {
+          "name": "ProductFamily_slug_key",
+          "unique": true,
+          "sql": "CREATE UNIQUE INDEX \"ProductFamily_slug_key\" ON \"ProductFamily\"(\"slug\");"
+        },
+        {
+          "name": "ProductFamily_active_idx",
+          "unique": false,
+          "sql": "CREATE INDEX \"ProductFamily_active_idx\" ON \"ProductFamily\"(\"active\");"
+        },
+        {
+          "name": "ProductFamily_featured_idx",
+          "unique": false,
+          "sql": "CREATE INDEX \"ProductFamily_featured_idx\" ON \"ProductFamily\"(\"featured\");"
+        },
+        {
+          "name": "Product_familyId_variantLabel_key",
+          "unique": true,
+          "sql": "CREATE UNIQUE INDEX \"Product_familyId_variantLabel_key\" ON \"Product\"(\"familyId\", \"variantLabel\");"
+        },
+        {
+          "name": "Product_familyId_variantSortOrder_idx",
+          "unique": false,
+          "sql": "CREATE INDEX \"Product_familyId_variantSortOrder_idx\" ON \"Product\"(\"familyId\", \"variantSortOrder\");"
+        }
+      ],
+      "foreignKeys": [
+        "ALTER TABLE \"Product\" ADD CONSTRAINT \"Product_familyId_fkey\" FOREIGN KEY (\"familyId\") REFERENCES \"ProductFamily\"(\"id\") ON DELETE SET NULL ON UPDATE CASCADE;"
+      ],
+      "functions": [],
+      "triggers": [],
+      "topLevelDml": [],
+      "ordinal": 7,
+      "sha256": "239756027d333272b70779cd832154f2571817e985d4da8f4bdf6261a215fbea",
+      "classification": "BLOCKING_RISK",
+      "additive": true,
+      "locks": "ALTER TABLE Product solicita ACCESS EXCLUSIVE para columnas/CHECK; FK usa SHARE ROW EXCLUSIVE también en ProductFamily; CREATE INDEX no CONCURRENTLY puede bloquear escrituras. Check/index valida Product (98 esperado). No lock_timeout definido por el SQL.",
+      "dml": "Ningún INSERT/UPDATE/DELETE/TRUNCATE a nivel superior. ALTER ADD DEFAULT 0 define nueva columna de filas existentes; no backfill de familias.",
+      "backfill": "Ninguno. Las 25 familias y 79 enlaces se aplican con herramienta aparte, nunca por esta migración.",
+      "risk": "P0: ProductFamily en staging tiene RLS=false y grants anon CRUD. MEDIUM operacional por locks/orden; LOW pérdida de datos si baseline validado. Requiere Product de migraciones 1–6.",
+      "expectedDuration": "Estimación no medida: segundos con 98 Product y sin transacciones bloqueantes; adquisición de locks puede tardar indefinidamente sin límite externo. No se ensayó DDL productivo.",
+      "reversibility": "Operativamente volver apps previas y conservar schema; quitar columnas/familias sería destructivo y requeriría otra autorización.",
+      "previousBackendCompatibility": "Lecturas y escrituras históricas usan columnas existentes; nuevas columnas nullable/default. Producto no pierde ID/slug/precios/stock. No usar prisma nuevo contra schema previo.",
+      "previousFrontendCompatibility": "Continúa API SKU previa; agrupación sólo visible con frontend nuevo. No exige frontend simultáneo.",
+      "extraColumns": [
+        {
+          "table": "Product",
+          "columns": [
+            "\"familyId\" TEXT NULL",
+            "\"variantLabel\" TEXT NULL",
+            "\"variantSortOrder\" INTEGER NOT NULL DEFAULT 0"
+          ],
+          "constraints": [
+            "Product_variantSortOrder_nonnegative: variantSortOrder >= 0",
+            "Product_family_variant_label: familyId IS NULL OR (variantLabel IS NOT NULL AND btrim(variantLabel) <> '')"
+          ]
+        }
+      ],
+      "lineAudit": [
+        {
+          "start": 1,
+          "end": 17,
+          "assessment": "CREATE ProductFamily: 14 columnas y PK; tabla inicialmente vacía."
+        },
+        {
+          "start": 19,
+          "end": 22,
+          "assessment": "ADD Product.familyId/variantLabel nullable; variantSortOrder NOT NULL DEFAULT 0. Sin UPDATE ni asociación."
+        },
+        {
+          "start": 24,
+          "end": 25,
+          "assessment": "CHECK orden no negativo y etiqueta no vacía al vincular; baseline NULL/0 satisface."
+        },
+        {
+          "start": 27,
+          "end": 31,
+          "assessment": "Cinco índices, dos únicos. Familias vacías y familyId NULL no generan duplicados."
+        },
+        {
+          "start": 33,
+          "end": 34,
+          "assessment": "FK Product → ProductFamily: SET NULL al borrar familia; CASCADE al actualizar id. No elimina Product."
+        }
+      ]
+    },
+    {
+      "file": "backend/prisma/migrations/20260901033000_editorial_website_content/migration.sql",
+      "lines": 235,
+      "tables": [
+        {
+          "name": "WebsiteContent",
+          "columns": [
+            "\"id\" TEXT NOT NULL",
+            "\"familyId\" TEXT",
+            "\"productId\" TEXT",
+            "\"publishedRevisionId\" TEXT",
+            "\"createdAt\" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP",
+            "\"updatedAt\" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP"
+          ],
+          "constraints": [
+            "CONSTRAINT \"WebsiteContent_pkey\" PRIMARY KEY (\"id\")",
+            "CONSTRAINT \"WebsiteContent_exactly_one_target_check\" CHECK (num_nonnulls(\"familyId\", \"productId\") = 1)"
+          ]
+        },
+        {
+          "name": "WebsiteContentRevision",
+          "columns": [
+            "\"id\" TEXT NOT NULL",
+            "\"contentId\" TEXT NOT NULL",
+            "\"version\" INTEGER NOT NULL",
+            "\"status\" \"WebsiteContentStatus\" NOT NULL DEFAULT 'DRAFT'",
+            "\"title\" TEXT",
+            "\"shortDescription\" TEXT",
+            "\"longDescription\" TEXT",
+            "\"seoTitle\" TEXT",
+            "\"seoDescription\" TEXT",
+            "\"technicalSheetUrl\" TEXT",
+            "\"sdsUrl\" TEXT",
+            "\"createdById\" TEXT NOT NULL",
+            "\"reviewedById\" TEXT",
+            "\"approvedById\" TEXT",
+            "\"publishedById\" TEXT",
+            "\"conflictsConfirmedById\" TEXT",
+            "\"conflictsConfirmationNote\" TEXT",
+            "\"reviewedAt\" TIMESTAMP(3)",
+            "\"approvedAt\" TIMESTAMP(3)",
+            "\"publishedAt\" TIMESTAMP(3)",
+            "\"conflictsConfirmedAt\" TIMESTAMP(3)",
+            "\"createdAt\" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP",
+            "\"updatedAt\" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP"
+          ],
+          "constraints": [
+            "CONSTRAINT \"WebsiteContentRevision_pkey\" PRIMARY KEY (\"id\")",
+            "CONSTRAINT \"WebsiteContentRevision_positive_version_check\" CHECK (\"version\" > 0)"
+          ]
+        },
+        {
+          "name": "WebsiteContentEntry",
+          "columns": [
+            "\"id\" TEXT NOT NULL",
+            "\"revisionId\" TEXT NOT NULL",
+            "\"section\" \"WebsiteContentSection\" NOT NULL",
+            "\"value\" TEXT NOT NULL",
+            "\"position\" INTEGER NOT NULL DEFAULT 0"
+          ],
+          "constraints": [
+            "CONSTRAINT \"WebsiteContentEntry_pkey\" PRIMARY KEY (\"id\")",
+            "CONSTRAINT \"WebsiteContentEntry_nonnegative_position_check\" CHECK (\"position\" >= 0)"
+          ]
+        },
+        {
+          "name": "WebsiteContentFaq",
+          "columns": [
+            "\"id\" TEXT NOT NULL",
+            "\"revisionId\" TEXT NOT NULL",
+            "\"question\" TEXT NOT NULL",
+            "\"answer\" TEXT NOT NULL",
+            "\"position\" INTEGER NOT NULL DEFAULT 0"
+          ],
+          "constraints": [
+            "CONSTRAINT \"WebsiteContentFaq_pkey\" PRIMARY KEY (\"id\")",
+            "CONSTRAINT \"WebsiteContentFaq_nonnegative_position_check\" CHECK (\"position\" >= 0)"
+          ]
+        },
+        {
+          "name": "WebsiteContentSource",
+          "columns": [
+            "\"id\" TEXT NOT NULL",
+            "\"contentId\" TEXT NOT NULL",
+            "\"layer\" \"WebsiteContentSourceLayer\" NOT NULL",
+            "\"sourceFile\" TEXT",
+            "\"sourceSha256\" TEXT",
+            "\"data\" JSONB NOT NULL",
+            "\"reviewRequired\" BOOLEAN NOT NULL DEFAULT false",
+            "\"confidence\" \"ContentExtractionConfidence\"",
+            "\"createdById\" TEXT NOT NULL",
+            "\"createdAt\" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP"
+          ],
+          "constraints": [
+            "CONSTRAINT \"WebsiteContentSource_pkey\" PRIMARY KEY (\"id\")"
+          ]
+        }
+      ],
+      "enums": [
+        {
+          "name": "WebsiteContentStatus",
+          "values": [
+            "DRAFT",
+            "REVIEW",
+            "APPROVED",
+            "PUBLISHED"
+          ]
+        },
+        {
+          "name": "WebsiteContentSection",
+          "values": [
+            "BENEFIT",
+            "APPLICATION",
+            "USAGE",
+            "DILUTION",
+            "PRECAUTION",
+            "PICTOGRAM",
+            "SEO_KEYWORD"
+          ]
+        },
+        {
+          "name": "WebsiteContentSourceLayer",
+          "values": [
+            "SOURCE_TECHNICAL",
+            "DERIVED_COMMERCIAL"
+          ]
+        },
+        {
+          "name": "ContentExtractionConfidence",
+          "values": [
+            "LOW",
+            "MEDIUM",
+            "HIGH"
+          ]
+        }
+      ],
+      "indexes": [
+        {
+          "name": "WebsiteContent_familyId_key",
+          "unique": true,
+          "sql": "CREATE UNIQUE INDEX \"WebsiteContent_familyId_key\" ON \"WebsiteContent\"(\"familyId\");"
+        },
+        {
+          "name": "WebsiteContent_productId_key",
+          "unique": true,
+          "sql": "CREATE UNIQUE INDEX \"WebsiteContent_productId_key\" ON \"WebsiteContent\"(\"productId\");"
+        },
+        {
+          "name": "WebsiteContent_publishedRevisionId_key",
+          "unique": true,
+          "sql": "CREATE UNIQUE INDEX \"WebsiteContent_publishedRevisionId_key\" ON \"WebsiteContent\"(\"publishedRevisionId\");"
+        },
+        {
+          "name": "WebsiteContentRevision_contentId_version_key",
+          "unique": true,
+          "sql": "CREATE UNIQUE INDEX \"WebsiteContentRevision_contentId_version_key\" ON \"WebsiteContentRevision\"(\"contentId\", \"version\");"
+        },
+        {
+          "name": "WebsiteContentRevision_contentId_status_idx",
+          "unique": false,
+          "sql": "CREATE INDEX \"WebsiteContentRevision_contentId_status_idx\" ON \"WebsiteContentRevision\"(\"contentId\", \"status\");"
+        },
+        {
+          "name": "WebsiteContentRevision_createdById_idx",
+          "unique": false,
+          "sql": "CREATE INDEX \"WebsiteContentRevision_createdById_idx\" ON \"WebsiteContentRevision\"(\"createdById\");"
+        },
+        {
+          "name": "WebsiteContentRevision_reviewedById_idx",
+          "unique": false,
+          "sql": "CREATE INDEX \"WebsiteContentRevision_reviewedById_idx\" ON \"WebsiteContentRevision\"(\"reviewedById\");"
+        },
+        {
+          "name": "WebsiteContentRevision_approvedById_idx",
+          "unique": false,
+          "sql": "CREATE INDEX \"WebsiteContentRevision_approvedById_idx\" ON \"WebsiteContentRevision\"(\"approvedById\");"
+        },
+        {
+          "name": "WebsiteContentRevision_publishedById_idx",
+          "unique": false,
+          "sql": "CREATE INDEX \"WebsiteContentRevision_publishedById_idx\" ON \"WebsiteContentRevision\"(\"publishedById\");"
+        },
+        {
+          "name": "WebsiteContentRevision_conflictsConfirmedById_idx",
+          "unique": false,
+          "sql": "CREATE INDEX \"WebsiteContentRevision_conflictsConfirmedById_idx\" ON \"WebsiteContentRevision\"(\"conflictsConfirmedById\");"
+        },
+        {
+          "name": "WebsiteContentEntry_revisionId_section_position_idx",
+          "unique": false,
+          "sql": "CREATE INDEX \"WebsiteContentEntry_revisionId_section_position_idx\" ON \"WebsiteContentEntry\"(\"revisionId\", \"section\", \"position\");"
+        },
+        {
+          "name": "WebsiteContentFaq_revisionId_position_idx",
+          "unique": false,
+          "sql": "CREATE INDEX \"WebsiteContentFaq_revisionId_position_idx\" ON \"WebsiteContentFaq\"(\"revisionId\", \"position\");"
+        },
+        {
+          "name": "WebsiteContentSource_contentId_layer_idx",
+          "unique": false,
+          "sql": "CREATE INDEX \"WebsiteContentSource_contentId_layer_idx\" ON \"WebsiteContentSource\"(\"contentId\", \"layer\");"
+        },
+        {
+          "name": "WebsiteContentSource_createdById_idx",
+          "unique": false,
+          "sql": "CREATE INDEX \"WebsiteContentSource_createdById_idx\" ON \"WebsiteContentSource\"(\"createdById\");"
+        },
+        {
+          "name": "WebsiteContentSource_sourceSha256_idx",
+          "unique": false,
+          "sql": "CREATE INDEX \"WebsiteContentSource_sourceSha256_idx\" ON \"WebsiteContentSource\"(\"sourceSha256\");"
+        }
+      ],
+      "foreignKeys": [
+        "ALTER TABLE \"WebsiteContent\" ADD CONSTRAINT \"WebsiteContent_familyId_fkey\" FOREIGN KEY (\"familyId\") REFERENCES \"ProductFamily\"(\"id\") ON DELETE CASCADE ON UPDATE CASCADE;",
+        "ALTER TABLE \"WebsiteContent\" ADD CONSTRAINT \"WebsiteContent_productId_fkey\" FOREIGN KEY (\"productId\") REFERENCES \"Product\"(\"id\") ON DELETE CASCADE ON UPDATE CASCADE;",
+        "ALTER TABLE \"WebsiteContentRevision\" ADD CONSTRAINT \"WebsiteContentRevision_contentId_fkey\" FOREIGN KEY (\"contentId\") REFERENCES \"WebsiteContent\"(\"id\") ON DELETE CASCADE ON UPDATE CASCADE;",
+        "ALTER TABLE \"WebsiteContentRevision\" ADD CONSTRAINT \"WebsiteContentRevision_createdById_fkey\" FOREIGN KEY (\"createdById\") REFERENCES \"User\"(\"id\") ON DELETE RESTRICT ON UPDATE CASCADE;",
+        "ALTER TABLE \"WebsiteContentRevision\" ADD CONSTRAINT \"WebsiteContentRevision_reviewedById_fkey\" FOREIGN KEY (\"reviewedById\") REFERENCES \"User\"(\"id\") ON DELETE SET NULL ON UPDATE CASCADE;",
+        "ALTER TABLE \"WebsiteContentRevision\" ADD CONSTRAINT \"WebsiteContentRevision_approvedById_fkey\" FOREIGN KEY (\"approvedById\") REFERENCES \"User\"(\"id\") ON DELETE SET NULL ON UPDATE CASCADE;",
+        "ALTER TABLE \"WebsiteContentRevision\" ADD CONSTRAINT \"WebsiteContentRevision_publishedById_fkey\" FOREIGN KEY (\"publishedById\") REFERENCES \"User\"(\"id\") ON DELETE SET NULL ON UPDATE CASCADE;",
+        "ALTER TABLE \"WebsiteContentRevision\" ADD CONSTRAINT \"WebsiteContentRevision_conflictsConfirmedById_fkey\" FOREIGN KEY (\"conflictsConfirmedById\") REFERENCES \"User\"(\"id\") ON DELETE SET NULL ON UPDATE CASCADE;",
+        "ALTER TABLE \"WebsiteContent\" ADD CONSTRAINT \"WebsiteContent_publishedRevisionId_fkey\" FOREIGN KEY (\"publishedRevisionId\") REFERENCES \"WebsiteContentRevision\"(\"id\") ON DELETE SET NULL ON UPDATE CASCADE;",
+        "ALTER TABLE \"WebsiteContentEntry\" ADD CONSTRAINT \"WebsiteContentEntry_revisionId_fkey\" FOREIGN KEY (\"revisionId\") REFERENCES \"WebsiteContentRevision\"(\"id\") ON DELETE CASCADE ON UPDATE CASCADE;",
+        "ALTER TABLE \"WebsiteContentFaq\" ADD CONSTRAINT \"WebsiteContentFaq_revisionId_fkey\" FOREIGN KEY (\"revisionId\") REFERENCES \"WebsiteContentRevision\"(\"id\") ON DELETE CASCADE ON UPDATE CASCADE;",
+        "ALTER TABLE \"WebsiteContentSource\" ADD CONSTRAINT \"WebsiteContentSource_contentId_fkey\" FOREIGN KEY (\"contentId\") REFERENCES \"WebsiteContent\"(\"id\") ON DELETE CASCADE ON UPDATE CASCADE;",
+        "ALTER TABLE \"WebsiteContentSource\" ADD CONSTRAINT \"WebsiteContentSource_createdById_fkey\" FOREIGN KEY (\"createdById\") REFERENCES \"User\"(\"id\") ON DELETE RESTRICT ON UPDATE CASCADE;"
+      ],
+      "functions": [
+        "prevent_published_website_content_revision_mutation",
+        "prevent_published_website_content_child_mutation"
+      ],
+      "triggers": [
+        {
+          "name": "WebsiteContentRevision_prevent_published_update",
+          "function": "prevent_published_website_content_revision_mutation",
+          "sql": "CREATE TRIGGER \"WebsiteContentRevision_prevent_published_update\" BEFORE UPDATE ON \"WebsiteContentRevision\" FOR EACH ROW EXECUTE FUNCTION \"prevent_published_website_content_revision_mutation\"();"
+        },
+        {
+          "name": "WebsiteContentRevision_prevent_published_delete",
+          "function": "prevent_published_website_content_revision_mutation",
+          "sql": "CREATE TRIGGER \"WebsiteContentRevision_prevent_published_delete\" BEFORE DELETE ON \"WebsiteContentRevision\" FOR EACH ROW EXECUTE FUNCTION \"prevent_published_website_content_revision_mutation\"();"
+        },
+        {
+          "name": "WebsiteContentEntry_prevent_published_mutation",
+          "function": "prevent_published_website_content_child_mutation",
+          "sql": "CREATE TRIGGER \"WebsiteContentEntry_prevent_published_mutation\" BEFORE INSERT OR UPDATE OR DELETE ON \"WebsiteContentEntry\" FOR EACH ROW EXECUTE FUNCTION \"prevent_published_website_content_child_mutation\"();"
+        },
+        {
+          "name": "WebsiteContentFaq_prevent_published_mutation",
+          "function": "prevent_published_website_content_child_mutation",
+          "sql": "CREATE TRIGGER \"WebsiteContentFaq_prevent_published_mutation\" BEFORE INSERT OR UPDATE OR DELETE ON \"WebsiteContentFaq\" FOR EACH ROW EXECUTE FUNCTION \"prevent_published_website_content_child_mutation\"();"
+        }
+      ],
+      "topLevelDml": [],
+      "ordinal": 8,
+      "sha256": "abdff24943e5c5d3806f3f9e8b2a932611e41a7c2d4ccc7ec13b3144e90e1baf",
+      "classification": "BLOCKING_RISK",
+      "additive": true,
+      "locks": "CREATE TABLE/INDEX en tablas nuevas; ADD FK solicita SHARE ROW EXCLUSIVE en ProductFamily/Product/User además de nuevas tablas; CREATE TRIGGER solicita SHARE ROW EXCLUSIVE. Sin timeout explícito.",
+      "dml": "Ninguno. SELECT dentro de función sólo consulta al dispararse posteriormente; no escribe ni publica.",
+      "backfill": "Ninguno: tablas editoriales comienzan vacías; status default DRAFT no crea registros.",
+      "risk": "P0: privilegios directos anon/authenticated efectivos sin RLS en tablas creadas. MEDIUM por dependencia de 7 y corrección de 9. No detener liberación con sólo 8 aplicada; nueva API requiere esquema completo.",
+      "expectedDuration": "Estimación no medida: segundos para tablas nuevas vacías, más espera de locks de Product/User. No es SLA ni tiempo medido.",
+      "reversibility": "Conservar estructuras y contenido; rollback.sql borra fuentes/revisiones y no se autoriza. No retirar FK/triggers para forzar eliminaciones.",
+      "previousBackendCompatibility": "No usa tablas nuevas; lecturas compatibles. En el futuro eliminar Product/Family o actores ligados a editorial puede fallar por inmutabilidad/RESTRICT, protección deliberada; V1 parte de editorial vacío.",
+      "previousFrontendCompatibility": "Ignora nuevas tablas y sigue API anterior; ninguna publicación se produce por migración.",
+      "lineAudit": [
+        {
+          "start": 1,
+          "end": 11,
+          "assessment": "Cuatro enums nuevos; no se alteran enums existentes."
+        },
+        {
+          "start": 13,
+          "end": 24,
+          "assessment": "WebsiteContent + XOR familyId/productId + PK."
+        },
+        {
+          "start": 26,
+          "end": 54,
+          "assessment": "Revision: versión positiva, estado inicial DRAFT, campos comerciales/auditoría y PK."
+        },
+        {
+          "start": 56,
+          "end": 66,
+          "assessment": "Entry: section, value, posición no negativa y PK."
+        },
+        {
+          "start": 68,
+          "end": 78,
+          "assessment": "Faq: pregunta/respuesta, posición no negativa y PK."
+        },
+        {
+          "start": 80,
+          "end": 94,
+          "assessment": "Source: JSONB privado, hash/ruta/confianza y PK."
+        },
+        {
+          "start": 96,
+          "end": 139,
+          "assessment": "15 índices explícitos; 4 únicos; tablas nuevas vacías."
+        },
+        {
+          "start": 141,
+          "end": 178,
+          "assessment": "13 FK: Product/Family/revision/source cascades; creador RESTRICT; otros actores SET NULL."
+        },
+        {
+          "start": 180,
+          "end": 193,
+          "assessment": "Función inmutable: rechaza UPDATE/DELETE si OLD.status=PUBLISHED. Defecto intermedio: RETURN NEW en DELETE no publicado devuelve NULL; corregido por 9."
+        },
+        {
+          "start": 195,
+          "end": 203,
+          "assessment": "Dos triggers BEFORE de Revision, UPDATE y DELETE."
+        },
+        {
+          "start": 205,
+          "end": 225,
+          "assessment": "Función de hijos consulta revisión destino y rechaza si PUBLISHED; devuelve OLD para DELETE y NEW resto."
+        },
+        {
+          "start": 227,
+          "end": 235,
+          "assessment": "Dos triggers BEFORE INSERT/UPDATE/DELETE para Entry/Faq."
+        }
+      ]
+    },
+    {
+      "file": "backend/prisma/migrations/20260902090000_editorial_media/migration.sql",
+      "lines": 86,
+      "tables": [
+        {
+          "name": "WebsiteContentMedia",
+          "columns": [
+            "\"id\" TEXT NOT NULL",
+            "\"revisionId\" TEXT NOT NULL",
+            "\"role\" \"WebsiteContentMediaRole\" NOT NULL",
+            "\"bucket\" TEXT NOT NULL",
+            "\"storagePath\" TEXT NOT NULL",
+            "\"alt\" TEXT NOT NULL",
+            "\"position\" INTEGER NOT NULL DEFAULT 0",
+            "\"width\" INTEGER",
+            "\"height\" INTEGER",
+            "\"byteSize\" INTEGER NOT NULL",
+            "\"sha256\" TEXT NOT NULL",
+            "\"mimeType\" TEXT NOT NULL",
+            "\"reviewRequired\" BOOLEAN NOT NULL DEFAULT false",
+            "\"editorialWarning\" TEXT",
+            "\"createdAt\" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP"
+          ],
+          "constraints": [
+            "CONSTRAINT \"WebsiteContentMedia_pkey\" PRIMARY KEY (\"id\")",
+            "CONSTRAINT \"WebsiteContentMedia_position_check\" CHECK (\"position\" >= 0)",
+            "CONSTRAINT \"WebsiteContentMedia_width_check\" CHECK (\"width\" IS NULL OR \"width\" > 0)",
+            "CONSTRAINT \"WebsiteContentMedia_height_check\" CHECK (\"height\" IS NULL OR \"height\" > 0)",
+            "CONSTRAINT \"WebsiteContentMedia_byteSize_check\" CHECK (\"byteSize\" > 0 AND \"byteSize\" <= 10485760)",
+            "CONSTRAINT \"WebsiteContentMedia_sha256_check\" CHECK (\"sha256\" ~ '^[0-9a-f]{64}$')",
+            "CONSTRAINT \"WebsiteContentMedia_mimeType_check\" CHECK (\"mimeType\" = 'image/webp')",
+            "CONSTRAINT \"WebsiteContentMedia_bucket_check\" CHECK (\"bucket\" = 'product-media')"
+          ]
+        }
+      ],
+      "enums": [
+        {
+          "name": "WebsiteContentMediaRole",
+          "values": [
+            "HERO",
+            "BENEFITS",
+            "USAGE",
+            "SAFETY",
+            "INFOGRAPHIC"
+          ]
+        }
+      ],
+      "indexes": [
+        {
+          "name": "WebsiteContentMedia_revisionId_role_position_key",
+          "unique": true,
+          "sql": "CREATE UNIQUE INDEX \"WebsiteContentMedia_revisionId_role_position_key\" ON \"WebsiteContentMedia\"(\"revisionId\", \"role\", \"position\");"
+        },
+        {
+          "name": "WebsiteContentMedia_revisionId_bucket_storagePath_key",
+          "unique": true,
+          "sql": "CREATE UNIQUE INDEX \"WebsiteContentMedia_revisionId_bucket_storagePath_key\" ON \"WebsiteContentMedia\"(\"revisionId\", \"bucket\", \"storagePath\");"
+        },
+        {
+          "name": "WebsiteContentMedia_revisionId_role_position_idx",
+          "unique": false,
+          "sql": "CREATE INDEX \"WebsiteContentMedia_revisionId_role_position_idx\" ON \"WebsiteContentMedia\"(\"revisionId\", \"role\", \"position\");"
+        }
+      ],
+      "foreignKeys": [
+        "ALTER TABLE \"WebsiteContentMedia\" ADD CONSTRAINT \"WebsiteContentMedia_revisionId_fkey\" FOREIGN KEY (\"revisionId\") REFERENCES \"WebsiteContentRevision\"(\"id\") ON DELETE CASCADE ON UPDATE CASCADE;"
+      ],
+      "functions": [
+        "prevent_published_website_content_revision_mutation",
+        "prevent_published_website_content_media_mutation"
+      ],
+      "triggers": [
+        {
+          "name": "WebsiteContentMedia_prevent_published_mutation",
+          "function": "prevent_published_website_content_media_mutation",
+          "sql": "CREATE TRIGGER \"WebsiteContentMedia_prevent_published_mutation\" BEFORE INSERT OR UPDATE OR DELETE ON \"WebsiteContentMedia\" FOR EACH ROW EXECUTE FUNCTION \"prevent_published_website_content_media_mutation\"();"
+        }
+      ],
+      "topLevelDml": [],
+      "ordinal": 9,
+      "sha256": "1b16f8f1be3e130f23e75955bb6a4db76a43e68e7d836c3284cd071a77f679a4",
+      "classification": "BLOCKING_RISK",
+      "additive": true,
+      "locks": "DDL/índices en tabla nueva, FK y trigger usan SHARE ROW EXCLUSIVE en nuevas tablas/revisión; función sustituye metadatos, sin backfill; no locks sobre Order/Payment.",
+      "dml": "Ninguno. Corrige función, no cambia status ni filas existentes.",
+      "backfill": "Ninguno. No crea bucket Storage ni objetos ni asociaciones.",
+      "risk": "P0: privilegios directos anon/authenticated efectivos sin RLS en tablas creadas. LOW-MEDIUM: depende de 8; corrige trigger antes de utilizar editorial. Índice no único repite columnas del único (coste futuro menor).",
+      "expectedDuration": "Estimación no medida: segundos con tabla vacía y sin bloqueo, más latencia; sin ensayo de aplicación esta noche.",
+      "reversibility": "Volver apps conservando tabla/función corregida. rollback.sql eliminaría medios y reintroduciría RETURN NEW defectuoso para DELETE; no usar.",
+      "previousBackendCompatibility": "No consulta la tabla; corrección permite DELETE de DRAFT con semántica adecuada, PUBLISHED sigue protegido.",
+      "previousFrontendCompatibility": "Medios opcionales; frontend viejo los ignora; sin contenido PUBLISHED no cambia exposición pública.",
+      "lineAudit": [
+        {
+          "start": 1,
+          "end": 14,
+          "assessment": "CREATE OR REPLACE de función anterior: OLD para DELETE; corrección semántica, no actualización de filas."
+        },
+        {
+          "start": 16,
+          "end": 16,
+          "assessment": "Enum de cinco roles editoriales."
+        },
+        {
+          "start": 18,
+          "end": 43,
+          "assessment": "Media: 15 columnas, PK y siete CHECK; WebP, bucket fijo product-media, tamaño máximo 10 MiB."
+        },
+        {
+          "start": 45,
+          "end": 52,
+          "assessment": "Dos índices únicos y uno no único redundante con el primer índice."
+        },
+        {
+          "start": 54,
+          "end": 57,
+          "assessment": "FK a Revision con CASCADE; aún no hay medios productivos."
+        },
+        {
+          "start": 59,
+          "end": 81,
+          "assessment": "Función de inmutabilidad media: rechaza parent PUBLISHED, retorno OLD/NEW correcto."
+        },
+        {
+          "start": 83,
+          "end": 86,
+          "assessment": "Trigger BEFORE INSERT/UPDATE/DELETE media."
+        }
+      ]
+    }
+  ],
+  "confirmations": {
+    "priceChanges": false,
+    "stockChanges": false,
+    "reservedStockChanges": false,
+    "orderPaymentChanges": false,
+    "productDeletes": false,
+    "editorialPublication": false,
+    "storageBucketOrUpload": false,
+    "topLevelDml": false,
+    "migration9CorrectsTrigger": true
+  },
+  "conditions": [
+    "Verificar baseline 6/6, backup nuevo e identidad productiva antes de cualquier aplicación futura.",
+    "La secuencia original 7–9 → backend RELEASE_SHA está bloqueada. Una futura secuencia requiere corrección revisada, contención de acceso directo, autorización expresa y nuevo SHA certificado; 9/9 no basta.",
+    "Medir lock wait y abortar/escalar según runbook sin matar sesiones ajenas ni ejecutar rollback.sql.",
+    "Conservar checkout false; no usar esta auditoría como autorización para migrar.",
+    "Reverificar grants/RLS y exposición real del schema tras remediación autorizada: 7–9 no contienen GRANT/REVOKE ni ENABLE ROW LEVEL SECURITY; el P0 ya está confirmado por metadatos.",
+    "Bloqueo P0 de acceso editorial directo debe resolverse en PR separado y nueva certificación antes de autorizar cualquier release."
+  ],
+  "findings": [
+    {
+      "id": "LEGACY_CRITICAL_DB_PRIVILEGES",
+      "priority": "P0",
+      "classification": "MUST_FIX_BEFORE_RELEASE",
+      "preExistingProduction": true,
+      "confirmed": "Metadata READ-ONLY: User, RefreshToken, Order, Payment, InventoryMovement, Product en ambos entornos sin RLS y anon SELECT/INSERT/UPDATE/DELETE; authenticated SELECT. ProductFamily en staging igual.",
+      "notConfirmed": "Exposición efectiva PostgREST de schema no comprobada; sin explotación HTTP, sin lecturas de filas sensibles ni escrituras.",
+      "evidence": [
+        ".local/reports/release-visible-v1/production-readonly.json#criticalTableAccess",
+        ".local/reports/release-visible-v1/staging-readonly.json#criticalTableAccess"
+      ],
+      "fix": "PR separado para lista explícita de todas las tablas de aplicación; ENABLE RLS + REVOKE client/PUBLIC; preservar backend owner/service_role; no auth/storage/defaults globales; no apply remoto.",
+      "verdict": "NO_GO"
+    },
+    {
+      "id": "EDITORIAL_DIRECT_DATA_API_ACCESS",
+      "priority": "P0",
+      "classification": "MUST_FIX_BEFORE_RELEASE",
+      "finding": "Staging: seis tablas editoriales sin RLS; anon SELECT/INSERT/UPDATE/DELETE y authenticated SELECT/UPDATE efectivos. Cero filas hoy; riesgo de leer fuentes/auditoría o saltar workflow vía acceso directo.",
+      "evidence": "READ-ONLY 2026-09-04T09:44:38.938Z; .local/reports/release-visible-v1/staging-readonly.json#editorialAccess",
+      "tables": [
+        "WebsiteContent",
+        "WebsiteContentRevision",
+        "WebsiteContentSource",
+        "WebsiteContentEntry",
+        "WebsiteContentFaq",
+        "WebsiteContentMedia"
+      ],
+      "metadata": {
+        "rls": false,
+        "anonSelect": true,
+        "anonInsert": true,
+        "anonUpdate": true,
+        "anonDelete": true,
+        "authenticatedSelect": true,
+        "authenticatedUpdate": true
+      },
+      "exploitAttempted": false,
+      "productionTablesPresent": false,
+      "fix": "PR separado con migración nueva que habilite RLS y revoque privilegios anon/authenticated/PUBLIC; mantener backend autorizado. No aplicar ni modificar RELEASE_SHA.",
+      "verdict": "NO_GO"
+    },
+    {
+      "id": "EDITORIAL_CHILD_REPARENT",
+      "priority": "P2",
+      "classification": "CLEANUP_AFTER_RELEASE",
+      "description": "Triggers de hijos/media en UPDATE sólo inspeccionan NEW.revisionId. SQL privilegiado podría mover fila desde parent PUBLISHED a DRAFT sin consultar OLD. API estricta no admite revisionId en update; no se halló ruta pública/admin expuesta. Añadir defensa y test en PR posterior sin reescribir migraciones aplicadas.",
+      "evidence": [
+        "20260901033000_editorial_website_content/migration.sql:212",
+        "20260902090000_editorial_media/migration.sql:68",
+        "backend/src/schemas/websiteContent.ts:66"
+      ]
+    },
+    {
+      "id": "MEDIA_REDUNDANT_INDEX",
+      "priority": "P2",
+      "classification": "CLEANUP_AFTER_RELEASE",
+      "description": "WebsiteContentMedia_revisionId_role_position_idx duplica las columnas ordenadas del índice unique; espacio/coste de mantenimiento, sin bloqueo V1.",
+      "evidence": [
+        "20260902090000_editorial_media/migration.sql:45",
+        "20260902090000_editorial_media/migration.sql:51"
+      ]
+    },
+    {
+      "id": "ROLLBACK_SQL_NOT_OPERATIONAL",
+      "priority": "P2",
+      "classification": "ACCEPTED",
+      "description": "Sidecars destructivos explícitamente inventariados, no incluidos en forward deploy y prohibidos por el runbook; rollback9 reinstala función anterior defectuosa.",
+      "evidence": [
+        "backend/prisma/migrations/20260902090000_editorial_media/rollback.sql:16"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "title": "PostgreSQL 17 ALTER TABLE y locks",
+      "url": "https://www.postgresql.org/docs/17/sql-altertable.html"
+    },
+    {
+      "title": "PostgreSQL 17 bloqueo explícito",
+      "url": "https://www.postgresql.org/docs/17/explicit-locking.html"
+    },
+    {
+      "title": "PostgreSQL 17 funciones trigger OLD/NEW",
+      "url": "https://www.postgresql.org/docs/17/plpgsql-trigger.html"
+    },
+    {
+      "title": "Supabase RLS y grants",
+      "url": "https://supabase.com/docs/guides/database/postgres/row-level-security"
+    }
+  ],
+  "deploymentGate": "NO_GO: secuencia original bloqueada. Antes de cualquier futura operación productiva se requiere corrección de seguridad revisada, contención de acceso directo durante la transición, autorización expresa y un nuevo SHA certificado; ni backup ni 9/9 por sí solos levantan este bloqueo."
+}
