@@ -10,8 +10,6 @@ export type Product = {
   category: string;
   description: string;
   imageUrl?: string | null;
-  unitPrice: number;
-  wholesalePrice: number;
   retailPrice: number;
   digitalPrice: number;
   price: number;
