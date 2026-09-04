@@ -17,7 +17,8 @@
     "test:inventory": "ts-node --transpile-only src/scripts/testInventory.ts",
     "media:sync": "npm run build --silent && node dist/scripts/syncProductMedia.js",
     "staging:catalog:export": "npm run build --silent && node dist/scripts/exportStagingCatalog.js",
-    "staging:catalog:apply": "npm run build --silent && node dist/scripts/applyStagingCatalog.js"
+    "staging:catalog:apply": "npm run build --silent && node dist/scripts/applyStagingCatalog.js",
+    "product-families:apply": "npm run build --silent && node dist/scripts/applyProductFamilyPlan.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",

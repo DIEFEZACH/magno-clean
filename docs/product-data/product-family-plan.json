@@ -1,0 +1,1251 @@
+{
+  "schemaVersion": 1,
+  "release": "PRODUCTS_V1",
+  "groupingRule": "ACTIVE_EXACT_COMMERCIAL_NAME_AT_LEAST_TWO_SKUS",
+  "persistence": "QA_BASELINE_NOT_TEMPORARY_FIXTURE",
+  "summary": {
+    "products": 98,
+    "active": 95,
+    "inactive": 3,
+    "families": 25,
+    "groupedVariants": 79,
+    "individuals": 16,
+    "commercialItems": 41
+  },
+  "families": [
+    {
+      "familyName": "ACABA-ÁCAROS",
+      "familySlug": "acaba-acaros",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "DAA1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "DAA1",
+        "DAA5",
+        "DAA20"
+      ],
+      "variants": [
+        {
+          "code": "DAA1",
+          "productSlug": "acaba-acaros-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "DAA5",
+          "productSlug": "acaba-acaros-5-lts",
+          "variantLabel": "5 LTS",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "DAA20",
+          "productSlug": "acaba-acaros-20-lts",
+          "variantLabel": "20 LTS",
+          "variantSortOrder": 2
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "AMOXI ULTRA",
+      "familySlug": "amoxi-ultra",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "APCAMU1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "APCAMU1",
+        "APCAMUG",
+        "APCAMU5",
+        "APCAM20"
+      ],
+      "variants": [
+        {
+          "code": "APCAMU1",
+          "productSlug": "amoxi-ultra-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "APCAMUG",
+          "productSlug": "amoxi-ultra-3-78-l",
+          "variantLabel": "3.78 L",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "APCAMU5",
+          "productSlug": "amoxi-ultra-5-lts",
+          "variantLabel": "5 LTS",
+          "variantSortOrder": 2
+        },
+        {
+          "code": "APCAM20",
+          "productSlug": "amoxi-ultra-20-lts",
+          "variantLabel": "20 LTS",
+          "variantSortOrder": 3
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "APC CITRUS NEUTRO",
+      "familySlug": "apc-citrus-neutro",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "APCCN1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "APCCN1",
+        "APCCNG",
+        "APCCN5",
+        "APCCN20"
+      ],
+      "variants": [
+        {
+          "code": "APCCN1",
+          "productSlug": "apc-citrus-neutro-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "APCCNG",
+          "productSlug": "apc-citrus-neutro-3-78-l",
+          "variantLabel": "3.78 L",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "APCCN5",
+          "productSlug": "apc-citrus-neutro-5-lts",
+          "variantLabel": "5 LTS",
+          "variantSortOrder": 2
+        },
+        {
+          "code": "APCCN20",
+          "productSlug": "apc-citrus-neutro-20-lts",
+          "variantLabel": "20 LTS",
+          "variantSortOrder": 3
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "APC TNT",
+      "familySlug": "apc-tnt",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "APC1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "APC1",
+        "APCG",
+        "APC5",
+        "APC20"
+      ],
+      "variants": [
+        {
+          "code": "APC1",
+          "productSlug": "apc-tnt-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "APCG",
+          "productSlug": "apc-tnt-3-78-l",
+          "variantLabel": "3.78 L",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "APC5",
+          "productSlug": "apc-tnt-5-lts",
+          "variantLabel": "5 LTS",
+          "variantSortOrder": 2
+        },
+        {
+          "code": "APC20",
+          "productSlug": "apc-tnt-20-lts",
+          "variantLabel": "20 LTS",
+          "variantSortOrder": 3
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "BLANCOLCHON FORTE",
+      "familySlug": "blancolchon-forte",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "DBCF1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "DBCF1",
+        "DBCFG",
+        "DBCF5",
+        "DBCF20"
+      ],
+      "variants": [
+        {
+          "code": "DBCF1",
+          "productSlug": "blancolchon-forte-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "DBCFG",
+          "productSlug": "blancolchon-forte-3-78-l",
+          "variantLabel": "3.78 L",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "DBCF5",
+          "productSlug": "blancolchon-forte-5-lts",
+          "variantLabel": "5 LTS",
+          "variantSortOrder": 2
+        },
+        {
+          "code": "DBCF20",
+          "productSlug": "blancolchon-forte-20-lts",
+          "variantLabel": "20 LTS",
+          "variantSortOrder": 3
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "BLUE GEL",
+      "familySlug": "blue-gel",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "DBG1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "DBG1",
+        "DBGG",
+        "DBG5",
+        "DBG20"
+      ],
+      "variants": [
+        {
+          "code": "DBG1",
+          "productSlug": "blue-gel-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "DBGG",
+          "productSlug": "blue-gel-3-78-l",
+          "variantLabel": "3.78 L",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "DBG5",
+          "productSlug": "blue-gel-5-lts",
+          "variantLabel": "5 LTS",
+          "variantSortOrder": 2
+        },
+        {
+          "code": "DBG20",
+          "productSlug": "blue-gel-20-lts",
+          "variantLabel": "20 LTS",
+          "variantSortOrder": 3
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "CHAZAM",
+      "familySlug": "chazam",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "PLCZ1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "PLCZ1",
+        "PLCZ2",
+        "PLCZ3"
+      ],
+      "variants": [
+        {
+          "code": "PLCZ1",
+          "productSlug": "chazam-1-kg",
+          "variantLabel": "1 KG",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "PLCZ2",
+          "productSlug": "chazam-2-kg",
+          "variantLabel": "2 KG",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "PLCZ3",
+          "productSlug": "chazam-3-kg",
+          "variantLabel": "3 KG",
+          "variantSortOrder": 2
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "CITRICAL",
+      "familySlug": "citrical",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "PLCT1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "PLCT1",
+        "PLCT2",
+        "PLCT3"
+      ],
+      "variants": [
+        {
+          "code": "PLCT1",
+          "productSlug": "citrical-1-kg",
+          "variantLabel": "1 KG",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "PLCT2",
+          "productSlug": "citrical-2-kg",
+          "variantLabel": "2 KG",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "PLCT3",
+          "productSlug": "citrical-3-kg",
+          "variantLabel": "3 KG",
+          "variantSortOrder": 2
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "CRISTALIZADOR DON REMIGIO H.",
+      "familySlug": "cristalizador-don-remigio-h",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "PICD1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "PICD1",
+        "PICD4"
+      ],
+      "variants": [
+        {
+          "code": "PICD1",
+          "productSlug": "cristalizador-don-remigio-h-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "PICD4",
+          "productSlug": "cristalizador-don-remigio-h-4-lts",
+          "variantLabel": "4 LTS",
+          "variantSortOrder": 1
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "HIDRATADOR DE CUERO",
+      "familySlug": "hidratador-de-cuero",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "TCPH1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "TCPH1",
+        "TCPH4"
+      ],
+      "variants": [
+        {
+          "code": "TCPH1",
+          "productSlug": "hidratador-de-cuero-1-kg",
+          "variantLabel": "1 KG",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "TCPH4",
+          "productSlug": "hidratador-de-cuero-4-kg",
+          "variantLabel": "4 KG",
+          "variantSortOrder": 1
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "LIMPIADOR DE CUERO",
+      "familySlug": "limpiador-de-cuero",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "TCPL1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "TCPL1",
+        "TCPL4"
+      ],
+      "variants": [
+        {
+          "code": "TCPL1",
+          "productSlug": "limpiador-de-cuero-1-kg",
+          "variantLabel": "1 KG",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "TCPL4",
+          "productSlug": "limpiador-de-cuero-4-kg",
+          "variantLabel": "4 KG",
+          "variantSortOrder": 1
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "LYPTUS LIQUID",
+      "familySlug": "lyptus-liquid",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "PLLL1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "PLLL1",
+        "PLLL5",
+        "PLLL20"
+      ],
+      "variants": [
+        {
+          "code": "PLLL1",
+          "productSlug": "lyptus-liquid-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "PLLL5",
+          "productSlug": "lyptus-liquid-5-lts",
+          "variantLabel": "5 LTS",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "PLLL20",
+          "productSlug": "lyptus-liquid-20-lts",
+          "variantLabel": "20 LTS",
+          "variantSortOrder": 2
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "MATA OLORES ENZIMATICO",
+      "familySlug": "mata-olores-enzimatico",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "COME1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "COME1",
+        "COMEG",
+        "COME5",
+        "COME20"
+      ],
+      "variants": [
+        {
+          "code": "COME1",
+          "productSlug": "mata-olores-enzimatico-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "COMEG",
+          "productSlug": "mata-olores-enzimatico-3-78-l",
+          "variantLabel": "3.78 L",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "COME5",
+          "productSlug": "mata-olores-enzimatico-5-lts",
+          "variantLabel": "5 LTS",
+          "variantSortOrder": 2
+        },
+        {
+          "code": "COME20",
+          "productSlug": "mata-olores-enzimatico-20-lts",
+          "variantLabel": "20 LTS",
+          "variantSortOrder": 3
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "MULTIFIBRAS",
+      "familySlug": "multifibras",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "EMLF1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "EMLF1",
+        "EMLFG",
+        "EMLF5",
+        "EMLF20"
+      ],
+      "variants": [
+        {
+          "code": "EMLF1",
+          "productSlug": "multifibras-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "EMLFG",
+          "productSlug": "multifibras-3-78-l",
+          "variantLabel": "3.78 L",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "EMLF5",
+          "productSlug": "multifibras-5-lts",
+          "variantLabel": "5 LTS",
+          "variantSortOrder": 2
+        },
+        {
+          "code": "EMLF20",
+          "productSlug": "multifibras-20-lts",
+          "variantLabel": "20 LTS",
+          "variantSortOrder": 3
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "MULTIFIBRAS LYPTUS",
+      "familySlug": "multifibras-lyptus",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "EMLFL1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "EMLFL1",
+        "EMLFL5",
+        "EMLFL20"
+      ],
+      "variants": [
+        {
+          "code": "EMLFL1",
+          "productSlug": "multifibras-lyptus-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "EMLFL5",
+          "productSlug": "multifibras-lyptus-5-lts",
+          "variantLabel": "5 LTS",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "EMLFL20",
+          "productSlug": "multifibras-lyptus-20-lts",
+          "variantLabel": "20 LTS",
+          "variantSortOrder": 2
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "MULTIFIBRAS ORANGE",
+      "familySlug": "multifibras-orange",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "EMLFO1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "EMLFO1",
+        "EMLFO5",
+        "EMLFO20"
+      ],
+      "variants": [
+        {
+          "code": "EMLFO1",
+          "productSlug": "multifibras-orange-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "EMLFO5",
+          "productSlug": "multifibras-orange-5-lts",
+          "variantLabel": "5 LTS",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "EMLFO20",
+          "productSlug": "multifibras-orange-20-lts",
+          "variantLabel": "20 LTS",
+          "variantSortOrder": 2
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "NEUTRO CAR",
+      "familySlug": "neutro-car",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "SCN1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "SCN1",
+        "SCN5",
+        "SCN20"
+      ],
+      "variants": [
+        {
+          "code": "SCN1",
+          "productSlug": "neutro-car-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "SCN5",
+          "productSlug": "neutro-car-5-lts",
+          "variantLabel": "5 LTS",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "SCN20",
+          "productSlug": "neutro-car-20-lts",
+          "variantLabel": "20 LTS",
+          "variantSortOrder": 2
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "ORANGE LIQUID",
+      "familySlug": "orange-liquid",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "PLOL1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "PLOL1",
+        "PLOLG",
+        "PLOL5",
+        "PLOL20"
+      ],
+      "variants": [
+        {
+          "code": "PLOL1",
+          "productSlug": "orange-liquid-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "PLOLG",
+          "productSlug": "orange-liquid-3-78-l",
+          "variantLabel": "3.78 L",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "PLOL5",
+          "productSlug": "orange-liquid-5-lts",
+          "variantLabel": "5 LTS",
+          "variantSortOrder": 2
+        },
+        {
+          "code": "PLOL20",
+          "productSlug": "orange-liquid-20-lts",
+          "variantLabel": "20 LTS",
+          "variantSortOrder": 3
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "PEXIDIL",
+      "familySlug": "pexidil",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "DPX1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "DPX1",
+        "DPX5",
+        "DPX20"
+      ],
+      "variants": [
+        {
+          "code": "DPX1",
+          "productSlug": "pexidil-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "DPX5",
+          "productSlug": "pexidil-5-lts",
+          "variantLabel": "5 LTS",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "DPX20",
+          "productSlug": "pexidil-20-lts",
+          "variantLabel": "20 LTS",
+          "variantSortOrder": 2
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "REPEL",
+      "familySlug": "repel",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "PTR1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "PTR1",
+        "PTR4"
+      ],
+      "variants": [
+        {
+          "code": "PTR1",
+          "productSlug": "repel-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "PTR4",
+          "productSlug": "repel-4-lts",
+          "variantLabel": "4 LTS",
+          "variantSortOrder": 1
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "REPEL APPLY WET",
+      "familySlug": "repel-apply-wet",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "PTRW1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "PTRW1",
+        "PTRW4"
+      ],
+      "variants": [
+        {
+          "code": "PTRW1",
+          "productSlug": "repel-apply-wet-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "PTRW4",
+          "productSlug": "repel-apply-wet-4-lts",
+          "variantLabel": "4 LTS",
+          "variantSortOrder": 1
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "SEVEN NEUTRO",
+      "familySlug": "seven-neutro",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "PLSN1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "PLSN1",
+        "PLSN5",
+        "PLSN20"
+      ],
+      "variants": [
+        {
+          "code": "PLSN1",
+          "productSlug": "seven-neutro-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "PLSN5",
+          "productSlug": "seven-neutro-5-lts",
+          "variantLabel": "5 LTS",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "PLSN20",
+          "productSlug": "seven-neutro-20-lts",
+          "variantLabel": "20 LTS",
+          "variantSortOrder": 2
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "SHAMPOO ALFOMBRAS",
+      "familySlug": "shampoo-alfombras",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "SAN1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "SAN1",
+        "SANG",
+        "SAN5",
+        "SAN20"
+      ],
+      "variants": [
+        {
+          "code": "SAN1",
+          "productSlug": "shampoo-alfombras-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "SANG",
+          "productSlug": "shampoo-alfombras-3-78-l",
+          "variantLabel": "3.78 L",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "SAN5",
+          "productSlug": "shampoo-alfombras-5-lts",
+          "variantLabel": "5 LTS",
+          "variantSortOrder": 2
+        },
+        {
+          "code": "SAN20",
+          "productSlug": "shampoo-alfombras-20-lts",
+          "variantLabel": "20 LTS",
+          "variantSortOrder": 3
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "SHAMPOO GERMICIDA",
+      "familySlug": "shampoo-germicida",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "SGA1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "SGA1",
+        "SGA5",
+        "SGA20"
+      ],
+      "variants": [
+        {
+          "code": "SGA1",
+          "productSlug": "shampoo-germicida-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "SGA5",
+          "productSlug": "shampoo-germicida-5-lts",
+          "variantLabel": "5 LTS",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "SGA20",
+          "productSlug": "shampoo-germicida-20-lts",
+          "variantLabel": "20 LTS",
+          "variantSortOrder": 2
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    },
+    {
+      "familyName": "ULTRA BLACK",
+      "familySlug": "ultra-black",
+      "brand": "Magno Clean",
+      "category": "Magno",
+      "variantType": "Presentación",
+      "description": "Disponible en varias presentaciones.",
+      "active": true,
+      "featured": false,
+      "imageUrl": null,
+      "selectedImage": {
+        "strategy": "FIRST_ACTIVE_VARIANT",
+        "productCode": "SUB1",
+        "source": "Product.imageUrl / ProductImage",
+        "persistFamilyImage": false
+      },
+      "productCodes": [
+        "SUB1",
+        "SUB5",
+        "SUB20"
+      ],
+      "variants": [
+        {
+          "code": "SUB1",
+          "productSlug": "ultra-black-1-lt",
+          "variantLabel": "1 LT",
+          "variantSortOrder": 0
+        },
+        {
+          "code": "SUB5",
+          "productSlug": "ultra-black-5-lts",
+          "variantLabel": "5 LTS",
+          "variantSortOrder": 1
+        },
+        {
+          "code": "SUB20",
+          "productSlug": "ultra-black-20-lts",
+          "variantLabel": "20 LTS",
+          "variantSortOrder": 2
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    }
+  ],
+  "individuals": [
+    {
+      "code": "EBW1_5_1",
+      "name": "BIO WASH ENJUAGUE KIWI",
+      "slug": "bio-wash-enjuague-kiwi-1-5-kg"
+    },
+    {
+      "code": "EBW1_5_2",
+      "name": "BIO WASH ENJUAGUE MENTA",
+      "slug": "bio-wash-enjuague-menta-1-5-kg"
+    },
+    {
+      "code": "EBW1_5_3",
+      "name": "BIO WASH ENJUAGUE NARANJA",
+      "slug": "bio-wash-enjuague-naranja-1-5-kg"
+    },
+    {
+      "code": "PLBW2_1",
+      "name": "BIO WASH KIWI",
+      "slug": "bio-wash-kiwi-2-kg"
+    },
+    {
+      "code": "PLBW2_2",
+      "name": "BIO WASH MENTA",
+      "slug": "bio-wash-menta-2-kg"
+    },
+    {
+      "code": "PLBW2_3",
+      "name": "BIO WASH NARANJA",
+      "slug": "bio-wash-naranja-2-kg"
+    },
+    {
+      "code": "DCM2",
+      "name": "CITRIMAG",
+      "slug": "citrimag-500-ml"
+    },
+    {
+      "code": "PLFC1_5",
+      "name": "FINE CLEANNER",
+      "slug": "fine-cleanner-1-5-kg"
+    },
+    {
+      "code": "EFN1_5",
+      "name": "FINE ENJUAGUE",
+      "slug": "fine-enjuague-1-5-kg"
+    },
+    {
+      "code": "ABS2",
+      "name": "MAGBOOSTER",
+      "slug": "magbooster-2-kg"
+    },
+    {
+      "code": "APCMA1",
+      "name": "MAGNIFICO MAGNIFICO",
+      "slug": "magnifico-magnifico-1-lt"
+    },
+    {
+      "code": "DOX2",
+      "name": "OXIMAG",
+      "slug": "oximag-500-ml"
+    },
+    {
+      "code": "DPM2",
+      "name": "PERMAG",
+      "slug": "permag-500-ml"
+    },
+    {
+      "code": "LPF5",
+      "name": "PLANCHA FACIL",
+      "slug": "plancha-facil-5-lts"
+    },
+    {
+      "code": "DPT2",
+      "name": "PROTEMAG",
+      "slug": "protemag-500-ml"
+    },
+    {
+      "code": "SIL1",
+      "name": "SILICREMA",
+      "slug": "silicrema-1-lt"
+    }
+  ],
+  "inactive": [
+    {
+      "code": "magno-bot-clean-ai",
+      "name": "Magno Bot Clean AI",
+      "slug": "magno-bot-clean-ai"
+    },
+    {
+      "code": "magno-hydroforce-2200",
+      "name": "Magno HydroForce 2200",
+      "slug": "magno-hydroforce-2200"
+    },
+    {
+      "code": "magno-pro-cyclone-x2",
+      "name": "Magno Pro Cyclone X2",
+      "slug": "magno-pro-cyclone-x2"
+    }
+  ],
+  "warnings": [
+    "Stock is not changed. Sold-out variant chips remain disabled by the existing UI; query and historical URLs still select variants.",
+    "No technical, editorial or media sources were used for grouping.",
+    "Automatic Product.updatedAt timestamps may change when linking variants. All other fields outside familyId, variantLabel and variantSortOrder are preserved.",
+    "Existing image references remain on Product. No environment-specific URL is canonical in this plan."
+  ],
+  "conflicts": []
+}

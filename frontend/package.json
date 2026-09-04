@@ -8,8 +8,9 @@
     "sitemap": "node scripts/generateSitemap.mjs",
     "prebuild": "npm run sitemap",
     "build": "tsc -b && vite build",
+    "build:ci": "node scripts/buildForCi.mjs",
     "lint": "eslint .",
-    "test": "vitest run",
+    "test": "vitest run && node --test scripts/*.test.mjs",
     "test:e2e": "playwright test",
     "preview": "vite preview"
   },
