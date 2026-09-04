@@ -4,7 +4,7 @@ This separate PR is based on frozen release `050f890f2704b0b6d6a57c7e76e5520525b
 
 ## Confirmed finding and architecture
 
-Read-only metadata confirmed RLS disabled and effective `anon`, `authenticated` and `service_role` access to application objects in `public`. This includes legacy sensitive/commercial tables in production and the complete 20-table release schema in staging. Both Data APIs initially exposed `public` and `graphql_public`, with automatic exposure of new tables. A controlled staging-only containment test then disabled its Data API: authenticated zero-row REST and GraphQL probes changed to unavailable while Express/Prisma, frontend, sitemap and Storage checks stayed healthy. Production's Data API was only inspected and remains enabled. No sensitive row values or credentials were inspected.
+Read-only metadata confirmed RLS disabled and effective `anon`, `authenticated` and `service_role` access to application objects in `public`. This includes legacy sensitive/commercial tables in production and the complete 20-table release schema in staging. Both Data APIs initially exposed `public` and `graphql_public`, with automatic exposure of new tables. Controlled containment subsequently disabled the Data API in both environments. In staging, authenticated zero-row REST and GraphQL probes changed to unavailable while Express/Prisma, frontend, sitemap and Storage checks stayed healthy. Production containment was separately authorized and did not apply this migration or change application-table RLS/grants. Disabling the Data API reduces the reachable surface but does not replace the migration's defense-in-depth controls. No sensitive row values or credentials were inspected.
 
 Application traffic uses Express/Prisma with the `postgres` database role. Repository, CI and runtime inspection found no Supabase REST/GraphQL application access. `service_role` is used only against `/storage/v1`; its grants/defaults and managed objects in `storage` are preserved. Therefore none of the three Data API roles needs privileges on application objects in `public`.
 
@@ -57,7 +57,7 @@ The real trigger functions are preserved and their PUBLISHED immutability behavi
 4. Confirm the backend still connects as `postgres`, `service_role` remains Storage-only, CHECKOUT remains disabled, the current backup is accepted and the global function-default compatibility cost is approved.
 5. Run CI and isolated PostgreSQL tests. The authorized staging application is complete; any retry must first prove why it is required. Production application remains separately gated.
 6. After application, verify all 20 RLS flags, absence of table/column/function/sequence/view access for all three Data API roles, creator defaults, unchanged managed-schema ACL/default snapshots, real Prisma/API/admin behavior and Storage access. Do not test a real checkout or payment.
-7. Production requires a separate authorization after staging evidence. Opening or merging this PR is not mitigation of current live permissions.
+7. Production migration remains separately authorized work after staging evidence. Its Data API is already disabled as containment, but application-table RLS/grants remain unremediated; opening or merging this PR does not apply the defense-in-depth migration.
 
 ## Local verification
 
@@ -85,7 +85,7 @@ The exact migration with SHA-256 `d00b0982192923709ebbb36a99cee6fcf2323a6d36117e
 - Data API remains disabled: authenticated REST and GraphQL probes return `PGRST002`. Storage bucket metadata/listing and a public WebP HEAD remain 200; no Storage write was attempted.
 - Baseline stayed at 98 products, 25 families, 79 linked variants, zero stock/reserved stock and no orders/payments. Managed relation/function/default-ACL snapshots outside `public` are unchanged; `product-media` remains at 218 objects.
 - Security Advisor rerun: 0 errors, 3 warnings for mutable search paths on the invoker-rights trigger functions, and 20 informational `RLS Enabled No Policy` findings. The no-policy findings are intentional default-deny behavior. The search-path warnings remain documented hardening work; no function body or migration 7–9 was rewritten.
-- Production was audited read-only after the staging change and remained byte-for-byte equal in the captured metadata/count snapshot: six migrations, 98 products and Data API enabled. It was not changed.
+- Production was audited read-only after the staging migration and remained byte-for-byte equal in the captured application metadata/count snapshot: six migrations and 98 products. Its Data API was disabled afterward under a separate containment authorization. Migration 10 is still not applied there, so the application-table RLS/grants finding remains and containment must not be represented as a substitute for the migration.
 
 ## Rollback
 
