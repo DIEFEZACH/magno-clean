@@ -10,6 +10,7 @@ type AuthStore = {
   accessToken: string | null;
   user: User | null;
   lastError: string | null;
+  logoutUnconfirmed: boolean;
   initialize: () => Promise<void>;
   login: (email: string, password: string) => Promise<boolean>;
   refresh: () => Promise<boolean>;
@@ -17,6 +18,7 @@ type AuthStore = {
 };
 
 const signedOut = { initialized: true, isAuthenticated: false, accessToken: null, user: null };
+const logoutFailure = "Sesión cerrada en este navegador; no pudimos confirmar su revocación. Intenta nuevamente.";
 let sessionEpoch = 0;
 let loggedOut = false;
 let refreshPending: Promise<boolean> | null = null;
@@ -49,6 +51,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   accessToken: null,
   user: null,
   lastError: null,
+  logoutUnconfirmed: false,
 
   initialize: () => {
     if (get().initialized) return Promise.resolve();
@@ -62,11 +65,12 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   login: (email, password) => {
     if (loginPending) return loginPending;
+    if (get().logoutUnconfirmed || logoutPending) return Promise.resolve(false);
     const epoch = ++sessionEpoch;
     loggedOut = false;
     set({ lastError: null });
     loginPending = withSessionLock(async () => {
-      if (epoch !== sessionEpoch || loggedOut) return false;
+      if (epoch !== sessionEpoch || loggedOut || get().logoutUnconfirmed) return false;
       try {
         const response = await authRequest("login", { email, password });
         if (epoch !== sessionEpoch || loggedOut) return false;
@@ -123,9 +127,16 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     logoutPending = withSessionLock(async () => {
       try {
         const response = await authRequest("logout");
-        if (!response.ok) set({ lastError: "Sesión cerrada en este navegador; no pudimos confirmar su revocación. Intenta nuevamente." });
+        if (!response.ok) {
+          set({ logoutUnconfirmed: true, lastError: logoutFailure });
+          sessionChannel?.postMessage({ type: "logout-unconfirmed" });
+        } else {
+          set({ logoutUnconfirmed: false, lastError: null });
+          sessionChannel?.postMessage({ type: "logout-confirmed" });
+        }
       } catch {
-        set({ lastError: "Sesión cerrada en este navegador; no pudimos confirmar su revocación. Intenta nuevamente." });
+        set({ logoutUnconfirmed: true, lastError: logoutFailure });
+        sessionChannel?.postMessage({ type: "logout-unconfirmed" });
       }
     }).finally(() => { logoutPending = null; });
     return logoutPending;
@@ -139,5 +150,9 @@ if (sessionChannel) sessionChannel.onmessage = (event: MessageEvent) => {
     useAuthStore.setState({ ...signedOut, lastError: null });
   } else if (event.data?.type === "login") {
     loggedOut = false;
+  } else if (event.data?.type === "logout-unconfirmed") {
+    useAuthStore.setState({ logoutUnconfirmed: true, lastError: logoutFailure });
+  } else if (event.data?.type === "logout-confirmed") {
+    useAuthStore.setState({ logoutUnconfirmed: false, lastError: null });
   }
 };

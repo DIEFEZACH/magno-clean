@@ -57,11 +57,17 @@ export async function onRequest({ request, env }: AuthContext): Promise<Response
     }
   }
 
+  const cookie = refreshCookie(request);
+  if (url.pathname === "/api/auth/refresh" && (!cookie || !/^magno_refresh=[A-Za-z0-9_-]{64}$/.test(cookie))) {
+    // Anonymous public-page initialization should not consume the shared upstream
+    // login/refresh limiter. Valid sessions still go to Express for verification.
+    return jsonError(401, "Sesión inválida o expirada", requestId);
+  }
+
   const headers = new Headers({ "Accept": "application/json", "X-Request-Id": requestId });
   // The browser cannot override the destination, forwarded host or forwarding headers.
   headers.set("Origin", url.origin);
   if (url.pathname !== "/api/auth/login") {
-    const cookie = refreshCookie(request);
     if (cookie) headers.set("Cookie", cookie);
   }
   if (url.pathname === "/api/auth/me") {
@@ -99,6 +105,14 @@ export async function onRequest({ request, env }: AuthContext): Promise<Response
     const upstream = await fetch(`${env.AUTH_UPSTREAM_URL}${url.pathname}`, {
       method, headers, body, redirect: "manual", signal: AbortSignal.timeout(15000),
     });
+    // Express's rate limiter may return text/plain. Preserve its rate-limit
+    // semantics without exposing its body or turning a normal 429 into a 502.
+    if (upstream.status === 429) {
+      const response = jsonError(429, "Demasiados intentos. Espera antes de intentar de nuevo.", requestId);
+      const retryAfter = upstream.headers.get("Retry-After");
+      if (retryAfter && /^\d+$/.test(retryAfter)) response.headers.set("Retry-After", retryAfter);
+      return response;
+    }
     if (upstream.status >= 300 && upstream.status < 400) return jsonError(502, "Respuesta de autenticación no válida", requestId);
     if (!upstream.headers.get("Content-Type")?.includes("application/json")) return jsonError(502, "Respuesta de autenticación no válida", requestId);
     const responseHeaders = new Headers({

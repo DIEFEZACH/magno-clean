@@ -7,14 +7,17 @@ export function AdminLogin() {
   const feedback = useAdminFeedback();
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
+  const logout = useAuthStore((state) => state.logout);
+  const logoutUnconfirmed = useAuthStore((state) => state.logoutUnconfirmed);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [retryingLogout, setRetryingLogout] = useState(false);
 
   async function handleLogin(event: React.FormEvent) {
     event.preventDefault();
-    if (submitting) return;
+    if (submitting || logoutUnconfirmed) return;
     setSubmitting(true);
     const success = await login(email, password);
     setSubmitting(false);
@@ -41,6 +44,18 @@ export function AdminLogin() {
           Iniciar sesión
         </h1>
 
+        {logoutUnconfirmed && <div role="alert" className="mt-6 min-w-0 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-950">
+          <h2 className="font-black">Cierre de sesión pendiente de confirmar</h2>
+          <p className="mt-2 text-sm leading-6">El acceso se cerró en este navegador, pero el servidor no confirmó la revocación. Reintenta el cierre antes de iniciar otra sesión.</p>
+          <button type="button" disabled={retryingLogout} aria-busy={retryingLogout} onClick={async () => {
+            if (retryingLogout) return;
+            setRetryingLogout(true);
+            try { await logout(); } finally { setRetryingLogout(false); }
+          }} className="mt-3 min-h-11 w-full rounded-xl border border-amber-600 px-4 py-3 text-sm font-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700 disabled:cursor-wait disabled:opacity-60">
+            {retryingLogout ? "Confirmando cierre…" : "Reintentar cierre de sesión"}
+          </button>
+        </div>}
+
         <div className="mt-8 grid gap-5">
           <label className="grid gap-2 font-bold">Correo
           <input
@@ -60,7 +75,7 @@ export function AdminLogin() {
           />
           </label>
 
-          <button disabled={submitting} aria-busy={submitting} className="min-h-12 rounded-full bg-[#19A2B6] px-8 py-4 text-sm font-black text-white transition hover:bg-[#111111] disabled:cursor-wait disabled:opacity-60">
+          <button disabled={submitting || logoutUnconfirmed} aria-busy={submitting} className="min-h-12 rounded-full bg-[#19A2B6] px-8 py-4 text-sm font-black text-white transition hover:bg-[#111111] disabled:cursor-not-allowed disabled:opacity-60">
             {submitting ? "Iniciando sesión…" : "Entrar"}
           </button>
         </div>
