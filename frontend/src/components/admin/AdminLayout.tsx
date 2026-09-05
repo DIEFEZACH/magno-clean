@@ -8,6 +8,7 @@ const links = [
   { to: "/admin/customers", label: "Clientes", Icon: Users }, { to: "/admin/products", label: "Productos", Icon: Package },
   { to: "/admin/product-families", label: "Familias", Icon: Layers3 }, { to: "/admin/inventory", label: "Inventario", Icon: Boxes },
   { to: "/admin/content", label: "Contenido", Icon: FilePenLine },
+  { to: "/admin/publications", label: "Publicaciones", Icon: Layers3 },
   { to: "/admin/settings", label: "Configuración", Icon: Settings },
 ];
 

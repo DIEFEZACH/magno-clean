@@ -11,6 +11,8 @@ const LegalPage = lazy(() => import("./pages/LegalPage").then(m => ({ default: m
 const AdminLogin=page(()=>import("./pages/AdminLogin"),"AdminLogin"), AdminDashboard=page(()=>import("./pages/AdminDashboard"),"AdminDashboard"), AdminOrders=page(()=>import("./pages/AdminOrders"),"AdminOrders"), AdminOrderDetail=page(()=>import("./pages/AdminOrderDetail"),"AdminOrderDetail"), AdminCustomers=page(()=>import("./pages/AdminCustomers"),"AdminCustomers"), AdminCustomerDetail=page(()=>import("./pages/AdminCustomerDetail"),"AdminCustomerDetail"), AdminProducts=page(()=>import("./pages/AdminProducts"),"AdminProducts"), AdminProductEdit=page(()=>import("./pages/AdminProductEdit"),"AdminProductEdit"), AdminProductFamilies=page(()=>import("./pages/AdminProductFamilies"),"AdminProductFamilies"), AdminInventory=page(()=>import("./pages/AdminInventory"),"AdminInventory"), AdminSettings=page(()=>import("./pages/AdminSettings"),"AdminSettings"), AdminContent=page(()=>import("./pages/AdminContent"),"AdminContent");
 const AdminContentEditor = lazy(() => import("./pages/AdminContentEditor").then(m => ({ default: m.AdminContentEditor }))) as React.LazyExoticComponent<React.ComponentType<{ type: "family" | "product" }>>;
 
+const AdminPublications = page(() => import("./pages/AdminPublications"), "AdminPublications");
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -30,6 +32,7 @@ export default function App() {
               <Route path="customers" element={<AdminCustomers />} />
               <Route path="customers/:email" element={<AdminCustomerDetail />} />
               <Route path="products" element={<AdminProducts />} />
+              <Route path="publications" element={<AdminPublications />} />
               <Route path="products/:id/edit" element={<AdminProductEdit />} />
               <Route path="product-families" element={<AdminProductFamilies />} />
               <Route path="content" element={<AdminContent />} />
