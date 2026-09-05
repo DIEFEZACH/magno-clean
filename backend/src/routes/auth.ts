@@ -9,6 +9,10 @@ import { login, publicUser, REFRESH_COOKIE, revokeRefreshToken, rotateRefreshTok
 import { prisma } from "../lib/prisma";
 
 export const authRouter = Router();
+authRouter.use((_req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  next();
+});
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: env.AUTH_RATE_LIMIT_MAX, standardHeaders: true, legacyHeaders: false });
 const cookieOptions = { httpOnly: true, secure: env.NODE_ENV === "production", sameSite: "strict" as const, path: "/api/auth" };
 
