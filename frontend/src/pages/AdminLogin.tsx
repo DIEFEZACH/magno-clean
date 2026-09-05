@@ -10,14 +10,17 @@ export function AdminLogin() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   async function handleLogin(event: React.FormEvent) {
     event.preventDefault();
-
+    if (submitting) return;
+    setSubmitting(true);
     const success = await login(email, password);
+    setSubmitting(false);
 
     if (!success) {
-      feedback.toast("error", "Credenciales incorrectas");
+      feedback.toast("error", useAuthStore.getState().lastError || "No fue posible iniciar sesión. Intenta nuevamente.");
       return;
     }
 
@@ -57,8 +60,8 @@ export function AdminLogin() {
           />
           </label>
 
-          <button className="min-h-12 rounded-full bg-[#19A2B6] px-8 py-4 text-sm font-black text-white transition hover:bg-[#111111]">
-            Entrar
+          <button disabled={submitting} aria-busy={submitting} className="min-h-12 rounded-full bg-[#19A2B6] px-8 py-4 text-sm font-black text-white transition hover:bg-[#111111] disabled:cursor-wait disabled:opacity-60">
+            {submitting ? "Iniciando sesión…" : "Entrar"}
           </button>
         </div>
       </form>
