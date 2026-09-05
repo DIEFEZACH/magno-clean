@@ -1,17 +1,27 @@
 // @vitest-environment node
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getSetCookies, onRequest, sameOriginCookie } from "../../functions/api/auth/[[path]]";
+import { getSetCookies, onRequest, resolveAuthDeployment, sameOriginCookie, type AuthEnvironment } from "../../functions/api/auth/[[path]]";
 
 const origin = "https://demo.magno-clean-staging.pages.dev";
 const upstream = "https://magno-clean-api-staging.onrender.com";
 const fixtureCookie = `magno_refresh=${"a".repeat(64)}`;
-const env = { AUTH_UPSTREAM_URL: upstream };
+const env: AuthEnvironment = {
+  AUTH_DEPLOYMENT_ENVIRONMENT: "staging",
+  AUTH_UPSTREAM_URL: upstream,
+  AUTH_ALLOWED_FRONTEND_ORIGINS: JSON.stringify(["https://magno-clean-staging.pages.dev", origin]),
+};
+const productionOrigins = ["https://www.magnoclean.com.mx", "https://magno-clean.pages.dev"];
+const productionEnv: AuthEnvironment = {
+  AUTH_DEPLOYMENT_ENVIRONMENT: "production",
+  AUTH_UPSTREAM_URL: "https://magno-clean-api.onrender.com",
+  AUTH_ALLOWED_FRONTEND_ORIGINS: JSON.stringify(productionOrigins),
+};
 const invalidCsrfHeaders: Record<string, string>[] = [{ Origin: "https://evil.invalid" }, { Origin: "null" }, { Origin: "" }, { "X-Magno-Auth": "" }];
-function request(path = "/api/auth/refresh", options: RequestInit = {}) {
-  const headers = new Headers({ Origin: origin, "Content-Type": "application/json", "X-Magno-Auth": "1", Cookie: fixtureCookie });
+function request(path = "/api/auth/refresh", options: RequestInit = {}, frontendOrigin = origin) {
+  const headers = new Headers({ Origin: frontendOrigin, "Content-Type": "application/json", "X-Magno-Auth": "1", Cookie: fixtureCookie });
   new Headers(options.headers).forEach((value, key) => headers.set(key, value));
   const method = options.method || "POST";
-  return new Request(`${origin}${path}`, { ...options, method, headers, ...(method === "POST" ? { body: options.body ?? "{}" } : {}) });
+  return new Request(`${frontendOrigin}${path}`, { ...options, method, headers, ...(method === "POST" ? { body: options.body ?? "{}" } : {}) });
 }
 afterEach(() => vi.unstubAllGlobals());
 
@@ -31,7 +41,7 @@ describe("strict same-origin auth proxy", () => {
   });
   it.each([undefined, "https://api.invalid", `${upstream}/`, "http://magno-clean-api-staging.onrender.com", "https://magno-clean-api.onrender.com"])("fails closed on invalid upstream binding %s", async (value) => {
     const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
-    const response = await onRequest({ request: request(), env: { AUTH_UPSTREAM_URL: value } });
+    const response = await onRequest({ request: request(), env: { ...env, AUTH_UPSTREAM_URL: value } });
     expect(response.status).toBe(503); expect(fetch).not.toHaveBeenCalled();
   });
   it.each(invalidCsrfHeaders)("rejects missing/foreign origin and missing non-simple CSRF header", async (headers) => {
@@ -131,5 +141,131 @@ describe("strict same-origin auth proxy", () => {
     expect(response.headers.get("Cache-Control")).toBe("no-store");
     expect(response.headers.get("Content-Type")).toContain("application/json");
     expect(fetch).not.toHaveBeenCalled();
+  });
+});
+
+describe("trusted deployment binding and exact cross-environment isolation", () => {
+  it.each([
+    undefined, "", "preview", "Production", "development", "PRODUCTION",
+  ])("requires an explicit supported runtime deployment environment: %s", async (environment) => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    const response = await onRequest({ request: request(), env: { ...env, AUTH_DEPLOYMENT_ENVIRONMENT: environment } });
+    expect(response.status).toBe(503);
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("never infers destination from NODE_ENV, VITE flags or a Pages environment label", async () => {
+    const fetch = vi.fn().mockResolvedValue(Response.json({ message: "fixture" })); vi.stubGlobal("fetch", fetch);
+    const misleading = { ...env, NODE_ENV: "production", VITE_DEMO_PREVIEW: "false", CF_PAGES_ENVIRONMENT: "Production" };
+    const response = await onRequest({ request: request(), env: misleading });
+    expect(response.status).toBe(200);
+    expect(fetch.mock.calls[0][0]).toBe(`${upstream}/api/auth/refresh`);
+    fetch.mockClear();
+    expect((await onRequest({ request: request(), env: { ...misleading, AUTH_DEPLOYMENT_ENVIRONMENT: undefined } })).status).toBe(503);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["staging", "https://magno-clean-api.onrender.com"],
+    ["production", "https://magno-clean-api-staging.onrender.com"],
+  ])("rejects the cross-environment pairing %s / %s before forwarding credentials", async (environment, url) => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    const config = environment === "production" ? productionEnv : env;
+    const frontendOrigin = environment === "production" ? productionOrigins[0] : origin;
+    const response = await onRequest({ request: request("/api/auth/login", { body: JSON.stringify({ email: "fixture@example.invalid", password: "fixture-only" }) }, frontendOrigin), env: { ...config, AUTH_UPSTREAM_URL: url } });
+    expect(response.status).toBe(503);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    `${upstream}:443`, `${upstream}:444`, `${upstream}/`, `${upstream}/api/auth`, `${upstream}?`, `${upstream}?target=x`, `${upstream}#`, `${upstream}#fragment`,
+    "https://user:password@magno-clean-api-staging.onrender.com", "https://@magno-clean-api-staging.onrender.com", "https://MAGNO-CLEAN-API-STAGING.onrender.com",
+    "https://magno-clean-api-staging.onrender.com.evil.invalid", "https://magno-clean-api-staging.onrender.com@evil.invalid", "http://magno-clean-api-staging.onrender.com", "https://127.0.0.1", ` ${upstream}`, `${upstream}\n`,
+  ])("rejects a noncanonical or unsafe upstream origin %s", async (url) => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    const response = await onRequest({ request: request(), env: { ...env, AUTH_UPSTREAM_URL: url } });
+    expect(response.status).toBe(503); expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    undefined, "", "not-json", "null", "{}", "[]", JSON.stringify(origin),
+    JSON.stringify([origin, origin]), JSON.stringify([origin, 1]), JSON.stringify(Array.from({ length: 65 }, (_, index) => `https://preview-${index}.magno-clean-staging.pages.dev`)),
+  ])("rejects invalid or ambiguous exact-origin lists", async (origins) => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    const response = await onRequest({ request: request(), env: { ...env, AUTH_ALLOWED_FRONTEND_ORIGINS: origins } });
+    expect(response.status).toBe(503); expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    "*", "https://*.pages.dev", "https://*.magno-clean-staging.pages.dev", "https://other-project.pages.dev", "https://demo.magno-clean.pages.dev",
+    "https://nested.demo.magno-clean-staging.pages.dev", "https://-demo.magno-clean-staging.pages.dev", "https://demo-.magno-clean-staging.pages.dev", "https://demo.magno-clean-staging.pages.dev.evil.invalid",
+    "https://www.magnoclean.com.mx", "https://magno-clean.pages.dev", "http://demo.magno-clean-staging.pages.dev", `${origin}:443`, `${origin}:8443`, `${origin}/`, `${origin}/path`, `${origin}?x=1`, `${origin}#x`,
+    "https://user:password@demo.magno-clean-staging.pages.dev", "https://DEMO.magno-clean-staging.pages.dev", "https://127.0.0.1", "https://localhost",
+  ])("rejects foreign, wildcard or noncanonical configured staging frontend %s", async (value) => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    const response = await onRequest({ request: request(), env: { ...env, AUTH_ALLOWED_FRONTEND_ORIGINS: JSON.stringify([value]) } });
+    expect(response.status).toBe(503); expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    "https://unlisted.magno-clean-staging.pages.dev", "https://other-project.pages.dev", "https://www.magnoclean.com.mx", "https://magno-clean.pages.dev", `${origin}:8443`,
+  ])("rejects incoming frontend %s unless explicitly allowed in the correct runtime environment", async (frontendOrigin) => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    const response = await onRequest({ request: request("/api/auth/login", {}, frontendOrigin), env });
+    expect(response.status).toBe(403); expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("requires the request origin itself to be listed, not a spoofed Origin or forwarded-host header", async () => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    const response = await onRequest({ request: request("/api/auth/me", { method: "GET", headers: {
+      Origin: origin, "X-Forwarded-Host": "demo.magno-clean-staging.pages.dev", Authorization: "Bearer fixture.jwt.value",
+    } }, "https://unlisted.magno-clean-staging.pages.dev"), env });
+    expect(response.status).toBe(403); expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("allows the explicitly configured stable staging origin without changing upstream", async () => {
+    const fetch = vi.fn().mockResolvedValue(Response.json({ message: "fixture" })); vi.stubGlobal("fetch", fetch);
+    const response = await onRequest({ request: request("/api/auth/login", {}, "https://magno-clean-staging.pages.dev"), env });
+    expect(response.status).toBe(200);
+    expect(fetch.mock.calls[0][0]).toBe(`${upstream}/api/auth/login`);
+  });
+
+  // Every production case is a unit test with fetch replaced. No production
+  // network connection, account, credential or deployment is used by this suite.
+  it.each(productionOrigins.flatMap((frontendOrigin) => [
+    [frontendOrigin, "/api/auth/login", "POST"], [frontendOrigin, "/api/auth/refresh", "POST"],
+    [frontendOrigin, "/api/auth/logout", "POST"], [frontendOrigin, "/api/auth/me", "GET"],
+  ]))("mock-only production transport allows exact frontend %s and %s", async (frontendOrigin, pathname, method) => {
+    const fetch = vi.fn().mockResolvedValue(Response.json({ message: "fixture" })); vi.stubGlobal("fetch", fetch);
+    const response = await onRequest({ request: request(pathname, { method, headers: { Authorization: "Bearer fixture.jwt.value" } }, frontendOrigin), env: productionEnv });
+    expect(response.status).toBe(200);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch.mock.calls[0][0]).toBe(`https://magno-clean-api.onrender.com${pathname}`);
+    expect(fetch.mock.calls[0][1].redirect).toBe("manual");
+    expect(fetch.mock.calls[0][1].headers.get("Origin")).toBe(frontendOrigin);
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+  });
+
+  it.each([origin, "https://magno-clean-staging.pages.dev", "https://preview.magno-clean.pages.dev", "https://magnoclean.com.mx", "https://evil.invalid"])("mock-only production config rejects foreign frontend %s", async (frontendOrigin) => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    const response = await onRequest({ request: request("/api/auth/login", {}, productionOrigins[0]), env: {
+      ...productionEnv, AUTH_ALLOWED_FRONTEND_ORIGINS: JSON.stringify([...productionOrigins, frontendOrigin]),
+    } });
+    expect(response.status).toBe(503); expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("does not grant implicit production origins omitted from the configured list", async () => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    const config = { ...productionEnv, AUTH_ALLOWED_FRONTEND_ORIGINS: JSON.stringify([productionOrigins[0]]) };
+    const response = await onRequest({ request: request("/api/auth/me", { method: "GET" }, productionOrigins[1]), env: config });
+    expect(response.status).toBe(403); expect(fetch).not.toHaveBeenCalled();
+    expect([...resolveAuthDeployment(config)!.origins]).toEqual([productionOrigins[0]]);
+  });
+
+  it("rejects an explicitly foreign Origin even for bearer-only me", async () => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    const response = await onRequest({ request: request("/api/auth/me", { method: "GET", headers: { Origin: "https://evil.invalid", Authorization: "Bearer fixture.jwt.value" } }), env });
+    expect(response.status).toBe(403); expect(fetch).not.toHaveBeenCalled();
   });
 });

@@ -1,7 +1,52 @@
-type AuthEnvironment = { AUTH_UPSTREAM_URL?: string };
+export type AuthEnvironment = {
+  AUTH_DEPLOYMENT_ENVIRONMENT?: string;
+  AUTH_UPSTREAM_URL?: string;
+  AUTH_ALLOWED_FRONTEND_ORIGINS?: string;
+};
 type AuthContext = { request: Request; env: AuthEnvironment };
 
-const ALLOWED_UPSTREAM = "https://magno-clean-api-staging.onrender.com";
+const UPSTREAMS = {
+  staging: "https://magno-clean-api-staging.onrender.com",
+  production: "https://magno-clean-api.onrender.com",
+} as const;
+const PRODUCTION_FRONTEND_ORIGINS = new Set([
+  "https://www.magnoclean.com.mx",
+  "https://magno-clean.pages.dev",
+]);
+
+// Runtime bindings are authoritative. Build flags, NODE_ENV, request headers and
+// Cloudflare's Production/Preview label must not select a credential destination.
+function exactHttpsOrigin(value: unknown): value is string {
+  if (typeof value !== "string" || value.length > 2048) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password && !url.port
+      && url.pathname === "/" && !url.search && !url.hash && url.origin === value;
+  } catch { return false; }
+}
+
+export function resolveAuthDeployment(env: AuthEnvironment): { upstream: string; origins: Set<string> } | null {
+  const environment = env.AUTH_DEPLOYMENT_ENVIRONMENT;
+  if (environment !== "staging" && environment !== "production") return null;
+  if (!exactHttpsOrigin(env.AUTH_UPSTREAM_URL) || env.AUTH_UPSTREAM_URL !== UPSTREAMS[environment]) return null;
+  if (typeof env.AUTH_ALLOWED_FRONTEND_ORIGINS !== "string" || env.AUTH_ALLOWED_FRONTEND_ORIGINS.length > 16384) return null;
+  let configured: unknown;
+  try { configured = JSON.parse(env.AUTH_ALLOWED_FRONTEND_ORIGINS); } catch { return null; }
+  if (!Array.isArray(configured) || !configured.length || configured.length > 64) return null;
+  const origins = new Set<string>();
+  for (const origin of configured) {
+    if (!exactHttpsOrigin(origin) || origins.has(origin)) return null;
+    const belongsToEnvironment = environment === "production"
+      ? PRODUCTION_FRONTEND_ORIGINS.has(origin)
+      : origin === "https://magno-clean-staging.pages.dev"
+        || /^https:\/\/[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.magno-clean-staging\.pages\.dev$/.test(origin);
+    if (!belongsToEnvironment) return null;
+    origins.add(origin);
+  }
+  // The staging hostname pattern only validates entries in this exact list. It
+  // never grants access to an unlisted preview, project or *.pages.dev origin.
+  return { upstream: UPSTREAMS[environment], origins };
+}
 const ROUTES: Record<string, string> = {
   "/api/auth/login": "POST",
   "/api/auth/refresh": "POST",
@@ -42,10 +87,14 @@ export async function onRequest({ request, env }: AuthContext): Promise<Response
   const requestId = crypto.randomUUID();
   const url = new URL(request.url);
   const method = ROUTES[url.pathname];
-  if (!method || url.search || /%|\\/.test(url.pathname)) return jsonError(404, "Ruta de autenticación no disponible", requestId);
+  if (!method || url.search || url.hash || url.username || url.password || /%|\\/.test(url.pathname)) return jsonError(404, "Ruta de autenticación no disponible", requestId);
   if (request.method !== method) return jsonError(405, "Método no permitido", requestId);
   if (url.protocol !== "https:") return jsonError(400, "La autenticación requiere HTTPS", requestId);
-  if (env.AUTH_UPSTREAM_URL !== ALLOWED_UPSTREAM) return jsonError(503, "Autenticación temporalmente no disponible", requestId);
+  const deployment = resolveAuthDeployment(env);
+  if (!deployment) return jsonError(503, "Autenticación temporalmente no disponible", requestId);
+  if (url.port || !deployment.origins.has(url.origin)) return jsonError(403, "Origen de autenticación no permitido", requestId);
+  const requestOrigin = request.headers.get("Origin");
+  if (requestOrigin && requestOrigin !== url.origin) return jsonError(403, "Origen de autenticación no permitido", requestId);
 
   if (method === "POST") {
     // SameSite is defense in depth; it does not replace explicit origin/JSON checks.
@@ -102,7 +151,7 @@ export async function onRequest({ request, env }: AuthContext): Promise<Response
   }
 
   try {
-    const upstream = await fetch(`${env.AUTH_UPSTREAM_URL}${url.pathname}`, {
+    const upstream = await fetch(`${deployment.upstream}${url.pathname}`, {
       method, headers, body, redirect: "manual", signal: AbortSignal.timeout(15000),
     });
     // Express's rate limiter may return text/plain. Preserve its rate-limit
