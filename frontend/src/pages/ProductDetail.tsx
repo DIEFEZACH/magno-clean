@@ -55,18 +55,19 @@ export function ProductDetail(){
   const breadcrumbJsonLd={"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Inicio","item":siteUrl},{"@type":"ListItem","position":2,"name":"Productos","item":`${siteUrl}/productos`},{"@type":"ListItem","position":3,"name":name,"item":`${siteUrl}${canonicalPath}`}]};
 
   const seoImage=family?(editorialHero?.url??gallery[0]?.url):gallery[0]?.url;
-  return <><Seo title={name} description={description.slice(0,160)} path={canonicalPath} image={seoImage} type="product" jsonLd={[productJsonLd,breadcrumbJsonLd]}/><section className="bg-white px-4 py-8 sm:px-5 sm:py-12 lg:px-8 lg:py-16"><div className="mx-auto max-w-7xl">
+  return <><Seo title={name} description={description.slice(0,160)} path={canonicalPath} image={seoImage} type="product" jsonLd={[productJsonLd,breadcrumbJsonLd]}/><section className="bg-white px-4 py-6 sm:px-5 md:py-8 lg:px-8 xl:px-12"><div className="mx-auto max-w-7xl">
     <nav aria-label="Migas de pan" className="mb-7 flex min-w-0 items-center gap-2 overflow-hidden text-xs font-bold text-black/45 sm:mb-10 sm:text-sm"><Link to="/" className="shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#19A2B6]">Inicio</Link><span aria-hidden="true">/</span><Link to="/productos" className="shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#19A2B6]">Productos</Link><span aria-hidden="true">/</span><span aria-current="page" className="truncate text-[#19A2B6]">{name}</span></nav>
-    <div className="grid min-w-0 gap-8 md:grid-cols-2 md:items-start lg:gap-14">
+    <div className="grid min-w-0 gap-8 md:grid-cols-[minmax(0,1.12fr)_minmax(0,1fr)] md:items-start lg:gap-12 xl:gap-16">
       <ProductGallery key={selectedVariant?.id??product?.id} images={gallery} name={selectedVariant?.name??name}/>
-      <div className="min-w-0 md:sticky md:top-24">
+      <div className="min-w-0 py-1 lg:py-5">
         {badge&&<span className="mb-5 inline-flex rounded-full bg-[#EF8329] px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-white">{badge}</span>}
-        <p className="text-xs font-black uppercase tracking-[0.2em] text-[#19A2B6] sm:text-sm sm:tracking-[0.25em]">{item.category}</p>
-        <h1 className="mt-3 break-words text-4xl font-black tracking-[-0.05em] sm:text-5xl lg:text-6xl xl:text-7xl">{name}</h1>
-        <p className="mt-4 text-sm font-bold text-black/45">Marca: {item.brand} <span aria-hidden="true">·</span> Código: <span aria-live="polite">{code}</span></p>
-        <div className="mt-7"><p className="text-4xl font-black sm:text-5xl" aria-live="polite">{money.format(price)}</p>{oldPrice&&<p className="mt-1 text-lg font-bold text-black/35 line-through">{money.format(oldPrice)}</p>}<p className={`mt-3 text-sm font-black ${soldOut?"text-red-600":"text-emerald-700"}`}>{soldOut?"Agotado":`${availableStock} disponibles`}</p></div>
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#16818f]">{item.category} <span aria-hidden="true">/</span> {item.brand}</p>
+        <h1 className="mt-3 break-words text-[32px] font-black leading-[1.12] tracking-[-0.045em] text-[#142f33] sm:text-4xl lg:text-5xl">{name}</h1>
+        <p className="mt-4 break-words text-xs text-black/45">Código / SKU: <span className="font-bold text-[#365452]" aria-live="polite">{code}</span></p>
+        <div className="mt-6 border-y border-black/10 py-5"><p className="text-[34px] font-black tracking-[-0.04em] text-[#142f33] sm:text-4xl" aria-live="polite">{money.format(price)}<span className="ml-2 text-[10px] font-medium tracking-normal text-black/45">MXN</span></p>{oldPrice&&<p className="mt-1 text-sm text-black/35 line-through">{money.format(oldPrice)}</p>}<p className={`mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-semibold ${soldOut?"bg-[#f5ede9] text-[#8b5650]":"bg-emerald-50 text-emerald-700"}`}><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-current"/>{soldOut?"Agotado":`${availableStock} disponibles`}</p></div>
         {family&&selectedVariant&&<VariantSelector family={family} selected={selectedVariant} onSelect={selectVariant}/>}
-        <div className="mt-8">{checkoutEnabled?<button type="button" onClick={()=>addItem(cartProduct)} disabled={soldOut} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#111] px-8 py-4 text-sm font-black text-white transition hover:bg-[#19A2B6] disabled:cursor-not-allowed disabled:bg-black/20 sm:w-auto"><ShoppingCart size={18}/>{soldOut?"Agotado":"Agregar al carrito"}</button>:<CheckoutUnavailable compact loading={checkoutLoading}/>}</div>
+        <div className="mt-6">{checkoutEnabled?<button type="button" onClick={()=>addItem(cartProduct)} disabled={soldOut} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#15383c] px-6 py-4 text-sm font-bold text-white transition hover:bg-[#19A2B6] disabled:cursor-not-allowed disabled:bg-[#edf0ee] disabled:text-[#778581]"><ShoppingCart size={18}/>{soldOut?"Agotado":"Agregar al carrito"}</button>:<CheckoutUnavailable compact loading={checkoutLoading}/>}</div>
+        {soldOut&&<p className="mt-3 text-xs leading-6 text-black/50">Esta presentación no tiene existencias. Puedes seguir explorando el catálogo y consultar sus detalles.</p>}
       </div>
     </div>
     <ProductContentSections content={{description}} media={editorialMedia} resetKey={detail.canonicalSlug}/>

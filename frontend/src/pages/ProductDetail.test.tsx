@@ -77,6 +77,18 @@ describe("ProductDetail Media B",()=>{
     expect(screen.getByText("V5")).toBeInTheDocument();expect(screen.getByRole("img",{name:"Medio HERO 0"})).toBeInTheDocument();expect(option).toHaveFocus();
   });
 
+  it("permite consultar una variante agotada sin permitir compra",async()=>{
+    mocks.detail={...familyDetail(null),item:{...family,variants:family.variants.map((variant)=>({...variant,available:false,availableStock:0})),available:false,availableStock:0}};
+    const user=userEvent.setup();renderDetail();
+    const option=screen.getByRole("button",{name:/5 L/});
+    expect(option).toBeEnabled();option.focus();await user.keyboard("{Enter}");
+    expect(option).toHaveAttribute("aria-pressed","true");
+    expect(screen.getByText("V5")).toBeInTheDocument();
+    expect(screen.getByRole("img",{name:"Familia Demo 5 L"})).toHaveAttribute("src","https://media.example/product-5.webp");
+    expect(screen.queryByRole("button",{name:"Agregar al carrito"})).not.toBeInTheDocument();
+    expect(mocks.addItem).not.toHaveBeenCalled();
+  });
+
   it("no anuncia roles no HERO en OpenGraph o JSON-LD",async()=>{
     mocks.detail=familyDetail({media:[editorial("BENEFITS"),editorial("USAGE"),editorial("SAFETY"),editorial("INFOGRAPHIC")]});renderDetail();
     await waitFor(()=>expect(document.head.querySelector('meta[property="og:image"]')).toHaveAttribute("content","https://media.example/product-1.webp"));
