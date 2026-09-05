@@ -47,6 +47,9 @@
     },
     "prisma": {
       "mysql2": "3.23.1"
+    },
+    "@prisma/config@7.10.0": {
+      "deepmerge-ts": "8.0.2"
     }
   },
   "devDependencies": {
