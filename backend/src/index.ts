@@ -21,8 +21,11 @@ import { websiteContentRouter } from "./routes/websiteContent";
 import { prisma } from "./lib/prisma";
 import { AppError } from "./errors/AppError";
 import { flushErrorTracking } from "./lib/errorTracking";
+import { createHealthChecks, probeDatabase } from "./lib/healthChecks";
 
 const app = express();
+let shuttingDown = false;
+const { health, ready } = createHealthChecks(() => probeDatabase(prisma), () => shuttingDown);
 
 app.set("trust proxy", 1);
 app.use(pinoHttp({
@@ -49,6 +52,9 @@ app.use(cors({
   },
   credentials: true,
 }));
+// Express matches only its registered GET route (including implicit HEAD).
+// Keep request IDs, security headers and CORS, but do not spend business quota.
+app.get("/health", health);
 app.use(rateLimit({
   windowMs: env.RATE_LIMIT_WINDOW_MS,
   limit: env.RATE_LIMIT_MAX,
@@ -69,15 +75,7 @@ app.use(express.json({ limit: env.JSON_BODY_LIMIT }));
 app.use(cookieParser());
 
 app.get("/", (_req, res) => res.json({ message: "Magno Clean API running" }));
-app.get("/health", (_req, res) => res.json({ status: "ok" }));
-app.get("/ready", async (_req, res) => {
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-    res.json({ status: "ready" });
-  } catch {
-    res.status(503).json({ status: "not_ready" });
-  }
-});
+app.get("/ready", ready);
 app.use("/api/auth", authRouter);
 app.use("/api/checkout", checkoutRouter);
 app.use("/api/payments", paymentsRouter);
@@ -95,7 +93,6 @@ const server = app.listen(env.PORT, () => {
   console.log(JSON.stringify({ level: "info", message: "API running", port: env.PORT, environment: env.NODE_ENV }));
 });
 
-let shuttingDown = false;
 async function shutdown(signal: string) {
   if (shuttingDown) return;
   shuttingDown = true;
