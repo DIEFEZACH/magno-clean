@@ -1,20 +1,7 @@
+import { ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
-export function Footer() {
-  return (
-    <footer className="bg-[#111111] px-5 py-12 text-white lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col justify-between gap-8 md:flex-row md:items-center">
-        <div>
-          <p className="text-2xl font-black">MAGNO CLEAN</p>
-          <p className="mt-2 text-sm text-white/55">Soluciones profesionales para cada espacio.</p>
-        </div>
 
-        <div className="flex flex-wrap gap-5 text-sm font-bold text-white/60">
-          <Link className="hover:text-white" to="/privacidad">Privacidad</Link>
-          <Link className="hover:text-white" to="/terminos">Términos</Link>
-          <Link className="hover:text-white" to="/devoluciones">Devoluciones</Link>
-          <Link className="hover:text-white" to="/contacto">Contacto</Link>
-        </div>
-      </div>
-    </footer>
-  );
+export function Footer() {
+  const groups = [{ title: "Explora", links: [["/productos", "Todos los productos"], ["/categorias", "Categorías"], ["/carrito", "Tu carrito"]] }, { title: "Magno Clean", links: [["/nosotros", "Nosotros"], ["/contacto", "Contacto"], ["/soporte", "Soporte"]] }, { title: "Información", links: [["/privacidad", "Aviso de privacidad"], ["/terminos", "Términos y condiciones"], ["/devoluciones", "Devoluciones"]] }];
+  return <footer className="bg-[#122d32] px-5 pt-12 text-white md:px-8 md:pt-16 xl:px-12"><div className="mx-auto max-w-7xl"><div className="grid gap-9 pb-12 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]"><div><Link to="/" className="text-[28px] font-black tracking-[-0.06em]">MAGNOCLEAN<span className="text-[#EF8329]">.</span></Link><p className="mt-4 max-w-64 text-sm leading-7 text-white/60">Un catálogo para conocer cada producto y elegir cada presentación.</p><Link to="/productos" className="mt-5 inline-flex min-h-11 items-center gap-5 text-xs font-bold text-[#99d7d7]">Encuentra tu Magno <ArrowUpRight size={18}/></Link></div>{groups.map((group) => <div key={group.title}><h2 className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">{group.title}</h2><nav aria-label={group.title} className="grid">{group.links.map(([to, label]) => <Link key={to} to={to} className="flex min-h-11 items-center text-xs text-white/80 hover:text-white">{label}</Link>)}</nav></div>)}</div><div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 py-6 text-[10px] text-white/45"><span>© {new Date().getFullYear()} Magno Clean</span><span>Tecnología de limpieza</span></div></div></footer>;
 }
