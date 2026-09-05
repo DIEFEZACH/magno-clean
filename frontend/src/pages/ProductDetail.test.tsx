@@ -8,13 +8,14 @@ import { ProductDetail } from "./ProductDetail";
 const mocks=vi.hoisted(()=>({
   detail:null as CatalogDetailResponse|null,
   addItem:vi.fn(),
+  checkoutEnabled:false,
 }));
 
 vi.mock("../hooks/useCatalog",()=>({
   useCatalogDetail:()=>({detail:mocks.detail,loading:false,error:null,notFound:false,refetch:vi.fn()}),
   useCatalog:()=>({items:[],pagination:{page:1,pageSize:6,total:0,pages:0},filters:{categories:[],brands:[]},loading:false,error:null,refetch:vi.fn()}),
 }));
-vi.mock("../hooks/useCheckoutAvailability",()=>({useCheckoutAvailability:()=>({checkoutEnabled:false,loading:false})}));
+vi.mock("../hooks/useCheckoutAvailability",()=>({useCheckoutAvailability:()=>({checkoutEnabled:mocks.checkoutEnabled,loading:false})}));
 vi.mock("../store/cartStore",()=>({useCartStore:(selector:(state:{addItem:typeof mocks.addItem})=>unknown)=>selector({addItem:mocks.addItem})}));
 
 const editorial=(role:PublicWebsiteContentMedia["role"],position=0):PublicWebsiteContentMedia=>({role,url:`https://media.example/${role.toLowerCase()}-${position}.webp`,alt:`Medio ${role} ${position}`,position,width:1200,height:900});
@@ -34,7 +35,7 @@ function renderDetail(entry="/producto/familia-demo"){return render(<MemoryRoute
 function jsonLd(type:string){return Array.from(document.querySelectorAll<HTMLScriptElement>('script[data-magno-jsonld="true"]')).map((node)=>JSON.parse(node.text)).find((entry)=>entry["@type"]===type);}
 
 describe("ProductDetail Media B",()=>{
-  beforeEach(()=>{mocks.detail=familyDetail(null);mocks.addItem.mockReset();});
+  beforeEach(()=>{mocks.detail=familyDetail(null);mocks.addItem.mockReset();mocks.checkoutEnabled=false;});
 
   it("mantiene el detalle actual con websiteContent null o media vacío",()=>{
     const first=renderDetail();expect(screen.getByRole("heading",{level:1,name:"Familia Demo"})).toBeInTheDocument();expect(screen.queryByText("Información del producto")).not.toBeInTheDocument();first.unmount();
@@ -86,6 +87,16 @@ describe("ProductDetail Media B",()=>{
     expect(screen.getByText("V5")).toBeInTheDocument();
     expect(screen.getByRole("img",{name:"Familia Demo 5 L"})).toHaveAttribute("src","https://media.example/product-5.webp");
     expect(screen.queryByRole("button",{name:"Agregar al carrito"})).not.toBeInTheDocument();
+    expect(mocks.addItem).not.toHaveBeenCalled();
+  });
+
+  it("con checkout habilitado, cambiar a una presentación agotada conserva la compra bloqueada",async()=>{
+    mocks.checkoutEnabled=true;
+    mocks.detail={...familyDetail(null),item:{...family,variants:family.variants.map((variant)=>({...variant,available:false,availableStock:0})),available:false,availableStock:0}};
+    const user=userEvent.setup();renderDetail();
+    await user.click(screen.getByRole("button",{name:/5 L/}));
+    expect(screen.getByRole("button",{name:"Agotado"})).toBeDisabled();
+    expect(screen.getByText("V5")).toBeInTheDocument();
     expect(mocks.addItem).not.toHaveBeenCalled();
   });
 
