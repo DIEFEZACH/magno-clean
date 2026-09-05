@@ -10,6 +10,7 @@ import { useCatalog, useCatalogDetail } from "../hooks/useCatalog";
 import { useCheckoutAvailability } from "../hooks/useCheckoutAvailability";
 import { buildGallery, selectInitialVariant } from "../lib/productDetail";
 import { firstEditorialHero } from "../lib/editorialMedia";
+import { isWithheldProductImage } from "../lib/productImageReview";
 import { useCartStore } from "../store/cartStore";
 import type { CatalogVariant } from "../types/catalog";
 import { NotFound } from "./NotFound";
@@ -50,7 +51,7 @@ export function ProductDetail(){
   function selectVariant(variant:CatalogVariant){const next=new URLSearchParams(searchParams);next.set("variant",variant.code);setSearchParams(next,{replace:true});}
 
   const productJsonLd=item.type==="FAMILY"?{
-    "@context":"https://schema.org","@type":"ProductGroup","name":family!.name,"description":family!.shortDescription,"url":`${siteUrl}${canonicalPath}`,"productGroupID":family!.id,"variesBy":family!.variantType,"brand":{"@type":"Brand","name":family!.brand},...(editorialHero?{"image":[editorialHero.url]}:{}),"hasVariant":family!.variants.map((variant)=>({"@type":"Product","name":variant.name,"sku":variant.code,"image":[variant.imageUrl,...variant.images.map((image)=>image.url)].filter(Boolean),...(checkoutEnabled?{"offers":{"@type":"Offer","url":`${siteUrl}${canonicalPath}?variant=${encodeURIComponent(variant.code)}`,"priceCurrency":"MXN","price":variant.price,"availability":variant.available?"https://schema.org/InStock":"https://schema.org/OutOfStock","itemCondition":"https://schema.org/NewCondition"}}:{})}))
+    "@context":"https://schema.org","@type":"ProductGroup","name":family!.name,"description":family!.shortDescription,"url":`${siteUrl}${canonicalPath}`,"productGroupID":family!.id,"variesBy":family!.variantType,"brand":{"@type":"Brand","name":family!.brand},...(editorialHero?{"image":[editorialHero.url]}:{}),"hasVariant":family!.variants.map((variant)=>({"@type":"Product","name":variant.name,"sku":variant.code,"image":[variant.imageUrl,...variant.images.map((image)=>image.url)].filter((url)=>url&&!isWithheldProductImage(variant.code,url)),...(checkoutEnabled?{"offers":{"@type":"Offer","url":`${siteUrl}${canonicalPath}?variant=${encodeURIComponent(variant.code)}`,"priceCurrency":"MXN","price":variant.price,"availability":variant.available?"https://schema.org/InStock":"https://schema.org/OutOfStock","itemCondition":"https://schema.org/NewCondition"}}:{})}))
   }:{"@context":"https://schema.org","@type":"Product","name":product!.name,"description":product!.description,"image":gallery.map((image)=>image.url),"sku":product!.code,"brand":{"@type":"Brand","name":product!.brand},...(checkoutEnabled?{"offers":{"@type":"Offer","url":`${siteUrl}${canonicalPath}`,"priceCurrency":"MXN","price":product!.price,"availability":product!.available?"https://schema.org/InStock":"https://schema.org/OutOfStock","itemCondition":"https://schema.org/NewCondition"}}:{})};
   const breadcrumbJsonLd={"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Inicio","item":siteUrl},{"@type":"ListItem","position":2,"name":"Productos","item":`${siteUrl}/productos`},{"@type":"ListItem","position":3,"name":name,"item":`${siteUrl}${canonicalPath}`}]};
 
