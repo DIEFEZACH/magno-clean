@@ -95,4 +95,21 @@ describe("auth session in-memory coordination", () => {
     await useAuthStore.getState().login("fixture@example.invalid", "fixture-only");
     expect(useAuthStore.getState().lastError).toBe("Credenciales incorrectas");
   });
+  it.each(["http", "network"])("keeps a visible logout-failure state after %s error until an explicit retry succeeds", async (failure) => {
+    const fetch = vi.fn();
+    if (failure === "http") fetch.mockResolvedValueOnce(Response.json({}, { status: 502 }));
+    else fetch.mockRejectedValueOnce(new TypeError("fixture network error"));
+    vi.stubGlobal("fetch", fetch);
+    const { useAuthStore } = await import("./authStore");
+    await useAuthStore.getState().logout();
+    expect(useAuthStore.getState()).toMatchObject({ isAuthenticated: false, accessToken: null, logoutUnconfirmed: true });
+    expect(useAuthStore.getState().lastError).toContain("no pudimos confirmar");
+    expect(await useAuthStore.getState().login("fixture@example.invalid", "fixture-only")).toBe(false);
+    expect(await useAuthStore.getState().refresh()).toBe(false);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    fetch.mockResolvedValueOnce(Response.json({ message: "closed" }));
+    await useAuthStore.getState().logout();
+    expect(useAuthStore.getState()).toMatchObject({ logoutUnconfirmed: false, lastError: null, isAuthenticated: false });
+    expect(fetch.mock.calls.map(([url]) => url)).toEqual(["/api/auth/logout", "/api/auth/logout"]);
+  });
 });

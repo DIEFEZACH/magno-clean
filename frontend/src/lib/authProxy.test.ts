@@ -4,10 +4,11 @@ import { getSetCookies, onRequest, sameOriginCookie } from "../../functions/api/
 
 const origin = "https://demo.magno-clean-staging.pages.dev";
 const upstream = "https://magno-clean-api-staging.onrender.com";
+const fixtureCookie = `magno_refresh=${"a".repeat(64)}`;
 const env = { AUTH_UPSTREAM_URL: upstream };
 const invalidCsrfHeaders: Record<string, string>[] = [{ Origin: "https://evil.invalid" }, { Origin: "null" }, { Origin: "" }, { "X-Magno-Auth": "" }];
 function request(path = "/api/auth/refresh", options: RequestInit = {}) {
-  const headers = new Headers({ Origin: origin, "Content-Type": "application/json", "X-Magno-Auth": "1" });
+  const headers = new Headers({ Origin: origin, "Content-Type": "application/json", "X-Magno-Auth": "1", Cookie: fixtureCookie });
   new Headers(options.headers).forEach((value, key) => headers.set(key, value));
   const method = options.method || "POST";
   return new Request(`${origin}${path}`, { ...options, method, headers, ...(method === "POST" ? { body: options.body ?? "{}" } : {}) });
@@ -53,14 +54,14 @@ describe("strict same-origin auth proxy", () => {
   it("forwards only fixed route, minimal headers and exact public origin", async () => {
     const fetch = vi.fn().mockResolvedValue(Response.json({ message: "ok" })); vi.stubGlobal("fetch", fetch);
     const response = await onRequest({ request: request(undefined, { headers: {
-      Cookie: "other=private; magno_refresh=fixture", "X-Forwarded-Host": "evil.invalid", "X-Upstream": "https://evil.invalid", Authorization: "Bearer should-not-forward",
+      Cookie: `other=private; ${fixtureCookie}`, "X-Forwarded-Host": "evil.invalid", "X-Upstream": "https://evil.invalid", Authorization: "Bearer should-not-forward",
     } }), env });
     expect(response.status).toBe(200);
     const [url, options] = fetch.mock.calls[0];
     expect(url).toBe(`${upstream}/api/auth/refresh`);
     expect(options.redirect).toBe("manual");
     expect(options.headers.get("origin")).toBe(origin);
-    expect(options.headers.get("cookie")).toBe("magno_refresh=fixture");
+    expect(options.headers.get("cookie")).toBe(fixtureCookie);
     expect(options.headers.has("authorization")).toBe(false);
     expect(options.headers.has("x-forwarded-host")).toBe(false);
     expect(options.headers.has("x-upstream")).toBe(false);
@@ -108,5 +109,27 @@ describe("strict same-origin auth proxy", () => {
     expect(response.status).toBe(502);
     expect(await response.text()).not.toContain("internal connection details");
     expect(response.headers.get("x-request-id")).toBeTruthy();
+  });
+  it("preserves a text/plain upstream 429 as sanitized JSON with Retry-After and no-store", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("upstream internal limiter text", {
+      status: 429, headers: { "Content-Type": "text/plain", "Retry-After": "123" },
+    })));
+    const response = await onRequest({ request: request(), env });
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("123");
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+    expect(response.headers.get("Content-Type")).toContain("application/json");
+    const body = await response.json();
+    expect(body.message).toContain("Demasiados intentos");
+    expect(JSON.stringify(body)).not.toContain("internal limiter text");
+    expect(body.requestId).toBeTruthy();
+  });
+  it.each(["", "magno_refresh=", "magno_refresh=short", `magno_refresh=${"!".repeat(64)}`])("rejects absent/malformed refresh locally without consuming upstream limiter", async (cookie) => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    const response = await onRequest({ request: request(undefined, { headers: { Cookie: cookie } }), env });
+    expect(response.status).toBe(401);
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+    expect(response.headers.get("Content-Type")).toContain("application/json");
+    expect(fetch).not.toHaveBeenCalled();
   });
 });
