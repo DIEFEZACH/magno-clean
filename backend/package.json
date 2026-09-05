@@ -41,6 +41,14 @@
     "prisma": "^7.8.0",
     "zod": "^4.4.3"
   },
+  "overrides": {
+    "express": {
+      "qs": "6.16.0"
+    },
+    "prisma": {
+      "mysql2": "3.23.1"
+    }
+  },
   "devDependencies": {
     "@types/compression": "^1.8.1",
     "@types/cookie-parser": "^1.4.10",
