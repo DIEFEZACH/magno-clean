@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useCartStore } from "../../store/cartStore";
 import { useCheckoutAvailability } from "../../hooks/useCheckoutAvailability";
 import type { CatalogFamily, CatalogItem, CatalogProduct } from "../../types/catalog";
+import { isWithheldProductImage } from "../../lib/productImageReview";
 
 type LegacyProduct = { id: string; slug: string; name: string; category: string; price: number; oldPrice?: number | null; badge?: string | null; description: string; imageUrl?: string | null; availableStock?: number };
 function isFamily(product: CatalogItem | LegacyProduct): product is CatalogFamily { return "type" in product && product.type === "FAMILY"; }
@@ -24,7 +25,7 @@ export function ProductCard({ product }: { product: CatalogItem | LegacyProduct 
     <Link to={href} className="flex min-w-0 flex-1 flex-col rounded-lg">
       <div className="relative flex aspect-square items-center justify-center rounded-lg bg-[#f7f8f6] p-5">
         {product.badge && <span className="absolute left-2 top-2 max-w-[calc(100%-1rem)] rounded-md bg-[#EF8329] px-2 py-1 text-[9px] font-bold text-white">{product.badge}</span>}
-        {product.imageUrl && failedImage !== product.imageUrl ? <img src={product.imageUrl} alt={product.name} width="360" height="360" loading="lazy" decoding="async" onError={() => setFailedImage(product.imageUrl ?? null)} className="h-full w-full object-contain mix-blend-multiply transition duration-300 group-hover:scale-[1.04]"/> : <span className="text-4xl font-black tracking-tighter text-[#168fa1]">MC.</span>}
+        {product.imageUrl && failedImage !== product.imageUrl && !isWithheldProductImage("code" in product ? product.code : undefined, product.imageUrl) ? <img src={product.imageUrl} alt={product.name} width="360" height="360" loading="lazy" decoding="async" onError={() => setFailedImage(product.imageUrl ?? null)} className="h-full w-full object-contain mix-blend-multiply transition duration-300 group-hover:scale-[1.04]"/> : <span className="text-4xl font-black tracking-tighter text-[#168fa1]">MC.</span>}
       </div>
       <p className="mt-4 text-[9px] font-bold uppercase tracking-[0.17em] text-[#16818f]">{product.category}</p><h3 className="mt-2 break-words text-[15px] font-extrabold leading-5 tracking-[-0.02em] text-[#142f33]">{product.name}</h3>
       {family ? <><p className="mt-2 text-[11px] font-semibold text-black/50">{productLike ? family.variants[0].label : `${family.variantCount} presentaciones`}</p>{family.variantCount > 1 && <div className="mt-3 flex flex-wrap gap-1.5" aria-label={`${family.variantType} disponibles`}>{family.variants.slice(0, 4).map((variant) => <span key={variant.id} className="rounded border border-black/10 px-2 py-1 text-[10px] font-semibold text-black/55">{variant.label}</span>)}{family.variantCount > 4 && <span className="px-1 py-1 text-[10px] text-black/50">+{family.variantCount - 4}</span>}</div>}</> : <p className="mt-2 text-[11px] text-black/50">Producto individual</p>}
