@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { PreviewNotice } from "./components/PreviewNotice";
 const PublicLayout = lazy(() => import("./components/layout/PublicLayout").then(m => ({ default: m.PublicLayout })));
 const AdminLayout = lazy(() => import("./components/admin/AdminLayout").then(m => ({ default: m.AdminLayout })));
 const AdminRoute = lazy(() => import("./components/admin/AdminRoute").then(m => ({ default: m.AdminRoute })));
@@ -13,6 +14,7 @@ const AdminContentEditor = lazy(() => import("./pages/AdminContentEditor").then(
 export default function App() {
   return (
     <BrowserRouter>
+      <PreviewNotice />
       <div
         className="min-h-screen bg-white text-[#111111]"
         style={{

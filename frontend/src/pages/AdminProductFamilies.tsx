@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Link2, Pencil, Plus, Search, Trash2, Unlink } from "lucide-react";
 import { AdminPageHeader, AdminSkeleton } from "../components/admin/AdminUi";
 import { useAdminFeedback } from "../components/admin/AdminFeedback";
@@ -79,6 +80,10 @@ async function messageFrom(response: Response, fallback: string) {
 
 export function AdminProductFamilies() {
   const feedback = useAdminFeedback();
+  const [params] = useSearchParams();
+  const requestedFamilyId = params.get("family");
+  const requestedEdit = params.get("edit") === "1";
+  const consumedLink = useRef<string | null>(null);
   const [families, setFamilies] = useState<Family[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -99,9 +104,22 @@ export function AdminProductFamilies() {
       const data = await response.json();
       setFamilies(data.families || []);
       setSelectedId((current) => (current && (data.families || []).some((item: Family) => item.id === current) ? current : data.families?.[0]?.id || null));
+      const linkedFamily = (data.families || []).find((item: Family) => item.id === requestedFamilyId) as Family | undefined;
+      if (linkedFamily && consumedLink.current !== requestedFamilyId) {
+        consumedLink.current = requestedFamilyId;
+        setSelectedId(linkedFamily.id);
+        if (requestedEdit) {
+          setEditing(linkedFamily.id);
+          setForm({ slug: linkedFamily.slug, name: linkedFamily.name, brand: linkedFamily.brand,
+            category: linkedFamily.category, description: linkedFamily.description,
+            variantType: linkedFamily.variantType, imageUrl: linkedFamily.imageUrl || "",
+            badge: linkedFamily.badge || "", active: linkedFamily.active,
+            featured: linkedFamily.featured, alwaysShowAsFamily: linkedFamily.alwaysShowAsFamily });
+        }
+      }
     } else feedback.toast("error", await messageFrom(response, "No se pudieron cargar las familias"));
     setLoading(false);
-  }, [feedback, search]);
+  }, [feedback, search, requestedFamilyId, requestedEdit]);
   useEffect(() => {
     // La carga sincroniza esta vista con la API administrativa al cambiar el filtro.
     // eslint-disable-next-line react-hooks/set-state-in-effect
